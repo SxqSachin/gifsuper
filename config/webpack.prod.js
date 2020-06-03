@@ -3,7 +3,7 @@ const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const config = {
-  mode: 'development',        //webpack打包的模式，上述命令里有介绍，也可以在本配置中配置
+  mode: 'production',        //webpack打包的模式，上述命令里有介绍，也可以在本配置中配置
   entry: {    //js的入口文件，支持多入口 注释①
     main: path.resolve(__dirname, '../src/index.js')
   },
@@ -44,14 +44,5 @@ const config = {
     new HtmlWebpackPlugin({ template: './src/index.html' }),
     new CleanWebpackPlugin(),
   ],
-  devServer: {        //webpack-dev-server配置（仅开发环境需要）
-    contentBase: path.join(__dirname, './dist'), //编译打包文件的位置
-    publicPath: '/',
-    port: 8080,                 //服务器端口号
-    host: '0.0.0.0',
-    proxy: {},                  //代理列表
-    compress: true,
-    historyApiFallback: true,   //开启服务器history重定向模式
-  }
 };
 module.exports = config;
