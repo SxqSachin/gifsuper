@@ -1,6 +1,7 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
 
 const config = {
   mode: 'development',        //webpack打包的模式，上述命令里有介绍，也可以在本配置中配置
@@ -12,37 +13,44 @@ const config = {
     filename: 'bundle.js'
   },
   module: {
-    rules: [{
-      test: /\.js$/,
-      loader: 'babel-loader',
-      exclude: path.resolve(__dirname, 'node_module/'),
-    },
-    {
-      test: /\.scss$/,
-      use: [
-        {
-          loader: "style-loader" // 将 JS 字符串生成为 style 节点
-        },
-        {
-          loader: "css-loader" // 将 CSS 转化成 CommonJS 模块
-        },
-        {
-          loader: "sass-loader" // 将 Sass 编译成 CSS
-        }
-      ]
-    },
-    {
-      test: /\.css$/,
-      use: [
-        'style-loader',
-        { loader: 'css-loader', options: { importLoaders: 1 } },
-        'postcss-loader'
-      ]
-    }],
+    rules: [
+      {
+        test: /\.js$/,
+        loader: 'babel-loader',
+        exclude: path.resolve(__dirname, 'node_module/'),
+      },
+      {
+        test: /\.scss$/,
+        use: [
+          {
+            loader: "style-loader" // 将 JS 字符串生成为 style 节点
+          },
+          {
+            loader: "css-loader" // 将 CSS 转化成 CommonJS 模块
+          },
+          {
+            loader: "sass-loader" // 将 Sass 编译成 CSS
+          }
+        ]
+      },
+      {
+        test: /\.css$/,
+        use: [
+          'style-loader',
+          { loader: 'css-loader', options: { importLoaders: 1 } },
+          'postcss-loader'
+        ]
+      },
+      {
+        test: /\.vue$/,
+        loader: 'vue-loader'
+      }
+    ],
   },
   plugins: [
     new HtmlWebpackPlugin({ template: './src/index.html' }),
     new CleanWebpackPlugin(),
+    new VueLoaderPlugin(),
   ],
   devServer: {        //webpack-dev-server配置（仅开发环境需要）
     contentBase: path.join(__dirname, './dist'), //编译打包文件的位置

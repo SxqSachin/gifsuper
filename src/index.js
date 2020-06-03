@@ -3,14 +3,11 @@ import '@babel/polyfill'
 import './style/index.css';
 import './style/index.scss';
 
-var a = async function()  {
 
-  const a = {};
+import Vue from 'vue';
 
-  const b = a?.c ?? '12';
+import App from './vue/App.vue';
 
-  console.log(b);
-
-}
-
-a();
+new Vue({
+  render: h => h(App),
+}).$mount('#app');
