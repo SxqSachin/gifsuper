@@ -17,22 +17,22 @@
 
       <div class="flex-1 flex flex-col mr-0 md:mr-8 w-full">
 
-        <fieldset class="flex items-start flex-col md:flex-row pb-4 mb-8 border-b border-gray-300 w-full" v-show="canEdit">
+        <fieldset class="flex items-start flex-col md:flex-row pb-4 mb-8 border-b border-gray-600 w-full" v-show="canEdit">
           <legend class="mb-4 text-lg"> 图片信息 </legend>
 
-          <div class="flex">
+          <div class="flex w-full">
             <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
               <label for="interval" class="whitespace-no-wrap flex-0 inline-block">总帧数：</label>
               <div>{{ this.frameList.length }}</div>
             </div>
             <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
-              <label for="interval" class="whitespace-no-wrap flex-0 inline-block">总帧数：</label>
-              <div>{{ this.frameList.length }}</div>
+              <label for="interval" class="whitespace-no-wrap flex-0 inline-block">大小：</label>
+              <div>{{ this.rawFile ? +(this.rawFile.size / (1024 * 1024)).toFixed(2) : 0 }}MB</div>
             </div>
           </div>
         </fieldset>
 
-        <fieldset class="flex items-start flex-col md:flex-row pb-8 mb-8 border-b border-gray-300 w-full">
+        <fieldset class="flex items-start flex-col md:flex-row pb-8 mb-8 border-b border-gray-600 w-full">
           <legend class="mb-4 text-lg"> 基础调整 </legend>
 
           <div class="flex items-center mb-4 pt-4 pb-8 w-full">
@@ -61,15 +61,16 @@
         </fieldset>
 
         <fieldset>
-          <legend class="mb-4 text-lg"> 文字操作 </legend>
+          <legend class="mb-2 text-lg"> 文字操作 </legend>
+          <div class="mb-4 pb-2 text-color-neutral text-sm border-b border-gray-400">生成文字后可于下方“时间轴”处调整文字位置</div>
           <div class="w-full flex flex-wrap items-start flex-col md:flex-row">
-            <div class="flex justify-center items-center mr-4 mb-4">
+            <div class="flex justify-center items-center mr-4 mb-4 w-full md:w-auto">
               <label for="" class="whitespace-no-wrap">文字内容：</label>
-              <s-input v-model="textContent" placeholder="请输入内容"></s-input>
+              <s-input class="w-full" v-model="textContent" placeholder="请输入内容，支持emoji表情"></s-input>
             </div>
-            <div class="flex justify-center items-center mr-4 mb-4">
+            <div class="flex justify-center items-center mr-4 mb-4 w-full md:w-auto">
               <label for="" class="whitespace-no-wrap">文字颜色：</label>
-              <s-input v-model="textColor"></s-input>
+              <s-input class="w-full" v-model="textColor"></s-input>
             </div>
 
             <!-- <div class="flex justify-center items-center mr-4 mb-4">
@@ -92,7 +93,7 @@
           </div>
         </fieldset>
 
-        <fieldset class="mt-8 pt-8 border-t border-gray-300">
+        <fieldset class="mt-8 pt-8 border-t border-gray-600">
           <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
         </fieldset>
       </div>
@@ -146,8 +147,6 @@ import { fabric } from 'fabric';
 const FrameIndex = 1;
 const TextZIndex = 10;
 
-console.log('sadsadsd');
-
 @Component({
   components: {
     'upload': Upload,
@@ -174,6 +173,9 @@ export default class extends Vue {
   public textOutline: string = '#fff';
 
   public textRange: string = '';
+
+  // 上传的Gif
+  public rawFile: File = null;
 
   // 倒放
   public revert: boolean = false;
@@ -265,6 +267,8 @@ export default class extends Vue {
     if (!gifFile || !this.canvas) {
       return;
     }
+
+    this.rawFile = gifFile;
 
     this.resetStage();
 

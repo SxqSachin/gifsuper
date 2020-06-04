@@ -125,11 +125,11 @@ body {
 }
 .content-text-color,
 .text-color-content {
-  color: var(--secondary-text-color);
+  color: var(--content-text-color);
 }
 .neutral-text-color,
 .text-color-neutral {
-  color: var(--secondary-text-color);
+  color: var(--neutral-text-color);
 }
 .r-text-color-primary {
   color: var(--r-primary-text-color);
@@ -138,10 +138,10 @@ body {
   color: var(--r-secondary-text-color);
 }
 .r-text-color-content {
-  color: var(--r-secondary-text-color);
+  color: var(--r-content-text-color);
 }
 .r-text-color-neutral {
-  color: var(--r-secondary-text-color);
+  color: var(--r-neutral-text-color);
 }
 
 .border-color-light {
