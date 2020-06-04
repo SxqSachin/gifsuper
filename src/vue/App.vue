@@ -1,66 +1,80 @@
 <template>
   <main class="wrapper p-4 sm:p-4 md:p-8 lg:p-8">
 
-    <div class="top mb-12">
-      <upload class="uploader mx-auto" :before-upload="upload" hover-color="var(--color-info)"></upload>
+    <div class="top mb-6">
+      <upload class="uploader mx-auto" :before-upload="upload" hover-color="var(--color-info)">上传GIF！</upload>
     </div>
 
     <div class="srcgif-wrapper flex mb-4 items-center">
       <div class="src w-1/2 flex-shrink-0">
-        <label for="">原图像：</label>
+        <label for="srcgif" class="inline-block mb-4">原Gif：</label>
         <div id="srcgif"> </div>
       </div>
     </div>
 
-    <div class="edit-panel p-8 border rounded-md border-color-2 mt-8 flex">
+    <div class="edit-panel p-2 md:p-8 border rounded-md border-color-2 mt-8 flex flex-col md:flex-row">
 
-      <div class="flex-1 flex flex-col mr-8">
-        <div class="flex items-center pb-8 mb-8 border-b border-gray-300">
-          <div class="flex justify-center items-center">
-            <label for="interval">选中帧：</label>
-            <s-input readonly v-model="editFrameIndex"></s-input>
-          </div>
-          <div class="flex justify-center items-center ml-8">
+      <div class="flex-1 flex flex-col mr-0 md:mr-8">
+
+        <fieldset class="flex items-start flex-col md:flex-row pb-8 mb-8 border-b border-gray-300">
+          <legend class="mb-4 text-lg"> 基础调整 </legend>
+
+          <div class="flex items-center mr-4 mb-4">
             <label for="interval">帧间隔：</label>
             <s-input type="number" name="interval" id="interval" v-model="interval"></s-input>
           </div>
-        </div>
 
-        <div class="flex pb-8 mb-8 border-b border-gray-300">
-          <div class="flex justify-center items-center">
-            <label for="">文字内容：</label>
-            <s-input v-model="textContent" placeholder="请输入内容"></s-input>
+          <sbtn class="flex-0 mr-0 md:mr-4 mb-1 w-auto" type="info" @click="toggleRevert">倒放：{{ revert ? '开' : '关' }}</sbtn>
+          <sbtn class="flex-0 mr-0 md:mr-4 mb-1 w-auto" @click="toggleRepeat">循环：{{ repeat ? '开' : '关' }}</sbtn>
+          <sbtn class="flex-0 mr-0 md:mr-4 mb-1 w-auto" @click="rs = !rs">抽帧：{{ rs ? '开' : '关' }}</sbtn>
+          <sbtn class="flex-0 mr-0 md:mr-4 mb-1 w-auto" type="error" @click="makeTimeline">重置</sbtn>
+
+        </fieldset>
+
+        <fieldset>
+          <legend class="mb-4 text-lg"> 文字操作 </legend>
+          <div class="w-full flex flex-wrap items-start flex-col md:flex-row">
+            <div class="flex justify-center items-center mr-4 mb-4">
+              <label for="" class="whitespace-no-wrap">文字内容：</label>
+              <s-input v-model="textContent" placeholder="请输入内容"></s-input>
+            </div>
+            <div class="flex justify-center items-center mr-4 mb-4">
+              <label for="" class="whitespace-no-wrap">文字颜色：</label>
+              <s-input v-model="textColor"></s-input>
+            </div>
+
+            <!-- <div class="flex justify-center items-center mr-4 mb-4">
+              <label for="" class="whitespace-no-wrap">文字边线色：</label>
+              <s-input v-model="textOutline"></s-input>
+            </div> -->
+
+            <div class="flex justify-center items-center mr-4 mb-4">
+              <sbtn class="mr-4 mb-1" @click="addText(textContent, textColor)">为指定帧添加文字</sbtn>
+              <s-input v-model="textRange" placeholder="如:0,1,2,(4-10)"></s-input>
+            </div>
+            <sbtn class="mb-1 w-full md:w-auto" @click="addText(textContent, textColor)">为所有帧添加文字</sbtn>
+
           </div>
-          <div class="flex justify-center items-center ml-8">
-            <label for="">文字颜色：</label>
-            <s-input v-model="textColor"></s-input>
-          </div>
+        </fieldset>
 
-          <sbtn class="ml-12" @click="addText(textContent, textColor)">添加文字</sbtn>
-        </div>
-
-        <div class="flex pb-8 mb-8 border-b border-gray-300">
-          <sbtn type="info" @click="revert = !revert">倒放：{{ revert ? '开' : '关' }}</sbtn>
-          <sbtn class="ml-4" @click="insertFrame(0, -1)">在末尾插入第一帧</sbtn>
-          <sbtn class="ml-4" @click="repeat = !repeat">循环：{{ repeat ? '开' : '关' }}</sbtn>
-          <sbtn class="ml-4" @click="rs = !rs">抽帧：{{ rs ? '开' : '关' }}</sbtn>
-          <sbtn class="ml-4" type="error" @click="makeTimeline">重置</sbtn>
-        </div>
-
-        <sbtn type="success" @click="generate" :disabled="isGenerating || !frameList.length">生成</sbtn>
+        <fieldset class="mt-8 pt-8 border-t border-gray-300">
+          <sbtn type="success" @click="generate" :disabled="isGenerating || !frameList.length">生成</sbtn>
+        </fieldset>
       </div>
 
-      <div class="flex-0 w-1/3">
-        <label for="">新图像：（保存图片：右击图片->图片另存为）</label>
+      <div class="flex-0 w-full md:w-1/3 border-t md:border-t-0 mt-4 md:mt-0 pt-4 md:pt-0">
+        <label for="" class="hidden md:inline" v-show="generateDone">新图像：（保存图片：右击图片->图片另存为）</label>
+        <label for="" class="inline md:hidden" v-show="generateDone">新图像：（长按图片->保存图片）</label>
+
         <div class="flex justify-center h-full items-center">
-          <div class="mb-24" v-show="isGenerating">
+          <div class="my-12 md:my-0" v-show="isGenerating">
             <div class="mb-12">生成中： {{progress}}%</div>
 
             <loading></loading>
           </div>
 
           <div v-show="!isGenerating">
-            <div id="dtsgif" > </div>
+            <div id="dtsgif" class="mt-4 md:mt-0"> </div>
           </div>
         </div>
       </div>
@@ -114,9 +128,13 @@ export default class extends Vue {
   public interval: number = 120;
 
   public isGenerating: boolean = false;
+  public generateDone: boolean = false;
 
   public textContent: string = '';
   public textColor: string = '#fff';
+  public textOutline: string = '#fff';
+
+  public textRange: string = '';
 
   // 倒放
   public revert: boolean = false;
@@ -170,6 +188,20 @@ export default class extends Vue {
     this.dragBarCanvas = new fabric.Canvas('dragbar');
 
     this.initKeyPressEvent();
+  }
+
+  public toggleRevert() {
+    this.revert = !this.revert;
+
+    // @ts-ignore
+    this.$message(`已${this.revert ? '开启' : '关闭'}倒放`, {type: 'info'})
+  }
+
+  public toggleRepeat() {
+    this.repeat = !this.repeat;
+
+    // @ts-ignore
+    this.$message(`已${this.repeat? '开启' : '关闭'}循环播放`, {type: 'info'})
   }
 
   public resetStage() {
@@ -298,20 +330,7 @@ export default class extends Vue {
           lockMovementX: true,
           lockMovementY: true,
           hasControls: false,
-        }).scale(scale).on('mousedown', (e: any) => {
-          const isShiftDown = e!.e!.shiftKey;
-          const frameIndex = e!.target!.frameIndex;
-
-          if (isShiftDown) {
-            this.editFrameIndex.push(frameIndex);
-          } else {
-            this.editFrameIndex = [frameIndex];
-          }
-
-          this.editFrameIndex.sort((a: any, b: any) => {
-            return +a - +b;
-          });
-        });
+        }).scale(scale);
 
         // @ts-ignore
         nimg.frameIndex = index;
@@ -395,6 +414,8 @@ export default class extends Vue {
       return;
     }
 
+    this.generateDone = false;
+
     this.progress = 0;
     this.isGenerating = true;
 
@@ -430,6 +451,7 @@ export default class extends Vue {
     });
 
     this.isGenerating = false;
+    this.generateDone = true;
   }
 
   public insertFrame(srcFrameIndex: number, targetFrameIndex: number) {

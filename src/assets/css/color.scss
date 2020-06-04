@@ -38,4 +38,10 @@ $text-color-grey: $grey-2;
   --color-disabled: #dfdfdf;
   --color-ghost: transparent;
 }
-// $content-text-color: $grey-3;
+
+.color-info { color: var(--color-info); }
+.color-success { color: var(--color-success); }
+.color-warn { color: var(--color-warn); }
+.color-error { color: var(--color-error); }
+.color-disabled { color: var(--color-disabled); }
+.color-ghost { color: var(--color-ghost); }
