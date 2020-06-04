@@ -3,9 +3,29 @@
 
 <head>
 
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="Gif Super: an easy online gif tool">
+
   <style>
     @import url('/static/css/theme-light.css') (prefers-color-scheme: light), (prefers-color-scheme: no-preference);
     @import url('/static/css/theme-dark.css') (prefers-color-scheme: dark);
+  </style>
+
+  <style>
+    header {
+      height: 72px;
+    }
+
+    main {
+      min-height: calc(100vh - 72px * 2);
+    }
+
+    footer {
+      height: 72px;
+    }
   </style>
 
   <script src="/static/js/libgif.js"></script>
@@ -26,20 +46,5 @@
     2020 @GifSuper
   </footer>
 </body>
-
-<style>
-  header {
-    height: 72px;
-  }
-
-  main {
-    height: calc(100vh - 72px * 2);
-  }
-
-  footer {
-    height: 72px;
-  }
-
-</style>
 
 </html>

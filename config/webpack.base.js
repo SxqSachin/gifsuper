@@ -3,6 +3,8 @@ const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const resolve = (dir) => {
   return path.join(__dirname, '..', dir);
@@ -44,27 +46,53 @@ const config = {
       {
         test: /\.scss$/,
         use: [
-          {
-            loader: "vue-style-loader" // 将 JS 字符串生成为 style 节点
-          },
-          {
-            loader: "style-loader" // 将 JS 字符串生成为 style 节点
-          },
-          {
-            loader: "css-loader" // 将 CSS 转化成 CommonJS 模块
-          },
-          {
-            loader: "sass-loader" // 将 Sass 编译成 CSS
-          }
+          MiniCssExtractPlugin.loader,
+          "css-loader",
+          "sass-loader",
         ]
+        // use: [
+        //   {
+        //     loader: "vue-style-loader" // 将 JS 字符串生成为 style 节点
+        //   },
+        //   {
+        //     loader: "style-loader" // 将 JS 字符串生成为 style 节点
+        //   },
+        //   {
+        //     loader: "css-loader" // 将 CSS 转化成 CommonJS 模块
+        //   },
+        //   {
+        //     loader: "sass-loader" // 将 Sass 编译成 CSS
+        //   }
+        // ]
+        // use: ExtractTextPlugin.extract({
+        //   fallback: 'style-loader',
+        //   use: [
+        //     MiniCssExtractPlugin.loader,
+        //     'css-loader',
+        //     'sass-loader',
+        //   ],
+        // })
       },
       {
         test: /\.css$/,
+        // use: [
+        //   'style-loader',
+        //   { loader: 'css-loader', options: { importLoaders: 1 } },
+        //   'postcss-loader'
+        // ]
         use: [
-          'style-loader',
-          { loader: 'css-loader', options: { importLoaders: 1 } },
+          MiniCssExtractPlugin.loader,
+          'css-loader',
           'postcss-loader'
         ]
+        // use: ExtractTextPlugin.extract({
+        //   fallback: 'style-loader',
+        //   use: [
+        //     MiniCssExtractPlugin.loader,
+        //     'css-loader',
+        //     'postcss-loader',
+        //   ],
+        // })
       },
       {
         test: /\.vue$/,
@@ -84,6 +112,8 @@ const config = {
         to: path.resolve(__dirname, '../dist/static')
       }]
     }),
+    new ExtractTextPlugin('css/index.css'),
+    new MiniCssExtractPlugin(),
   ],
 
 };

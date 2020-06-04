@@ -94,6 +94,8 @@ import { fabric } from 'fabric';
 const FrameIndex = 1;
 const TextZIndex = 10;
 
+console.log('sadsadsd');
+
 @Component({
   components: {
     'upload': Upload,

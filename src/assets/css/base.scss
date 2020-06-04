@@ -92,6 +92,10 @@ $ft-size-xxlarge: 28px;
   }
 }
 
+:root {
+  --shadow: 0px 8px 16px -8px rgba(0, 0, 0, 0.1);
+}
+
 body {
   color: var(--content-text-color);
 }
