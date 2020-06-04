@@ -48,7 +48,6 @@
               tooltip="always"
               tooltip-placement="bottom"
              ></slider>
-            <!-- <s-input type="number" name="interval" id="interval" v-model="interval"></s-input> -->
           </div>
 
           <div class="flex flex-col md:flex-row">
