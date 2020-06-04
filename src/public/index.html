@@ -5,24 +5,34 @@
 
 </head>
 
-<body>
+<body class="flex flex-col min-h-screen">
   <header>
     Gif Super
 
   </header>
-  <div class="flex text-green-600">
-    <div>test1</div>
-    <div>test2</div>
-    <div>test3</div>
-  </div>
 
-  <div id="app">
+  <main>
+    <div id="app"></div>
+  </main>
 
-  </div>
-
-  <footer>
-
+  <footer class="flex justify-center items-center">
+    2020 @GifSuper
   </footer>
 </body>
+
+<style>
+  header {
+    height: 72px;
+  }
+
+  main {
+    height: calc(100vh - 72px * 2);
+  }
+
+  footer {
+    height: 72px;
+  }
+
+</style>
 
 </html>
