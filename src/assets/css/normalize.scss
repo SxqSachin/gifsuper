@@ -1,0 +1,49 @@
+body, h1, h2, h3, h4, h5, h6, hr, p, blockquote, /* structural elements 结构元素 */
+dl, dt, dd, ul, ol, li, /* list elements 列表元素 */
+pre, /* text formatting elements 文本格式元素 */
+fieldset, lengend, button, input, textarea, /* form elements 表单元素 */
+th, td {
+  /* table elements 表格元素 */
+  margin: 0;
+  padding: 0;
+}
+body,
+body * {
+  box-sizing: border-box;
+}
+
+body {
+  font-size: 15px;
+  background: var(--body-bg);
+}
+
+input {
+  border: none;
+  -moz-appearance: none;
+  -webkit-appearance: none; /*解决ios上按钮的圆角问题*/
+  border-radius: 0; /*解决ios上输入框圆角问题*/
+  outline: medium; /*去掉鼠标点击的默认黄色边框*/
+  background-color: transparent;
+  font-size: 15px;
+}
+
+h1 {
+  font-size: 2em;
+  font-weight: bold;
+}
+h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+h3 {
+  font-size: 1.17em;
+  font-weight: bold;
+}
+
+textarea:focus, input:focus {
+  outline: 0;
+}
+
+a {
+  color: var(--link-color);
+}

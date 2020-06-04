@@ -13,6 +13,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     compress: true,
     historyApiFallback: true,   //开启服务器history重定向模式
     inline: true,
+    writeToDisk: true,
   }
 })
 

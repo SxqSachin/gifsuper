@@ -6,22 +6,25 @@
   "author": "sxqsachin",
   "license": "MIT",
   "scripts": {
-    "serve": "webpack-dev-server --config config/webpack.dev.js --color --progress --hot",
-    "serve2": "webpack-dev-server --config config/webpack.dev.js --color --content-base src --hot",
-
+    "serve": "webpack-dev-server --config config/webpack.dev.js --color --content-base src --progress --hot",
     "build": "cross-env NODE_ENV=production webpack --config config/webpack.prod.js"
   },
   "devDependencies": {
     "@babel/core": "^7.10.2",
+    "@babel/plugin-proposal-class-properties": "^7.10.1",
+    "@babel/plugin-proposal-decorators": "^7.10.1",
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.10.1",
     "@babel/plugin-proposal-optional-chaining": "^7.10.1",
     "@babel/plugin-transform-runtime": "^7.10.1",
     "@babel/polyfill": "^7.10.1",
     "@babel/preset-env": "^7.10.2",
+    "@babel/preset-typescript": "^7.10.1",
     "@fullhuman/postcss-purgecss": "^2.2.0",
+    "@types/fabric": "^3.6.5",
     "babel-loader": "^8.1.0",
     "babel-preset-stage-0": "^6.24.1",
     "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^6.0.2",
     "cross-env": "^7.0.2",
     "css-loader": "^3.5.3",
     "html-webpack-plugin": "^4.3.0",
@@ -29,6 +32,8 @@
     "postcss-loader": "^3.0.0",
     "sass-loader": "^8.0.2",
     "style-loader": "^1.2.1",
+    "ts-loader": "^7.0.5",
+    "typescript": "^3.9.3",
     "vue-loader": "^15.9.2",
     "vue-template-compiler": "^2.6.11",
     "webpack": "^4.43.0",
@@ -37,8 +42,12 @@
     "webpack-merge": "^4.2.2"
   },
   "dependencies": {
+    "@babel/plugin-syntax-decorators": "^7.10.1",
     "@babel/runtime": "^7.10.2",
+    "fabric": "3.6.3",
     "tailwindcss": "^1.4.6",
-    "vue": "^2.6.11"
+    "vue": "^2.6.11",
+    "vue-class-component": "^7.2.3",
+    "vue-property-decorator": "^8.4.2"
   }
 }
