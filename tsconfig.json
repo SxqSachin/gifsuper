@@ -23,9 +23,11 @@
       "@/*": [
         "src/*"
       ]
-    }
+    },
+    "outDir": "./"
 	},
 	"include": [
 		"src"
-	]
+	],
+  "exclude": ["node_modules", "dist"]
 }

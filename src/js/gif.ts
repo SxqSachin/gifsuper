@@ -9,7 +9,7 @@ async function urlToFile(url: string, filename: string, mimeType: string) {
   return new File([arrayBuffer], filename, { type: mimeType });
 }
 
-export function dataUrlToFile(dataurl: string, filename: string) {
+function dataUrlToFile(dataurl: string, filename: string) {
   const arr = dataurl.split(',');
   const mime = (arr[0].match(/:(.*?);/) as RegExpMatchArray)[1];
   const bstr = atob(arr[1]);
@@ -42,7 +42,7 @@ async function convertCanvasToImage(canvas: HTMLCanvasElement, filename: string)
   // return await urlToFile(canvas.toDataURL('image/jpeg', 0.9), filename, 'image/jpeg');
 }
 
-export async function parseSrcGif(gifFile: File): Promise<any[]> {
+async function parseSrcGif(gifFile: File): Promise<any[]> {
   const srcgifDOM = document.querySelector('#srcgif') as HTMLCanvasElement;
   const gifImg = document.createElement('img');
 
@@ -79,7 +79,7 @@ export async function parseSrcGif(gifFile: File): Promise<any[]> {
   return promise;
 }
 
-export class Gif {
+class Gif {
   private gif: any;
 
   private bodyDOM: HTMLElement;
@@ -224,3 +224,5 @@ export class Gif {
     this.pall.push(promise);
   }
 }
+
+export { dataUrlToFile, parseSrcGif, Gif }

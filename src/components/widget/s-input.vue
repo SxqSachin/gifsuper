@@ -51,14 +51,12 @@ export default class SInput extends Vue {
 </script>
 
 <style lang="scss" scoped>
-$divide-color: red;
-$secondary-text-color: red;
 .s-input-wrapper {
   display: inline-block;
 
   vertical-align: top;
 
-  border-bottom: 1px solid $divide-color;
+  border-bottom: 1px solid var(--border-color-light);
 
   color: var(--content-text-color);
 
@@ -87,7 +85,7 @@ $secondary-text-color: red;
     border: 0;
 
     &::placeholder {
-      color: $secondary-text-color;
+      color: var(--neutral-text-color);
     }
 
     &:focus {

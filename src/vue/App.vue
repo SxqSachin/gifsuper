@@ -87,7 +87,7 @@ import sbtn from '@/components/widget/s-btn.vue';
 import sInput from '@/components/widget/s-input.vue';
 import LoadingRing from '@/components/widget/loading-ring.vue';
 
-import { parseSrcGif, dataUrlToFile, Gif } from '../js/gif';
+import { parseSrcGif, dataUrlToFile, Gif } from '@/js/gif';
 
 import { fabric } from 'fabric';
 
