@@ -13,6 +13,7 @@
       </div>
     </div>
 
+
     <div class="edit-panel w-full p-4 md:p-8 border rounded-md border-color-2 mt-8 flex flex-col md:flex-row">
 
       <div class="flex-1 flex flex-col mr-0 md:mr-8 w-full">
