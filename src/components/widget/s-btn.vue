@@ -85,34 +85,53 @@ export default class SBtn extends Vue {
 
   &.disabled, & [disabled] {
     cursor: not-allowed;
+
+    .s-btn {
+      color: var(--r-seconday-text-color);
+    }
   }
 
   &.type--info {
     background-color: var(--color-info);
+    &.disabled{
+      background-color: var(--color-info--disabled);
+    }
     .s-btn {
       color: var(--r-primary-text-color);
     }
   }
   &.type--success {
     background-color: var(--color-success);
+    &.disabled{
+      background-color: var(--color-success--disabled);
+    }
     .s-btn {
       color: var(--r-primary-text-color);
     }
   }
   &.type--warn {
     background-color: var(--color-warn);
+    &.disabled{
+      background-color: var(--color-warn--disabled);
+    }
     .s-btn {
       color: var(--r-primary-text-color);
     }
   }
   &.type--error {
     background-color: var(--color-error);
+    &.disabled{
+      background-color: var(--color-error--disabled);
+    }
     .s-btn {
       color: var(--r-primary-text-color);
     }
   }
   &.type--disabled {
     background-color: var(--color-disabled);
+    &.disabled{
+      background-color: var(--color-disabled--disabled);
+    }
     .s-btn {
       color: var(--r-primary-text-color);
     }

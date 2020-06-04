@@ -6,28 +6,57 @@
     </div>
 
     <div class="srcgif-wrapper flex mb-4 items-center">
-      <div class="src w-1/2 flex-shrink-0">
-        <label for="srcgif" class="inline-block mb-4">原Gif：</label>
+      <div class="src w-full flex-shrink-0">
+        <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block mb-4 hidden md:block">原Gif：</label>
+        <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block mb-4 block md:hidden">原始Gif：（调整好设置后点击下方“生成”按钮）</label>
         <div id="srcgif"> </div>
       </div>
     </div>
 
-    <div class="edit-panel p-2 md:p-8 border rounded-md border-color-2 mt-8 flex flex-col md:flex-row">
+    <div class="edit-panel w-full p-4 md:p-8 border rounded-md border-color-2 mt-8 flex flex-col md:flex-row">
 
-      <div class="flex-1 flex flex-col mr-0 md:mr-8">
+      <div class="flex-1 flex flex-col mr-0 md:mr-8 w-full">
 
-        <fieldset class="flex items-start flex-col md:flex-row pb-8 mb-8 border-b border-gray-300">
+        <fieldset class="flex items-start flex-col md:flex-row pb-4 mb-8 border-b border-gray-300 w-full" v-show="canEdit">
+          <legend class="mb-4 text-lg"> 图片信息 </legend>
+
+          <div class="flex">
+            <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
+              <label for="interval" class="whitespace-no-wrap flex-0 inline-block">总帧数：</label>
+              <div>{{ this.frameList.length }}</div>
+            </div>
+            <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
+              <label for="interval" class="whitespace-no-wrap flex-0 inline-block">总帧数：</label>
+              <div>{{ this.frameList.length }}</div>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="flex items-start flex-col md:flex-row pb-8 mb-8 border-b border-gray-300 w-full">
           <legend class="mb-4 text-lg"> 基础调整 </legend>
 
-          <div class="flex items-center mr-4 mb-4">
-            <label for="interval">帧间隔：</label>
-            <s-input type="number" name="interval" id="interval" v-model="interval"></s-input>
+          <div class="flex items-center mb-4 pt-4 pb-8 w-full">
+            <label for="interval" class="whitespace-no-wrap flex-0 inline-block">帧间隔：</label>
+
+            <slider class="flex-1"
+              v-model="interval"
+              :min="15"
+              :max="200"
+              :lazy="true"
+              :disabled="!canEdit"
+              :drag-on-click="true"
+              tooltip="always"
+              tooltip-placement="bottom"
+             ></slider>
+            <!-- <s-input type="number" name="interval" id="interval" v-model="interval"></s-input> -->
           </div>
 
-          <sbtn class="flex-0 mr-0 md:mr-4 mb-1 w-auto" type="info" @click="toggleRevert">倒放：{{ revert ? '开' : '关' }}</sbtn>
-          <sbtn class="flex-0 mr-0 md:mr-4 mb-1 w-auto" @click="toggleRepeat">循环：{{ repeat ? '开' : '关' }}</sbtn>
-          <sbtn class="flex-0 mr-0 md:mr-4 mb-1 w-auto" @click="rs = !rs">抽帧：{{ rs ? '开' : '关' }}</sbtn>
-          <sbtn class="flex-0 mr-0 md:mr-4 mb-1 w-auto" type="error" @click="makeTimeline">重置</sbtn>
+          <div class="flex flex-col md:flex-row">
+            <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" :disabled="!canEdit" type="info" @click="toggleRevert">倒放：{{ revert ? '开' : '关' }}</sbtn>
+            <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" :disabled="!canEdit" @click="toggleRepeat">循环：{{ repeat ? '开' : '关' }}</sbtn>
+            <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" :disabled="!canEdit" @click="rs = !rs">抽帧：{{ rs ? '开' : '关' }}</sbtn>
+            <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" :disabled="!canEdit" type="error" @click="makeTimeline">重置</sbtn>
+          </div>
 
         </fieldset>
 
@@ -49,16 +78,22 @@
             </div> -->
 
             <div class="flex justify-center items-center mr-4 mb-4">
-              <sbtn class="mr-4 mb-1" @click="addText(textContent, textColor)">为指定帧添加文字</sbtn>
+              <sbtn
+                class="mr-4 mb-1"
+                @click="addText(textContent, textColor)"
+                :disabled="!canEdit">为指定帧添加文字</sbtn>
               <s-input v-model="textRange" placeholder="如:0,1,2,(4-10)"></s-input>
             </div>
-            <sbtn class="mb-1 w-full md:w-auto" @click="addText(textContent, textColor)">为所有帧添加文字</sbtn>
+            <sbtn
+              class="mb-1 w-full md:w-auto"
+              @click="addTextToAllFrame(textContent, textColor)"
+              :disabled="!canEdit">为所有帧添加文字</sbtn>
 
           </div>
         </fieldset>
 
         <fieldset class="mt-8 pt-8 border-t border-gray-300">
-          <sbtn type="success" @click="generate" :disabled="isGenerating || !frameList.length">生成</sbtn>
+          <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
         </fieldset>
       </div>
 
@@ -101,6 +136,9 @@ import sbtn from '@/components/widget/s-btn.vue';
 import sInput from '@/components/widget/s-input.vue';
 import LoadingRing from '@/components/widget/loading-ring.vue';
 
+import VueSlider from 'vue-slider-component'
+import 'vue-slider-component/theme/default.css'
+
 import { parseSrcGif, dataUrlToFile, Gif } from '@/js/gif';
 
 import { fabric } from 'fabric';
@@ -116,6 +154,7 @@ console.log('sadsadsd');
     sbtn,
     's-input': sInput,
     'loading': LoadingRing,
+    slider: VueSlider,
   },
 })
 export default class extends Vue {
@@ -180,6 +219,10 @@ export default class extends Vue {
     }
 
     return tArr;
+  }
+
+  get canEdit(): boolean {
+    return !!this.frameList?.length;
   }
 
   public mounted() {
@@ -277,6 +320,33 @@ export default class extends Vue {
     // @ts-ignore
     this.$message('添加成功', {type: 'success'});
   }
+
+  public addTextToAllFrame(textContent: string = '请输入内容', textColor: string = '#333') {
+    const textArr: fabric.IText[] = [];
+
+    this.canvas!.discardActiveObject();
+
+    const group: fabric.Group = new fabric.Group();
+
+    Array.from(this.frameList.keys()).forEach(index => {
+      const itext = new fabric.IText(textContent, {
+        fill: textColor,
+        left: index * ((this.frameWidth ?? 0) + 1),
+        top: 40,
+      });
+
+      group.addWithUpdate(itext);
+    });
+
+    this.canvas.enableRetinaScaling = true;
+    this.canvas.add(group);
+    this.canvas.setActiveObject(group).renderAll();
+    group.toActiveSelection();
+
+    // @ts-ignore
+    this.$message('添加成功', {type: 'success'});
+  }
+
 
   public async makeTimeline(frameList: any[]) {
     if (!this.canvas) {

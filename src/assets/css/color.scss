@@ -37,6 +37,19 @@ $text-color-grey: $grey-2;
   --color-error: #EB796E;
   --color-disabled: #dfdfdf;
   --color-ghost: transparent;
+
+  --color-info--500: #8CBCFF9E;
+  --color-success--500: #62da669E;
+  --color-warn--500: #FFD29A9E;
+  --color-error--500: #EB796E9E;
+  --color-disabled--500: #dfdfdf9E;
+  --color-ghost: transparent;
+
+  --color-info--disabled: #8CBCFF9E;
+  --color-success--disabled: #62da669E;
+  --color-warn--disabled: #FFD29A9E;
+  --color-error--disabled: #EB796E9E;
+  --color-disabled--disabled: #dfdfdf9E;
 }
 
 .color-info { color: var(--color-info); }
@@ -44,4 +57,11 @@ $text-color-grey: $grey-2;
 .color-warn { color: var(--color-warn); }
 .color-error { color: var(--color-error); }
 .color-disabled { color: var(--color-disabled); }
+.color-ghost { color: var(--color-ghost); }
+
+.color-info--disabled { color: var(--color-info--500); }
+.color-success--disabled { color: var(--color-success--500); }
+.color-warn--disabled { color: var(--color-warn--500); }
+.color-error--disabled { color: var(--color-error--500); }
+.color-disabled--disabled { color: var(--color-disabled--500); }
 .color-ghost { color: var(--color-ghost); }
