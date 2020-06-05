@@ -2,8 +2,8 @@
   <div class="wrapper p-4 sm:p-4 md:p-8 lg:p-8 max:w-screen overflow-x-hidden">
 
     <div class="top mb-6">
-      <upload class="uploader mx-auto" :before-upload="upload" hover-color="var(--color-info)">上传GIF！</upload>
-      <span class="text-sm text-color-neutral mt-2 block">Tips: 请不要上传尺寸过大的Gif，否则会导致显示异常。</span>
+      <upload class="uploader mx-auto" :before-upload="upload">上传GIF！</upload>
+      <span class="text-sm text-color-neutral mt-2 block md:hidden">Tips: 请不要上传尺寸过大的Gif，否则会导致显示异常，站长修复ing。</span>
     </div>
 
     <div class="srcgif-wrapper flex mb-4 items-center">
@@ -71,6 +71,24 @@
             <div class="flex justify-center items-center mr-4 mb-4 w-full">
               <label for="" class="whitespace-no-wrap">文字颜色：</label>
               <s-input class="w-full" v-model="textColor"></s-input>
+            </div>
+            <!-- <div class="flex justify-center items-center mr-4 mb-4 w-full">
+              <label for="" class="whitespace-no-wrap">文字边线色：</label>
+              <s-input class="w-full" v-model="textOutline"></s-input>
+            </div> -->
+            <div class="flex justify-center items-center mr-4 mb-4 pb-8 w-full">
+              <label for="" class="whitespace-no-wrap">文字大小：</label>
+              <slider class="flex-1"
+                v-model="textSize"
+                :min="14"
+                :max="128"
+                :lazy="true"
+                :disabled="!canEdit"
+                :drag-on-click="true"
+                tooltip="always"
+                tooltip-placement="bottom"
+               ></slider>
+              <!-- <s-input class="w-full" v-model="textSize"></s-input> -->
             </div>
 
             <!-- <div class="flex justify-center items-center mr-4 mb-4">
@@ -172,6 +190,7 @@ export default class extends Vue {
   public textContent: string = '';
   public textColor: string = '#fff';
   public textOutline: string = '#fff';
+  public textSize: string = '64';
 
   public textRange: string = '';
 
@@ -300,6 +319,10 @@ export default class extends Vue {
   }
 
   public addText(textContent: string = '请输入内容', textColor: string = '#333') {
+    // @ts-ignore
+    this.$message('功能开发中，敬请期待', {type: 'info'});
+    return;
+
     const textArr: fabric.IText[] = [];
 
     this.canvas!.discardActiveObject();
@@ -347,6 +370,7 @@ export default class extends Vue {
         fill: textColor,
         left: index * ((this.frameWidth ?? 0) + 1),
         top: 40,
+        fontSize: parseInt(this.textSize),
       });
 
       group.addWithUpdate(itext);
@@ -358,7 +382,7 @@ export default class extends Vue {
     group.toActiveSelection();
 
     // @ts-ignore
-    this.$message('添加成功', {type: 'success'});
+    this.$message('添加成功，可在下方时间轴调整文字位置', {type: 'success'});
   }
 
 

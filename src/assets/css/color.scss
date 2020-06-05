@@ -31,14 +31,14 @@ $text-color-3: #ccc;
 $text-color-grey: $grey-2;
 
 :root {
-  --color-info: #8CBCFF;
+  --color-info: rgb(102, 166, 255);
   --color-success: #62da66;
   --color-warn: #FFD29A;
   --color-error: #EB796E;
   --color-disabled: #dfdfdf;
   --color-ghost: transparent;
 
-  --color-info--500: #8CBCFF9E;
+  --color-info--500: rgba(102, 166, 255, 0.62);
   --color-success--500: #62da669E;
   --color-warn--500: #FFD29A9E;
   --color-error--500: #EB796E9E;
