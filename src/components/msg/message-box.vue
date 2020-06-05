@@ -1,10 +1,10 @@
 <template>
   <div :class="getAnimClass" :style="getStyle" v-if="!destroy">
     <div class="content">
-      <!-- <info-icon v-if="type === 'info'" class="icon"></info-icon> -->
-      <!-- <success-icon v-if="type === 'success'" class="icon"></success-icon> -->
-      <!-- <warn-icon v-if="type === 'warn'" class="icon"></warn-icon> -->
-      <!-- <error-icon v-if="type === 'error'" class="icon"></error-icon> -->
+      <ion-icon v-if="type === 'info'" class="icon color-info" name="information-circle-outline"></ion-icon>
+      <ion-icon v-if="type === 'success'" class="icon color-success" name="checkmark-circle-outline"></ion-icon>
+      <ion-icon v-if="type === 'warn'" class="icon color-warn" name="warning-outline"></ion-icon>
+      <ion-icon v-if="type === 'error'" class="icon color-error" name="close-circle-outline"></ion-icon>
       <span class="msg">{{ msg }}</span>
     </div>
   </div>
@@ -14,21 +14,12 @@
 
 import { Vue, Prop, Component } from 'vue-property-decorator';
 
-// import IosInformationCircleOutlineIcon from 'vue-ionicons/dist/ios-information-circle-outline.vue';
-// import IosCheckmarkCircleOutlineIcon from 'vue-ionicons/dist/ios-checkmark-circle-outline.vue';
-// import IosWarningIcon from 'vue-ionicons/dist/ios-warning.vue';
-// import IosCloseCircleOutlineIcon from 'vue-ionicons/dist/ios-close-circle-outline.vue';
-
 let count = 0;
 
 import { delay } from '@/js/utility';
 
 @Component({
   components: {
-    // 'info-icon': IosInformationCircleOutlineIcon,
-    // 'success-icon': IosCheckmarkCircleOutlineIcon,
-    // 'warn-icon': IosWarningIcon,
-    // 'error-icon': IosCloseCircleOutlineIcon,
   },
 })
 export default class extends Vue {
@@ -100,7 +91,7 @@ $box-height: 3.5em;
   left: calc(50% - #{$box-width / 2});
 
   width: $box-width;
-  height: $box-height;
+  min-height: $box-height;
 
   padding: 1em;
 
@@ -125,6 +116,7 @@ $box-height: 3.5em;
 
     .icon {
       font-size: 1.5em;
+      width: 32px;
     }
 
     .msg {

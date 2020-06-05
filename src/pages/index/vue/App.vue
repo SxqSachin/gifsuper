@@ -190,7 +190,7 @@ export default class extends Vue {
   public textContent: string = '';
   public textColor: string = '#fff';
   public textOutline: string = '#fff';
-  public textSize: string = '64';
+  public textSize: string = '42';
 
   public textRange: string = '';
 
@@ -248,6 +248,8 @@ export default class extends Vue {
   }
 
   public mounted() {
+    fabric.Object.prototype.objectCaching = false;
+
     this.canvas = new fabric.Canvas('stage');
 
     this.dragBarCanvas = new fabric.Canvas('dragbar');
@@ -384,7 +386,7 @@ export default class extends Vue {
         fill: textColor,
         left: index * ((this.frameWidth ?? 0) + 1),
         top: 40,
-        fontSize: parseInt(this.textSize),
+        // fontSize: parseInt(this.textSize),
       });
 
       group.addWithUpdate(itext);
@@ -393,7 +395,7 @@ export default class extends Vue {
     this.canvas.enableRetinaScaling = true;
     this.canvas.add(group);
     this.canvas.setActiveObject(group).renderAll();
-    group.toActiveSelection();
+    // group.toActiveSelection();
 
     // @ts-ignore
     this.$message('添加成功，可在下方时间轴调整文字位置', {type: 'success'});
@@ -452,6 +454,7 @@ export default class extends Vue {
           lockMovementX: true,
           lockMovementY: true,
           hasControls: false,
+          selectable: false,
         }).scale(scale);
 
         // @ts-ignore
