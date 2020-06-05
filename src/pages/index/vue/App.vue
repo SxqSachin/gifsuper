@@ -9,13 +9,13 @@
       <div class="src w-full flex-shrink-0">
         <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block mb-4 hidden md:block">原Gif：</label>
         <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block mb-4 block md:hidden">原始Gif：（调整好设置后点击下方“生成”按钮）</label>
-        <div id="srcgif"> </div>
+        <div id="srcgif" class="flex justify-center items-center"> </div>
       </div>
     </div>
 
-    <div class="edit-panel w-full p-4 md:p-8 border rounded-md border-color-2 mt-8 flex flex-col md:flex-row">
+    <div class="edit-panel w-full p-4 md:p-8 border rounded-md border-color-2 mt-8 flex flex-col">
 
-      <div class="flex-1 flex flex-col mr-0 md:mr-8 w-full">
+      <div class="flex-1 flex flex-col mr-0 mb-4 w-full">
 
         <fieldset class="flex items-start flex-col md:flex-row pb-4 mb-8 border-b border-gray-600 w-full" v-show="canEdit">
           <legend class="mb-4 text-lg"> 图片信息 </legend>
@@ -97,11 +97,11 @@
         </fieldset>
       </div>
 
-      <div class="flex-0 w-full md:w-1/3 border-t md:border-t-0 mt-4 md:mt-0 pt-4 md:pt-0">
+      <div class="flex-0 w-full border-t md:border-t-0 mt-4 pt-4 md:pt-0">
         <label for="" class="hidden md:inline" v-show="generateDone">新图像：（保存图片：右击图片->图片另存为）</label>
         <label for="" class="inline md:hidden" v-show="generateDone">新图像：（长按图片->保存图片）</label>
 
-        <div class="flex justify-center h-full items-center">
+        <div class="flex justify-center h-full items-center mt-4">
           <div class="my-12 md:my-0" v-show="isGenerating">
             <div class="mb-12">生成中： {{progress}}%</div>
 
@@ -109,7 +109,7 @@
           </div>
 
           <div v-show="!isGenerating">
-            <div id="dtsgif" class="mt-4 md:mt-0"> </div>
+            <div id="dtsgif" class="mt-4 md:mt-0 flex justify-center items-center"> </div>
           </div>
         </div>
       </div>
@@ -232,6 +232,8 @@ export default class extends Vue {
     this.dragBarCanvas = new fabric.Canvas('dragbar');
 
     this.initKeyPressEvent();
+
+    document.getElementById('loading-ph').remove();
   }
 
   public toggleRevert() {

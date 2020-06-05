@@ -69,13 +69,26 @@
   <main class="w-full md:w-3/5 mx-auto">
     <div id="app"></div>
 
+    <div id="loading-ph" class="w-full h-64 mt-16 flex flex-col justify-center items-center">
+      <p class="mb-4">功能模块加载中，请稍候。。。</p>
+      <p class="mb-4">加载不会超过5s，如果没有成功加载，请尝试刷新页面。</p>
+    </div>
+
     <div class="hhh">
       <div> 上传GIF！</div>
       <h1> 基础调整 </h1>
       <h1> 文字操作 </h1>
       <h2> 添加文字 </h2>
       <h2> 文字内容 </h2>
+      <fieldset>
+        <label for="textContent">文字内容</label>
+        <input id="textContent" type="text"/>
+      </fieldset>
       <h2> 文字颜色 </h2>
+      <fieldset>
+        <label for="textColor">文字内容</label>
+        <input id="textColor" type="text"/>
+      </fieldset>
       <h1> 时间轴 </h1>
     </div>
   </main>
