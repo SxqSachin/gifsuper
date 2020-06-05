@@ -12,7 +12,7 @@ const resolve = (dir) => {
 
 const config = {
   entry: {    //js的入口文件，支持多入口 注释①
-    main: path.resolve(__dirname, '../src/index.js')
+    main: path.resolve(__dirname, '../src/index.js'),
   },
   output: {   //js打包压缩后的出口文件，多入口时对应的配置应做相对变化 注释②
     path: path.resolve(__dirname, '../dist'),
