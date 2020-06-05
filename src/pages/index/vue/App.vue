@@ -1,5 +1,5 @@
 <template>
-  <main class="wrapper p-4 sm:p-4 md:p-8 lg:p-8">
+  <div class="wrapper p-4 sm:p-4 md:p-8 lg:p-8 max:w-screen overflow-x-hidden">
 
     <div class="top mb-6">
       <upload class="uploader mx-auto" :before-upload="upload" hover-color="var(--color-info)">上传GIF！</upload>
@@ -126,7 +126,7 @@
       </div>
     </div>
 
-  </main>
+  </div>
 </template>
 
 <script lang="ts">
@@ -500,6 +500,8 @@ export default class extends Vue {
 
     const { width, height } = this.frameList[0];
     const totalWidth = (width + 1) * n.length;
+
+    console.log(width, height);
 
     const gif = new Gif({
       repeat: this.repeat ? 0 : -1,
