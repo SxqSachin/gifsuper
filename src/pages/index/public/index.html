@@ -46,6 +46,16 @@
     footer {
       height: 42px;
     }
+
+    .loading-calm-cat {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background-position: center;
+      background-size: 320px;
+      background-repeat: no-repeat;
+      background-image: url("https://web-imgs-1.oss-cn-shanghai.aliyuncs.com/imgs/CYU8JsN.gif");
+    }
   </style>
 
   <script src="/static/js/libgif.js"></script>
@@ -70,6 +80,7 @@
     <div id="app"></div>
 
     <div id="loading-ph" class="w-full h-64 mt-16 flex flex-col justify-center items-center">
+      <div class="mb-4 rounded-full loading-calm-cat"></div>
       <p class="mb-4">功能模块加载中，请稍候。。。</p>
       <p class="mb-4">加载不会超过5s，如果没有成功加载，请尝试刷新页面。</p>
     </div>

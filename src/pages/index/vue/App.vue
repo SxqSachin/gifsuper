@@ -3,6 +3,7 @@
 
     <div class="top mb-6">
       <upload class="uploader mx-auto" :before-upload="upload" hover-color="var(--color-info)">上传GIF！</upload>
+      <span class="text-sm text-color-neutral mt-2 block">Tips: 请不要上传尺寸过大的Gif，否则会导致显示异常。</span>
     </div>
 
     <div class="srcgif-wrapper flex mb-4 items-center">
@@ -103,9 +104,10 @@
 
         <div class="flex justify-center h-full items-center mt-4">
           <div class="my-12 md:my-0" v-show="isGenerating">
-            <div class="mb-12">生成中： {{progress}}%</div>
+            <div class="mb-12 text-center">生成中： {{progress}}%</div>
 
-            <loading></loading>
+            <!-- <loading></loading> -->
+            <div class="loading-calm-cat"></div>
           </div>
 
           <div v-show="!isGenerating">
