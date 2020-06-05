@@ -12,11 +12,12 @@ const resolve = (dir) => {
 
 const config = {
   entry: {    //js的入口文件，支持多入口 注释①
-    main: path.resolve(__dirname, '../src/index.js'),
+    index: path.resolve(__dirname, '../src/pages/index/index.js'),
+    about: path.resolve(__dirname, '../src/pages/about/index.js'),
   },
   output: {   //js打包压缩后的出口文件，多入口时对应的配置应做相对变化 注释②
     path: path.resolve(__dirname, '../dist'),
-    filename: 'bundle.js'
+    filename: '[name].[hash].js'
   },
   resolve: {
     extensions: ['.js', '.vue', '.ts'],
@@ -50,49 +51,14 @@ const config = {
           "css-loader",
           "sass-loader",
         ]
-        // use: [
-        //   {
-        //     loader: "vue-style-loader" // 将 JS 字符串生成为 style 节点
-        //   },
-        //   {
-        //     loader: "style-loader" // 将 JS 字符串生成为 style 节点
-        //   },
-        //   {
-        //     loader: "css-loader" // 将 CSS 转化成 CommonJS 模块
-        //   },
-        //   {
-        //     loader: "sass-loader" // 将 Sass 编译成 CSS
-        //   }
-        // ]
-        // use: ExtractTextPlugin.extract({
-        //   fallback: 'style-loader',
-        //   use: [
-        //     MiniCssExtractPlugin.loader,
-        //     'css-loader',
-        //     'sass-loader',
-        //   ],
-        // })
       },
       {
         test: /\.css$/,
-        // use: [
-        //   'style-loader',
-        //   { loader: 'css-loader', options: { importLoaders: 1 } },
-        //   'postcss-loader'
-        // ]
         use: [
           MiniCssExtractPlugin.loader,
           'css-loader',
           'postcss-loader'
         ]
-        // use: ExtractTextPlugin.extract({
-        //   fallback: 'style-loader',
-        //   use: [
-        //     MiniCssExtractPlugin.loader,
-        //     'css-loader',
-        //     'postcss-loader',
-        //   ],
-        // })
       },
       {
         test: /\.vue$/,
@@ -103,17 +69,41 @@ const config = {
     ],
   },
   plugins: [
-    new HtmlWebpackPlugin({ template: './src/public/index.html' }),
+    new HtmlWebpackPlugin({
+      filename: 'index.html',
+      template: './src/pages/index/public/index.html',
+      chunks: ['index'],
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'about.html',
+      template: './src/pages/about/public/index.html',
+      chunks: ['about'],
+    }),
     new CleanWebpackPlugin(),
     new VueLoaderPlugin(),
     new CopyWebpackPlugin({
-      patterns: [{
-        from: path.resolve(__dirname, '../src/public/static'),//"/src/public/static",
-        to: path.resolve(__dirname, '../dist/static')
-      }]
+      patterns: [
+        {
+          from: path.resolve(__dirname, '../src/public/static'),//"/src/public/static",
+          to: path.resolve(__dirname, '../dist/static')
+        },
+        {
+          from: path.resolve(__dirname, '../src/pages/index/public/static'),//"/src/public/static",
+          to: path.resolve(__dirname, '../dist/static')
+        },
+        // {
+        //   from: path.resolve(__dirname, '../src/pages/about/public/static'),//"/src/public/static",
+        //   to: path.resolve(__dirname, '../dist/static')
+        // },
+      ]
     }),
-    new ExtractTextPlugin('css/index.css'),
-    new MiniCssExtractPlugin(),
+
+    // new ExtractTextPlugin('css/index.css'),
+
+    new MiniCssExtractPlugin({
+      filename: '[name].css',
+      chunkFilename: '[id].css',
+    }),
   ],
 
 };

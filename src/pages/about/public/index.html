@@ -20,7 +20,7 @@
   <meta name="verify" content="index,follow" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
 
-  <title>Gif Super，一个帮助您快速操作GIF网站</title>
+  <title>关于Gif Super</title>
 
   <link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
 
@@ -43,35 +43,54 @@
     }
   </style>
 
-  <script src="/static/js/libgif.js"></script>
-  <script src="/static/js/gif.js"></script>
-  <script data-ad-client="ca-pub-1451575114945845" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 </head>
 
 <body class="flex flex-col min-h-screen theme">
-  <header class="text-center flex items-center justify-center md:justify-between shadow px-8">
+  <header class="text-center flex items-center justify-center md:justify-between shadow px-8 border-b border-gray-400">
     <div class="flex items-center">
-      <span> Gif Super </span>
+      <a href="/" class="cursor-pointer text-color-primary"> Gif Super </a>
       <sup class="text-red-300 ml-1"> Beta </sup>
       <div class="hidden md:block ml-8"> 帮助您在线操作GIF文件 </div>
     </div>
     <div>
-      <div class="hidden md:block ml-8 cursor-pointer"> 关于 </div>
+      <a href="/about.html" class="hidden md:block ml-8 cursor-pointer text-color-primary"> 关于 </a>
     </div>
   </header>
 
-  <main class="w-full md:w-3/5 mx-auto">
-    <div id="app"></div>
+  <main class="w-full md:w-3/5 mx-auto p-4 md:p-8 text-color-primary">
+    <article class="leading-8">
+      <h1 class="mb-4 text-xl">关于Super Gif</h1>
+      <p>这是一个帮助您在线编辑Gif的工具站。</p>
+      <p>即开即用无需登陆等多余操作，减少您的使用成本。</p>
+      <p>Gif编辑过程中不包含任何网络请求，操作均在您的终端设备上直接计算。</p>
+      <p class="mt-4">目前包含下列功能：</p>
+      <ol class="list-disc list-inside">
+        <li>Gif调速</li>
+        <li>Gif倒放</li>
+        <li>开启/关闭Gif循环</li>
+        <li>添加文字</li>
+        <li>复制/删除Gif帧</li>
+        <li>抽取半数帧</li>
+      </ol>
+      <p>功能会不断扩充，期待您的建议与反馈，帮助Gif Super变得更好。</p>
 
-    <div class="hhh">
-      <div> 上传GIF！</div>
-      <h1> 基础调整 </h1>
-      <h1> 文字操作 </h1>
-      <h2> 添加文字 </h2>
-      <h2> 文字内容 </h2>
-      <h2> 文字颜色 </h2>
-      <h1> 时间轴 </h1>
-    </div>
+      <h1 class="mt-6 mb-4 text-xl">关于作者</h1>
+      <p>SxqSachin</p>
+      <p>Blog： <a class="text-color-primary" href="https://www.sxqsachin.com" target="_blank">LunchBox</a></p>
+      <p>QQ： 2512870210</p>
+      <p>邮箱： sxqsachin@yahoo.com</p>
+      <p>期待您的建议与反馈</p>
+
+      <h1 class="mt-6 mb-4 text-xl">源代码使用</h1>
+      <ol class="list-disc list-inside">
+        <li>vue.js</li>
+        <li>vue-slider-components.js</li>
+        <li>gif.js</li>
+        <li>fabric.js</li>
+        <li>ionicons</li>
+        <li>tailwind.css</li>
+      </ol>
+    </article>
   </main>
 
   <footer class="flex justify-center items-center border-t border-gray-400">
