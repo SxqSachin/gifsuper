@@ -2,7 +2,7 @@
   <div class="wrapper p-4 sm:p-4 md:p-8 lg:p-8 max:w-screen overflow-x-hidden">
 
     <div class="top mb-6">
-      <upload class="uploader mx-auto" :before-upload="upload">上传GIF！</upload>
+      <upload class="uploader mx-auto" :before-upload="upload">上传GIF</upload>
       <span class="text-sm text-color-neutral mt-2 block md:hidden">Tips: 请不要上传尺寸过大的Gif，否则会导致显示异常，站长修复ing。</span>
     </div>
 
