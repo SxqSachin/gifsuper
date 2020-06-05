@@ -1,5 +1,5 @@
 <template>
-  <div class="s-input-wrapper" :class="{full: full, 'no-divide-line': ((noDivideLine && noBorder))}">
+  <div class="s-input-wrapper border-b border-gray-300" :class="{full: full, 'no-divide-line': ((noDivideLine && noBorder))}">
     <input
       class="s-input"
       title="title"
@@ -56,7 +56,7 @@ export default class SInput extends Vue {
 
   vertical-align: top;
 
-  border-bottom: 1px solid var(--border-color-light);
+  // border-bottom: 1px solid var(--border-color-light);
 
   color: var(--content-text-color);
 

@@ -62,12 +62,12 @@
         <fieldset>
           <legend class="mb-2 text-lg"> 文字操作 </legend>
           <div class="mb-4 pb-2 text-color-neutral text-sm border-b border-gray-400">生成文字后可于下方“时间轴”处调整文字位置</div>
-          <div class="w-full flex flex-wrap items-start flex-col md:flex-row">
-            <div class="flex justify-center items-center mr-4 mb-4 w-full md:w-auto">
+          <div class="w-full flex flex-wrap items-start flex-col">
+            <div class="flex justify-center items-center mr-4 mb-4 w-full">
               <label for="" class="whitespace-no-wrap">文字内容：</label>
               <s-input class="w-full" v-model="textContent" placeholder="请输入内容，支持emoji表情"></s-input>
             </div>
-            <div class="flex justify-center items-center mr-4 mb-4 w-full md:w-auto">
+            <div class="flex justify-center items-center mr-4 mb-4 w-full">
               <label for="" class="whitespace-no-wrap">文字颜色：</label>
               <s-input class="w-full" v-model="textColor"></s-input>
             </div>
