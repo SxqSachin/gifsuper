@@ -10,8 +10,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="description" content="Gif Super">
 
-  <meta name="description" content="Gif Super,一个帮助你快速编辑GIF的在线工具网站"/>
-  <meta name="keywords" content="Gif GIF"/>
+  <meta name="description" content="Gif Super，Gif在线制作网站，一个帮助你快速编辑GIF的在线工具网站"/>
+  <meta name="keywords" content="Gif Gif在线制作 Gif压缩 Gif倒放 Gif循环 Gif添加文字 Gif添加表情 Gif调速"/>
 
   <meta name="author" content="SxqSachin" />
   <meta name="robots" content="index,follow" />
@@ -38,6 +38,11 @@
       min-height: calc(100vh - 42px - 48px);
     }
 
+    img.logo {
+      width: 32px;
+      height: 32px;
+    }
+
     footer {
       height: 42px;
     }
@@ -48,7 +53,8 @@
 <body class="flex flex-col min-h-screen theme">
   <header class="text-center flex items-center justify-center md:justify-between shadow px-8 border-b border-gray-400">
     <div class="flex items-center">
-      <a href="/" class="cursor-pointer text-color-primary"> Gif Super </a>
+      <img class="logo" src="/static/imgs/logo.png" alt="Gif Super Logo"/>
+      <a href="/" class="ml-2 cursor-pointer text-color-primary"> Gif Super </a>
       <sup class="text-red-300 ml-1"> Beta </sup>
       <div class="hidden md:block ml-8"> 帮助您在线操作GIF文件 </div>
     </div>
