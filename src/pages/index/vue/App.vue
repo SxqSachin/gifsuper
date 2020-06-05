@@ -104,8 +104,8 @@
               <s-input v-model="textRange" placeholder="如:0,1,2,(4-10)"></s-input>
             </div>
             <sbtn
-              class="mb-1 w-full md:w-auto"
-              @click="addTextToAllFrame(textContent, textColor)"
+              class="mb-1 w-full"
+              @click="addTextToAllFrame"
               :disabled="!canEdit">为所有帧添加文字</sbtn>
 
           </div>
@@ -358,12 +358,26 @@ export default class extends Vue {
     this.$message('添加成功', {type: 'success'});
   }
 
-  public addTextToAllFrame(textContent: string = '请输入内容', textColor: string = '#333') {
+  public addTextToAllFrame(textContent?: string, textColor?: string) {
     const textArr: fabric.IText[] = [];
 
     this.canvas!.discardActiveObject();
 
     const group: fabric.Group = new fabric.Group();
+
+    if (!textContent) {
+      textContent = this.textContent;
+    }
+
+    if (!textColor) {
+      textColor = this.textColor ?? '#333';
+    }
+
+    if (!textContent) {
+      // @ts-ignore
+      this.$message('请填写文字内容', {type: 'warn'});
+      return;
+    }
 
     Array.from(this.frameList.keys()).forEach(index => {
       const itext = new fabric.IText(textContent, {
