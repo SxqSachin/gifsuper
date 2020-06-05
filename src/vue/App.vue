@@ -162,7 +162,7 @@ export default class extends Vue {
   public frameList: any[] = [];
   public oriFrameList: any[] = [];
 
-  public interval: number = 120;
+  public interval: number = 80;
 
   public isGenerating: boolean = false;
   public generateDone: boolean = false;
