@@ -10,6 +10,8 @@
   <!-- <meta name="viewport" content="width=device-width,initial-scale=1" /> -->
   <meta name="description" content="Gif Super">
 
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
+
   <style>
     @import url('/static/css/theme-light.css') (prefers-color-scheme: light), (prefers-color-scheme: no-preference);
     @import url('/static/css/theme-dark.css') (prefers-color-scheme: dark);
@@ -21,29 +23,31 @@
     }
 
     main {
-      min-height: calc(100vh - 72px - 48px);
+      min-height: calc(100vh - 42px - 48px);
     }
 
     footer {
-      height: 72px;
+      height: 42px;
     }
   </style>
 
   <script src="/static/js/libgif.js"></script>
   <script src="/static/js/gif.js"></script>
+  <script data-ad-client="ca-pub-1451575114945845" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 </head>
 
 <body class="flex flex-col min-h-screen theme">
-  <header class="text-center flex items-center justify-center shadow">
-    Gif Super
-
+  <header class="text-center flex items-center justify-center md:justify-start shadow px-8">
+    <span> Gif Super </span>
+    <span class="text-red-300 ml-1"> Beta </span>
+    <div class="hidden md:block ml-8"> 帮助您在线编辑GIF文件 </div>
   </header>
 
-  <main>
+  <main class="w-full md:w-3/5 mx-auto">
     <div id="app"></div>
   </main>
 
-  <footer class="flex justify-center items-center">
+  <footer class="flex justify-center items-center border-t border-gray-400">
     <div>2020</div>
     <div class="ml-4">@GifSuper</div>
     <a class="ml-4" href="http://www.beian.miit.gov.cn/">苏ICP备17070289号</a>
