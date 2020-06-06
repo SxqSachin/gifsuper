@@ -36,8 +36,11 @@
         <fieldset class="flex items-start flex-col md:flex-row pb-8 mb-8 border-b border-gray-600 w-full">
           <legend class="mb-4 text-lg"> 基础调整 </legend>
 
-          <div class="flex items-center mb-4 pt-4 pb-8 w-full">
-            <label for="interval" class="whitespace-no-wrap flex-0 inline-block">帧间隔：</label>
+          <div class="flex flex-col justify-center items-start mb-4 pt-4 pb-8 w-full">
+            <label for="">
+              <span>帧间隔：</span>
+              <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">毫秒单位，帧间隔越小，生成后的Gif就越流畅，同时总时长变短</span>
+            </label>
 
             <slider class="flex-1"
               v-model="interval"
@@ -48,6 +51,7 @@
               :drag-on-click="true"
               tooltip="always"
               tooltip-placement="bottom"
+              style="width: 100%;"
              ></slider>
           </div>
 
@@ -61,17 +65,20 @@
         </fieldset>
 
         <fieldset class="flex items-start flex-col md:flex-row pb-8 mb-8 border-b border-gray-600 w-full">
-          <legend class="mb-4 text-lg"> 文字操作 <span class="inline-block mb-4 pb-2 text-color-neutral text-sm border-gray-400">生成文字后可于下方“时间轴”处调整文字位置</span> </legend>
+          <legend class="mb-4 text-lg">
+            <span> 文字操作 </span>
+            <span class="ml-2 inline-block mb-4 pb-2 text-color-neutral text-sm border-gray-400">生成文字后可于下方“时间轴”处调整文字位置</span>
+          </legend>
           <div class="w-full flex flex-wrap items-start flex-col">
             <div class="flex justify-center items-center mr-4 mb-4 w-full">
               <label for="" class="whitespace-no-wrap">文字内容：</label>
               <s-input class="w-full" v-model="textContent" :style="{color: this.textColor}" placeholder="请输入内容，支持可输入的表情"></s-input>
             </div>
-            <div class="flex justify-start items-center mr-4 mb-4 w-full">
+            <div class="flex justify-start items-center mb-4 w-full">
               <label for="" class="whitespace-no-wrap">文字颜色：</label>
               <color-picker class="z-50 ml-0 border border-gray-500" v-model="textColorObj"></color-picker>
             </div>
-            <div class="flex justify-center items-center mr-4 mb-4 pb-8 w-full">
+            <div class="flex justify-center items-center mb-4 pb-8 w-full">
               <label for="" class="whitespace-no-wrap">文字大小：</label>
               <slider class="flex-1"
                 v-model="textSize"
@@ -85,7 +92,7 @@
                ></slider>
             </div>
 
-            <div class="flex justify-center items-center mr-4 mb-4">
+            <div class="flex justify-center items-center mb-4">
               <sbtn
                 class="mr-4 mb-1"
                 @click="addText(textContent, textColor)"
@@ -100,32 +107,59 @@
           </div>
         </fieldset>
 
-        <fieldset class="flex items-start flex-col md:flex-row pb-8 mb-8 border-gray-600 w-full">
+        <fieldset class="flex items-start flex-col md:flex-row border-gray-600 w-full">
           <legend class="mb-4 text-lg"> 帧操作 </legend>
-          <div class="w-full flex flex-wrap items-start flex-col">
-            <div class="flex flex-col justify-center items-start mr-4 mb-4 pb-8 w-full">
-              <label for="" class="whitespace-no-wrap">区间裁剪：<span class="inline-block mb-4 pb-2 text-color-neutral text-sm border-gray-400">裁剪出指定区间内的帧</span></label>
+          <div class="flex flex-col justify-center items-start mb-4 pt-4 pb-8 w-full">
+            <label for="">
+              <span>区间裁剪：</span>
+              <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">生成后的Gif仅保留指定区间内的帧图像</span>
+            </label>
 
-              <div class="img-wrapper w-full flex justify-center items-center overflow-hidden z-50">
-                <img class="absolute transform -translate-y-1/2" v-show="!!curFrameSplitFrameImg" :src="curFrameSplitFrameImg" alt=""/>
-              </div>
-
-              <slider class="flex-1 w-full"
-                v-model="frameSplitRange"
-                :min="1"
-                :max="!!this.frameList.length ? this.frameList.length : 10"
-                :contained="true"
-                tooltip="always"
-                tooltip-placement="bottom"
-                @dragging="onFrameSplitRangeDragging"
-                @drag-end="onFrameSplitRangeDragEnd"
-                style="width: 100%;"
-               ></slider>
+            <div class="img-wrapper w-full flex justify-center items-center z-50">
+              <img class="absolute transform -translate-y-1/2" v-show="!!curFrameSplitFrameImg" :src="curFrameSplitFrameImg" alt=""/>
             </div>
+
+            <slider class="flex-1 py-0"
+              v-model="frameSplitRange"
+              :min="1"
+              :max="!!this.frameList.length ? this.frameList.length : 10"
+              :contained="true"
+              tooltip="always"
+              tooltip-placement="bottom"
+              @dragging="onFrameSplitRangeDragging"
+              @drag-end="onFrameSplitRangeDragEnd"
+              style="width: calc(100% - 14px);"
+             ></slider>
+          </div>
+
+          <div class="flex flex-col justify-center items-start mb-4 pt-4 pb-8 w-full">
+            <label for="">
+              <span>区间去除：</span>
+              <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">删除指定区间内的帧，受制于区间裁剪数值</span>
+            </label>
+            <sbtn class="mb-1" :disabled="!canEdit" @click="enableFrameRangeRemove = !enableFrameRangeRemove">区间去除：{{ enableFrameRangeRemove ? '开启' : '关闭' }}</sbtn>
+
+            <div class="img-wrapper w-full flex justify-center items-center z-50">
+              <img class="absolute transform -translate-y-1/2" v-show="!!curFrameRemoveFrameImg" :src="curFrameRemoveFrameImg" alt=""/>
+            </div>
+
+            <slider class="flex-1 w-full"
+              v-show="enableFrameRangeRemove"
+              ref="frameRemoveRange"
+              v-model="frameRemoveRange"
+              :min="frameSplitRange[0]"
+              :max="frameSplitRange[1]"
+              :contained="true"
+              tooltip="always"
+              tooltip-placement="bottom"
+              @dragging="onFrameRemoveRangeDragging"
+              @drag-end="onFrameRemoveRangeDragEnd"
+              style="width: calc(100% - 14px);"
+             ></slider>
           </div>
         </fieldset>
 
-        <fieldset class="mt-8 pt-8 border-gray-600">
+        <fieldset class="pt-8 border-t border-gray-600">
           <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
         </fieldset>
       </div>
@@ -217,6 +251,13 @@ export default class extends Vue {
   public curFrameSplitFrameImg: string = ''; // 当前帧图像
   // 帧区间裁剪 end
 
+  // 帧区间去除 start
+  public enableFrameRangeRemove: boolean = false;
+  public frameRemoveRange: [number, number] = [1, 1]; // 区间去除起始值
+  public curFrameRemoveFrameImg: string = ''; // 当前帧图像
+  // 帧区间去除 end
+
+
   // 上传的Gif
   public rawFile: File = null;
 
@@ -302,7 +343,6 @@ export default class extends Vue {
     this.oriFrameList = frameList;
 
     await this.makeTimeline(frameList);
-    console.log(this.frameList.length);
     this.updateEditData();
   }
 
@@ -592,7 +632,14 @@ export default class extends Vue {
     const startFrameIndex = (this.frameSplitRange[0] - 1);
     const endFrameIndex = (this.frameSplitRange[1]);
 
+    const removeRangeStartIndex = this.frameRemoveRange[0] - 1;
+    const removeRangeEndIndex = this.frameRemoveRange[1];
+
     for (let i = startFrameIndex; i < endFrameIndex; (this.rs ? i+=2 : i++))  {
+      if (this.enableFrameRangeRemove && i >= removeRangeStartIndex && i <= removeRangeEndIndex) {
+        continue;
+      }
+
       const durl = this.canvas.toDataURL({
         width,
         height,
@@ -602,6 +649,15 @@ export default class extends Vue {
       });
 
       dataUrlArr.push(durl);
+    }
+
+    if (!dataUrlArr.length) {
+      this.isGenerating = false;
+      this.generateDone = true;
+
+      // @ts-ignore
+      this.$message('帧数据为空，取消生成', {type: 'info'});
+      return;
     }
 
     gif.addDataUrl(dataUrlArr, {delay: this.interval});
@@ -633,9 +689,27 @@ export default class extends Vue {
 
   public onFrameSplitRangeDragging(value, index) {
     this.curFrameSplitFrameImg = this.frameList[value[index] - 1]?.imgFileUrl;
+
+    const frameRemoveRange: [number, number] = [1, 1];
+
+    frameRemoveRange[0] = Math.min(Math.max(this.frameRemoveRange[0], this.frameSplitRange[0]), this.frameSplitRange[1]);
+    frameRemoveRange[1] = Math.max(Math.min(this.frameRemoveRange[1], this.frameSplitRange[1]), this.frameSplitRange[0]);
+
+    const frameRemoveRangeSlider = this.$refs['frameRemoveRange'] as VueSlider;
+
+    if (frameRemoveRange) {
+      frameRemoveRangeSlider.setValue(frameRemoveRange);
+    }
   }
   public onFrameSplitRangeDragEnd(value, index) {
     this.curFrameSplitFrameImg = '';
+  }
+
+  public onFrameRemoveRangeDragging(value, index) {
+    this.curFrameRemoveFrameImg = this.frameList[value[index] - 1]?.imgFileUrl;
+  }
+  public onFrameRemoveRangeDragEnd(value, index) {
+    this.curFrameRemoveFrameImg = '';
   }
 
 

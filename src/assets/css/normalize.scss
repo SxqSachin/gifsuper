@@ -47,3 +47,7 @@ textarea:focus, input:focus {
 a {
   color: var(--link-color);
 }
+
+button:focus {
+  outline: 0;
+}
