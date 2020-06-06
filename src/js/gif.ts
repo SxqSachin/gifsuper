@@ -2,6 +2,13 @@
   stackoverflow: questions/35940290/how-to-convert-base64-string-to-javascript-file-object-like-as-from-file-input-f
 */
 
+export interface GifFrame {
+  imgFileSrc: string;
+  width: number;
+  height: number;
+}
+export type GifFrameList = GifFrame[];
+
 async function urlToFile(url: string, filename: string, mimeType: string) {
   const response = await fetch(url);
   const arrayBuffer = await response.arrayBuffer();
@@ -42,7 +49,7 @@ async function convertCanvasToImage(canvas: HTMLCanvasElement, filename: string)
   // return await urlToFile(canvas.toDataURL('image/jpeg', 0.9), filename, 'image/jpeg');
 }
 
-async function parseSrcGif(gifFile: File): Promise<any[]> {
+async function parseSrcGif(gifFile: File): Promise<GifFrameList> {
   const srcgifDOM = document.querySelector('#srcgif') as HTMLCanvasElement;
   const gifImg = document.createElement('img');
 
@@ -52,9 +59,11 @@ async function parseSrcGif(gifFile: File): Promise<any[]> {
 
   // @ts-ignore
   const superGif = new SuperGif({ gif: gifImg });
-  const frameList: any[] = [];
+  const frameList: GifFrameList = [];
 
-  const promise: Promise<any[]> = new Promise((resolve, reject) => {
+  const promiseList: Promise<GifFrame>[] = [];
+
+  const promise: Promise<GifFrameList> = new Promise((resolve, reject) => {
     superGif.load(async () => {
       for (let frame = 1; frame <= superGif.get_length(); frame++) {
         // 遍历gif实例的每一帧
@@ -64,11 +73,26 @@ async function parseSrcGif(gifFile: File): Promise<any[]> {
         const curFile = await convertCanvasToImage(superGif.get_canvas(), gifFile.name.replace('.gif', `-${frame}`));
         const curFileUrl = URL.createObjectURL(curFile);
 
-        frameList.push({
-          imgFile: curFile,
-          imgFileUrl: curFileUrl,
-        });
+        const imgFile = new Image();
+        imgFile.src = curFileUrl;
+
+        promiseList.push(new Promise(resolve => {
+          imgFile.onload = () => {
+            const gifFrame: GifFrame = {
+              imgFileSrc: imgFile.src,
+              width: imgFile.width,
+              height: imgFile.height,
+            };
+            resolve(gifFrame);
+          };
+        }));
       }
+
+      const gifFrameList = await Promise.all(promiseList);
+
+      gifFrameList.forEach(item => {
+        frameList.push(item);
+      })
 
       superGif.play();
 
@@ -225,4 +249,4 @@ class GifGenerator {
   }
 }
 
-export { dataUrlToFile, parseSrcGif, GifGenerator }
+export { dataUrlToFile, parseSrcGif, GifGenerator, }

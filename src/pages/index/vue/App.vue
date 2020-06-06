@@ -215,12 +215,19 @@ import 'vue-slider-component/theme/default.css'
 
 import { Chrome as ColorPicker } from 'vue-color';
 
-import { parseSrcGif, dataUrlToFile, GifGenerator } from '@/js/gif';
+import { parseSrcGif, dataUrlToFile, GifGenerator, GifFrameList, GifFrame } from '@/js/gif';
 
 import { fabric } from 'fabric';
 
 const FrameIndex = 1;
 const TextZIndex = 10;
+
+interface GenerateOption {
+  baseInterval: number;
+
+  generateRange: [number, number];
+  removeRange?: [number, number];
+}
 
 @Component({
   components: {
@@ -233,12 +240,17 @@ const TextZIndex = 10;
   },
 })
 export default class extends Vue {
+  // fabric canvas对象
   public canvas!: fabric.Canvas;
   public dragBarCanvas!: fabric.Canvas;
 
-  public frameList: any[] = [];
+  // 帧列表
+  public frameList: GifFrameList = [];
   public oriFrameList: any[] = [];
 
+  public generateOption: {[key: string]: any};
+
+  // 默认帧间隔
   public interval: number = 80;
 
   public isGenerating: boolean = false;
@@ -274,9 +286,6 @@ export default class extends Vue {
   public frameWidth: number = 0;
   public frameHeight: number = 0;
 
-  // 当前选中的帧数
-  public editFrameIndex: number[] = [];
-
   // 生成进度
   public progress: number = 0;
 
@@ -289,29 +298,7 @@ export default class extends Vue {
   // timeline偏移值
   public timelineLeft: number = 0;
 
-  // 帧剪贴板
-  public frameClipboard: any[] = [];
-
-  // 对象剪贴板
-  public objClipboard: fabric.Object[] = [];
-
   public clipboard: any[] = [];
-
-  get choosenFrameIndexArray(): number[] {
-    if (Array.isArray(this.editFrameIndex)) {
-      return this.editFrameIndex;
-    }
-
-    let tArr: number[] = [];
-
-    if (this.editFrameIndex === 'all') {
-      tArr = Array.from(this.frameList.keys());
-    } else {
-      tArr = (this.editFrameIndex as string).split(',').map(item => +item);
-    }
-
-    return tArr;
-  }
 
   get canEdit(): boolean {
     return !!this.frameList?.length;
@@ -319,6 +306,10 @@ export default class extends Vue {
 
   get textColor(): string {
     return this.textColorObj?.hex;
+  }
+
+  get totalFrameCount(): number {
+    return this.frameList.length;
   }
 
   public mounted() {
@@ -390,56 +381,6 @@ export default class extends Vue {
     }
   }
 
-  public fabricFromUrl(url: string): Promise<fabric.Image> {
-    const promise: Promise<fabric.Image> = new Promise(resolve => {
-      fabric.Image.fromURL(url, img => {
-        resolve(img);
-      });
-    });
-
-    return promise;
-  }
-
-  public addText(textContent: string = '请输入内容', textColor: string = '#333') {
-    // @ts-ignore
-    this.$message('功能开发中，敬请期待', {type: 'info'});
-    return;
-
-    const textArr: fabric.IText[] = [];
-
-    this.canvas!.discardActiveObject();
-
-    const group: fabric.Group = new fabric.Group();
-
-    if (!this.choosenFrameIndexArray.length) {
-      const itext = new fabric.IText(textContent, {
-        fill: textColor,
-        left: 0,
-        top: 40,
-      });
-
-      group.addWithUpdate(itext);
-    } else {
-      this.choosenFrameIndexArray.forEach(index => {
-        const itext = new fabric.IText(textContent, {
-          fill: textColor,
-          left: index * ((this.frameWidth ?? 0) + 1),
-          top: 40,
-        });
-
-        group.addWithUpdate(itext);
-      });
-    }
-
-
-    this.canvas!.add(group);
-    group.bringToFront();
-    group.toActiveSelection();
-
-    // @ts-ignore
-    this.$message('添加成功', {type: 'success'});
-  }
-
   public addTextToAllFrame(textContent?: string, textColor?: string) {
     const textArr: fabric.IText[] = [];
 
@@ -481,7 +422,7 @@ export default class extends Vue {
     this.$message('添加成功，可在下方时间轴调整文字位置', {type: 'success'});
   }
 
-  public async makeTimeline(frameList: any[]) {
+  public async makeTimeline(frameList: GifFrameList) {
     if (!this.canvas) {
       console.error('makrTimeline: canvas not ready');
       return;
@@ -497,15 +438,14 @@ export default class extends Vue {
         this.canvas.remove(obj);
       }
     })
-    this.editFrameIndex = [];
 
-    const firstImg = await this.fabricFromUrl(frameList[0].imgFileUrl);
+    const firstImg = frameList[0];
 
     const frameWidth = this.frameWidth = firstImg.width as number;
     const frameHeight = this.frameHeight = firstImg.height as number;
 
-    const canvasTotalWidth = (frameWidth + 1) * frameList.length;
-    const canvasHeight = firstImg.height as number + 10;
+    const canvasTotalWidth = (frameWidth + 1) * this.totalFrameCount;
+    const canvasHeight = frameHeight as number + 10;
 
     const timelineWrapperWidth = (this.$refs['timeline-wrapper'] as HTMLElement).offsetWidth - 2;
 
@@ -517,7 +457,7 @@ export default class extends Vue {
 
     this.frameList = frameList.map((frame, index) => {
       const percent = (index + 1) / frameList.length;
-      fabric.Image.fromURL(frame.imgFileUrl, img => {
+      fabric.Image.fromURL(frame.imgFileSrc, img => {
         if (!img.width || !img.height) {
           return;
         }
@@ -541,16 +481,7 @@ export default class extends Vue {
         // @ts-ignore
         nimg.frameData = frame;
 
-        if (!nimg.width || !nimg.height) {
-          return;
-        }
-
-        frame.width = img.width;
-        frame.height = img.height;
-
         this.canvas.add(nimg);
-
-        this.canvas.sendToBack(nimg);
       });
 
       return frame;
@@ -623,13 +554,10 @@ export default class extends Vue {
     this.progress = 0;
     this.isGenerating = true;
 
-    const n = this.frameList.map(item => item.imgFileUrl);
+    // const n = this.frameList.map(item => item.imgFileSrc);
 
     const { width, height } = this.frameList[0];
-    const totalFrameCount = this.frameList.length;
-    const totalWidth = (width + 1) * n.length;
-
-    console.log(width, height);
+    const totalWidth = (width + 1) * this.totalFrameCount;
 
     const gif = new GifGenerator({
       repeat: this.repeat ? 0 : -1,
@@ -666,8 +594,7 @@ export default class extends Vue {
       this.isGenerating = false;
       this.generateDone = true;
 
-      // @ts-ignore
-      this.$message('帧数据为空，取消生成', {type: 'info'});
+      this.toast('帧数据为空，取消生成', 'info');
       return;
     }
 
@@ -681,25 +608,8 @@ export default class extends Vue {
     this.generateDone = true;
   }
 
-  public insertFrame(srcFrameIndex: number, targetFrameIndex: number) {
-    if (srcFrameIndex < 0) {
-      srcFrameIndex = 0;
-    }
-    if (srcFrameIndex > this.frameList.length) {
-      srcFrameIndex = this.frameList.length - 1;
-    }
-
-    const frameList = this.frameList;
-
-    const firstFrame = frameList[srcFrameIndex];
-
-    frameList.push(firstFrame);
-
-    this.makeTimeline(frameList);
-  }
-
   public onFrameSplitRangeDragging(value, index) {
-    this.curFrameSplitFrameImg = this.frameList[value[index] - 1]?.imgFileUrl;
+    this.curFrameSplitFrameImg = this.frameList[value[index] - 1]?.imgFileSrc;
 
     const frameRemoveRange: [number, number] = [1, 1];
 
@@ -717,7 +627,7 @@ export default class extends Vue {
   }
 
   public onFrameRemoveRangeDragging(value, index) {
-    this.curFrameRemoveFrameImg = this.frameList[value[index] - 1]?.imgFileUrl;
+    this.curFrameRemoveFrameImg = this.frameList[value[index] - 1]?.imgFileSrc;
   }
   public onFrameRemoveRangeDragEnd(value, index) {
     this.curFrameRemoveFrameImg = '';
@@ -834,7 +744,7 @@ export default class extends Vue {
 
       this.canvas.renderAll();
       // @ts-ignore
-      this.$message(`已粘贴${this.objClipboard.length}个对象`, { type: 'success' });
+      this.$message(`已粘贴${this.copiedObj.length}个对象`, { type: 'success' });
     }
 
   }
