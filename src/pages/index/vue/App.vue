@@ -104,22 +104,26 @@
           <legend class="mb-4 text-lg"> 帧操作 </legend>
           <div class="w-full flex flex-wrap items-start flex-col">
             <div class="flex flex-col justify-center items-start mr-4 mb-4 pb-8 w-full">
-              <label for="" class="whitespace-no-wrap">帧区间裁剪：<span class="inline-block mb-4 pb-2 text-color-neutral text-sm border-gray-400">裁剪出指定区间内的帧</span></label>
+              <label for="" class="whitespace-no-wrap">区间裁剪：<span class="inline-block mb-4 pb-2 text-color-neutral text-sm border-gray-400">裁剪出指定区间内的帧</span></label>
+
+              <div class="img-wrapper w-full flex justify-center items-center overflow-hidden z-50">
+                <img class="absolute transform -translate-y-1/2" v-show="!!curFrameSplitFrameImg" :src="curFrameSplitFrameImg" alt=""/>
+              </div>
+
               <slider class="flex-1 w-full"
                 v-model="frameSplitRange"
                 :min="1"
-                :max="this.frameList.length"
-                :lazy="true"
-                :disabled="!canEdit"
-                :drag-on-click="true"
+                :max="!!this.frameList.length ? this.frameList.length : 10"
+                :contained="true"
                 tooltip="always"
                 tooltip-placement="bottom"
+                @dragging="onFrameSplitRangeDragging"
+                @drag-end="onFrameSplitRangeDragEnd"
                 style="width: 100%;"
                ></slider>
             </div>
           </div>
         </fieldset>
-
 
         <fieldset class="mt-8 pt-8 border-gray-600">
           <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
@@ -208,8 +212,10 @@ export default class extends Vue {
 
   public textRange: string = '';
 
-  // 帧裁剪
-  public frameSplitRange: [number, number] = [1, 1];
+  // 帧区间裁剪 start
+  public frameSplitRange: [number, number] = [1, 10]; // 区间裁剪起始值
+  public curFrameSplitFrameImg: string = ''; // 当前帧图像
+  // 帧区间裁剪 end
 
   // 上传的Gif
   public rawFile: File = null;
@@ -624,6 +630,14 @@ export default class extends Vue {
 
     this.makeTimeline(frameList);
   }
+
+  public onFrameSplitRangeDragging(value, index) {
+    this.curFrameSplitFrameImg = this.frameList[value[index] - 1]?.imgFileUrl;
+  }
+  public onFrameSplitRangeDragEnd(value, index) {
+    this.curFrameSplitFrameImg = '';
+  }
+
 
   public initKeyPressEvent() {
     window.onkeypress = (e: KeyboardEvent) => {
