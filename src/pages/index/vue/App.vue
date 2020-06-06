@@ -60,7 +60,7 @@
 
         </fieldset>
 
-        <fieldset>
+        <fieldset class="flex items-start flex-col md:flex-row pb-8 mb-8 border-b border-gray-600 w-full">
           <legend class="mb-4 text-lg"> 文字操作 <span class="inline-block mb-4 pb-2 text-color-neutral text-sm border-gray-400">生成文字后可于下方“时间轴”处调整文字位置</span> </legend>
           <div class="w-full flex flex-wrap items-start flex-col">
             <div class="flex justify-center items-center mr-4 mb-4 w-full">
@@ -69,13 +69,8 @@
             </div>
             <div class="flex justify-start items-center mr-4 mb-4 w-full">
               <label for="" class="whitespace-no-wrap">文字颜色：</label>
-              <!-- <s-input class="w-full" v-model="textColor" @focus="showTextColorPicker = true"></s-input> -->
               <color-picker class="z-50 ml-0 border border-gray-500" v-model="textColorObj"></color-picker>
             </div>
-            <!-- <div class="flex justify-center items-center mr-4 mb-4 w-full">
-              <label for="" class="whitespace-no-wrap">文字边线色：</label>
-              <s-input class="w-full" v-model="textOutline"></s-input>
-            </div> -->
             <div class="flex justify-center items-center mr-4 mb-4 pb-8 w-full">
               <label for="" class="whitespace-no-wrap">文字大小：</label>
               <slider class="flex-1"
@@ -88,13 +83,7 @@
                 tooltip="always"
                 tooltip-placement="bottom"
                ></slider>
-              <!-- <s-input class="w-full" v-model="textSize"></s-input> -->
             </div>
-
-            <!-- <div class="flex justify-center items-center mr-4 mb-4">
-              <label for="" class="whitespace-no-wrap">文字边线色：</label>
-              <s-input v-model="textOutline"></s-input>
-            </div> -->
 
             <div class="flex justify-center items-center mr-4 mb-4">
               <sbtn
@@ -111,7 +100,28 @@
           </div>
         </fieldset>
 
-        <fieldset class="mt-8 pt-8 border-t border-gray-600">
+        <fieldset class="flex items-start flex-col md:flex-row pb-8 mb-8 border-gray-600 w-full">
+          <legend class="mb-4 text-lg"> 帧操作 </legend>
+          <div class="w-full flex flex-wrap items-start flex-col">
+            <div class="flex flex-col justify-center items-start mr-4 mb-4 pb-8 w-full">
+              <label for="" class="whitespace-no-wrap">帧区间裁剪：<span class="inline-block mb-4 pb-2 text-color-neutral text-sm border-gray-400">裁剪出指定区间内的帧</span></label>
+              <slider class="flex-1 w-full"
+                v-model="frameSplitRange"
+                :min="1"
+                :max="this.frameList.length"
+                :lazy="true"
+                :disabled="!canEdit"
+                :drag-on-click="true"
+                tooltip="always"
+                tooltip-placement="bottom"
+                style="width: 100%;"
+               ></slider>
+            </div>
+          </div>
+        </fieldset>
+
+
+        <fieldset class="mt-8 pt-8 border-gray-600">
           <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
         </fieldset>
       </div>
@@ -198,6 +208,9 @@ export default class extends Vue {
 
   public textRange: string = '';
 
+  // 帧裁剪
+  public frameSplitRange: [number, number] = [1, 1];
+
   // 上传的Gif
   public rawFile: File = null;
 
@@ -267,6 +280,26 @@ export default class extends Vue {
     document.getElementById('loading-ph')?.remove();
   }
 
+  public async upload(e: FileList) {
+    const gifFile = e[0];
+
+    if (!gifFile || !this.canvas) {
+      return;
+    }
+
+    this.rawFile = gifFile;
+
+    this.resetStage();
+
+    const frameList = await parseSrcGif(gifFile);
+    this.frameList = frameList;
+    this.oriFrameList = frameList;
+
+    await this.makeTimeline(frameList);
+    console.log(this.frameList.length);
+    this.updateEditData();
+  }
+
   public toggleRevert() {
     this.revert = !this.revert;
 
@@ -298,24 +331,6 @@ export default class extends Vue {
     if (!!this.canvas) {
       this.canvas.clear();
     }
-  }
-
-  public async upload(e: FileList) {
-    const gifFile = e[0];
-
-    if (!gifFile || !this.canvas) {
-      return;
-    }
-
-    this.rawFile = gifFile;
-
-    this.resetStage();
-
-    const frameList = await parseSrcGif(gifFile);
-    this.frameList = frameList;
-    this.oriFrameList = frameList;
-
-    this.makeTimeline(frameList);
   }
 
   public fabricFromUrl(url: string): Promise<fabric.Image> {
@@ -408,7 +423,6 @@ export default class extends Vue {
     // @ts-ignore
     this.$message('添加成功，可在下方时间轴调整文字位置', {type: 'success'});
   }
-
 
   public async makeTimeline(frameList: any[]) {
     if (!this.canvas) {
@@ -555,6 +569,7 @@ export default class extends Vue {
     const n = this.frameList.map(item => item.imgFileUrl);
 
     const { width, height } = this.frameList[0];
+    const totalFrameCount = this.frameList.length;
     const totalWidth = (width + 1) * n.length;
 
     console.log(width, height);
@@ -567,7 +582,11 @@ export default class extends Vue {
 
     const dataUrlArr: string[] = [];
 
-    for (let i = 0; i < n.length; (this.rs ? i+=2 : i++))  {
+    // 处理帧裁剪数据
+    const startFrameIndex = (this.frameSplitRange[0] - 1);
+    const endFrameIndex = (this.frameSplitRange[1]);
+
+    for (let i = startFrameIndex; i < endFrameIndex; (this.rs ? i+=2 : i++))  {
       const durl = this.canvas.toDataURL({
         width,
         height,
@@ -740,6 +759,11 @@ export default class extends Vue {
     });
 
     this.makeTimeline(frameList);
+  }
+
+  // 更新可编辑内容
+  public updateEditData() {
+    this.frameSplitRange = [1, this.frameList.length];
   }
 }
 </script>
