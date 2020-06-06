@@ -46,12 +46,14 @@
               v-model="interval"
               :min="15"
               :max="200"
+              :marks="[15, 200]"
               :lazy="true"
               :disabled="!canEdit"
               :drag-on-click="true"
+              :contained="true"
               tooltip="always"
               tooltip-placement="bottom"
-              style="width: 100%;"
+              style="width: calc(100% - 14px);"
              ></slider>
           </div>
 
@@ -121,8 +123,10 @@
 
             <slider class="flex-1 py-0"
               v-model="frameSplitRange"
+              :disabled="!canEdit"
               :min="1"
               :max="!!this.frameList.length ? this.frameList.length : 10"
+              :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
               :contained="true"
               tooltip="always"
               tooltip-placement="bottom"
@@ -145,10 +149,12 @@
 
             <slider class="flex-1 w-full"
               v-show="enableFrameRangeRemove"
+              :disabled="!canEdit"
               ref="frameRemoveRange"
               v-model="frameRemoveRange"
               :min="frameSplitRange[0]"
               :max="frameSplitRange[1]"
+              :marks="[frameSplitRange[0], frameSplitRange[1]]"
               :contained="true"
               tooltip="always"
               tooltip-placement="bottom"
