@@ -79,7 +79,7 @@ async function parseSrcGif(gifFile: File): Promise<any[]> {
   return promise;
 }
 
-class Gif {
+class GifGenerator {
   private gif: any;
 
   private bodyDOM: HTMLElement;
@@ -172,7 +172,7 @@ class Gif {
     return Promise.resolve();
   }
 
-  public addDataUrl(dataUrls: string[] | string, options?: any): Gif {
+  public addDataUrl(dataUrls: string[] | string, options?: any): GifGenerator {
     if (Array.isArray(dataUrls)) {
       dataUrls.forEach(dataUrl => {
         this._addDataUrl(dataUrl, options);
@@ -184,8 +184,8 @@ class Gif {
     return this;
   }
 
-  public addImgElems(imgElems: HTMLImageElement, options?: any): Gif;
-  public addImgElems(imgElems: HTMLImageElement[] | HTMLImageElement, options?: any): Gif {
+  public addImgElems(imgElems: HTMLImageElement, options?: any): GifGenerator;
+  public addImgElems(imgElems: HTMLImageElement[] | HTMLImageElement, options?: any): GifGenerator {
     if (Array.isArray(imgElems)) {
       imgElems.forEach(imgElem => {
         this._addImgElem(imgElem, options);
@@ -225,4 +225,4 @@ class Gif {
   }
 }
 
-export { dataUrlToFile, parseSrcGif, Gif }
+export { dataUrlToFile, parseSrcGif, GifGenerator }

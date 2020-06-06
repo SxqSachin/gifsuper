@@ -215,7 +215,7 @@ import 'vue-slider-component/theme/default.css'
 
 import { Chrome as ColorPicker } from 'vue-color';
 
-import { parseSrcGif, dataUrlToFile, Gif } from '@/js/gif';
+import { parseSrcGif, dataUrlToFile, GifGenerator } from '@/js/gif';
 
 import { fabric } from 'fabric';
 
@@ -631,7 +631,7 @@ export default class extends Vue {
 
     console.log(width, height);
 
-    const gif = new Gif({
+    const gif = new GifGenerator({
       repeat: this.repeat ? 0 : -1,
     });
 
