@@ -61,8 +61,7 @@
         </fieldset>
 
         <fieldset>
-          <legend class="mb-2 text-lg"> 文字操作 </legend>
-          <div class="mb-4 pb-2 text-color-neutral text-sm border-b border-gray-400">生成文字后可于下方“时间轴”处调整文字位置</div>
+          <legend class="mb-4 text-lg"> 文字操作 <span class="inline-block mb-4 pb-2 text-color-neutral text-sm border-gray-400">生成文字后可于下方“时间轴”处调整文字位置</span> </legend>
           <div class="w-full flex flex-wrap items-start flex-col">
             <div class="flex justify-center items-center mr-4 mb-4 w-full">
               <label for="" class="whitespace-no-wrap">文字内容：</label>
@@ -71,7 +70,7 @@
             <div class="flex justify-start items-center mr-4 mb-4 w-full">
               <label for="" class="whitespace-no-wrap">文字颜色：</label>
               <!-- <s-input class="w-full" v-model="textColor" @focus="showTextColorPicker = true"></s-input> -->
-              <color-picker class="z-50 ml-0 border border-gray-700" v-model="textColorObj"></color-picker>
+              <color-picker class="z-50 ml-0 border border-gray-500" v-model="textColorObj"></color-picker>
             </div>
             <!-- <div class="flex justify-center items-center mr-4 mb-4 w-full">
               <label for="" class="whitespace-no-wrap">文字边线色：</label>
@@ -265,7 +264,7 @@ export default class extends Vue {
 
     this.initKeyPressEvent();
 
-    document.getElementById('loading-ph').remove();
+    document.getElementById('loading-ph')?.remove();
   }
 
   public toggleRevert() {
