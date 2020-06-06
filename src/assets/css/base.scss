@@ -193,7 +193,9 @@ body {
   --border-color-mid: #777;
 }
 
-.loading-place-holder-hhh {
-  // display: none;
+#loading-ph + .loading-place-holder-hhh {
   opacity: 0;
+}
+.loading-place-holder-hhh {
+  display: none;
 }
