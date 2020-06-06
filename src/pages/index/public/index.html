@@ -79,13 +79,13 @@
   <main class="w-full md:w-3/5 mx-auto">
     <div id="app"></div>
 
-    <div id="loading-ph" class="w-full h-64 mt-16 flex flex-col justify-center items-center">
+    <div id="loading-ph" class="loading w-full h-64 mt-16 flex flex-col justify-center items-center">
       <div class="mb-4 rounded-full loading-calm-cat"></div>
       <p class="mb-4">功能模块加载中，请稍候。。。</p>
       <p class="mb-4">加载不会超过5s，如果没有成功加载，请尝试刷新页面。</p>
     </div>
 
-    <div class="hhh">
+    <div class="loading-place-holder-hhh">
       <div> 上传GIF！</div>
       <h1> 基础调整 </h1>
       <h1> 文字操作 </h1>
@@ -101,6 +101,185 @@
         <input id="textColor" type="text"/>
       </fieldset>
       <h1> 时间轴 </h1>
+
+      <div class="edit-panel w-full p-4 md:p-8 border rounded-md border-color-2 mt-8 flex flex-col">
+
+        <div class="flex-1 flex flex-col mr-0 mb-4 w-full">
+
+          <fieldset class="flex items-start flex-col md:flex-row pb-4 mb-8 border-b border-gray-600 w-full" v-show="canEdit">
+            <legend class="mb-4 text-lg"> 图片信息 </legend>
+
+            <div class="flex w-full">
+              <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
+                <label for="interval" class="whitespace-no-wrap flex-0 inline-block">总帧数：</label>
+                <div>{{ this.frameList.length }}</div>
+              </div>
+              <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
+                <label for="interval" class="whitespace-no-wrap flex-0 inline-block">大小：</label>
+                <div>{{ this.rawFile ? +(this.rawFile.size / (1024 * 1024)).toFixed(2) : 0 }}MB</div>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col md:flex-row pb-8 mb-8 border-b border-gray-600 w-full">
+            <legend class="mb-4 text-lg"> 基础调整 </legend>
+
+            <div class="flex flex-col justify-center items-start mb-4 pt-4 pb-8 w-full">
+              <label for="">
+                <span>帧间隔：</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">毫秒单位，帧间隔越小，生成后的Gif就越流畅，同时总时长变短</span>
+              </label>
+
+              <slider class="flex-1"
+                v-model="interval"
+                :min="15"
+                :max="200"
+                :marks="[15, 200]"
+                :lazy="true"
+                :disabled="!canEdit"
+                :drag-on-click="true"
+                :contained="true"
+                tooltip="always"
+                tooltip-placement="bottom"
+                style="width: calc(100% - 14px);"
+               ></slider>
+            </div>
+
+            <div class="flex flex-col md:flex-row">
+              <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleRevert">倒放：{{ revert ? '开' : '关' }}</sbtn>
+              <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleRepeat">循环：{{ repeat ? '开' : '关' }}</sbtn>
+              <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后将会抽去原Gif中一般的帧数，可以减小文件大小，代价是Gif流畅程度将会下降" :disabled="!canEdit" @click="toggleRs">抽帧：{{ rs ? '开' : '关' }}</sbtn>
+              <!-- <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="重置时间轴" :disabled="!canEdit" type="error" @click="makeTimeline">重置</sbtn> -->
+            </div>
+
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col md:flex-row pb-8 mb-8 border-b border-gray-600 w-full">
+            <legend class="mb-4 text-lg">
+              <span> 文字操作 </span>
+              <span class="ml-2 inline-block mb-4 pb-2 text-color-neutral text-sm border-gray-400">生成文字后可于下方“时间轴”处调整文字位置</span>
+            </legend>
+            <div class="w-full flex flex-wrap items-start flex-col">
+              <div class="flex justify-center items-center mr-4 mb-4 w-full">
+                <label for="" class="whitespace-no-wrap">文字内容：</label>
+                <s-input class="w-full" v-model="textContent" :style="{color: this.textColor}" placeholder="请输入内容，支持可输入的表情"></s-input>
+              </div>
+              <div class="flex justify-start items-center mb-4 w-full">
+                <label for="" class="whitespace-no-wrap">文字颜色：</label>
+                <color-picker class="z-50 ml-0 border border-gray-500" v-model="textColorObj"></color-picker>
+              </div>
+              <div class="flex justify-center items-center mb-4 pb-8 w-full">
+                <label for="" class="whitespace-no-wrap">文字大小：</label>
+                <slider class="flex-1"
+                  v-model="textSize"
+                  :min="14"
+                  :max="128"
+                  :lazy="true"
+                  :disabled="!canEdit"
+                  :drag-on-click="true"
+                  tooltip="always"
+                  tooltip-placement="bottom"
+                 ></slider>
+              </div>
+
+              <div class="flex justify-center items-center mb-4">
+                <sbtn
+                  class="mr-4 mb-1"
+                  @click="addText(textContent, textColor)"
+                  :disabled="!canEdit">为指定帧添加文字</sbtn>
+                <s-input v-model="textRange" placeholder="如:0,1,2,(4-10)"></s-input>
+              </div>
+              <sbtn
+                class="mb-1 w-full"
+                @click="addTextToAllFrame"
+                :disabled="!canEdit">为所有帧添加文字</sbtn>
+
+            </div>
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col md:flex-row border-gray-600 w-full">
+            <legend class="mb-4 text-lg"> 帧操作 </legend>
+            <div class="flex flex-col justify-center items-start mb-4 pt-4 pb-8 w-full">
+              <label for="">
+                <span>区间裁剪：</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">生成后的Gif仅保留指定区间内的帧图像</span>
+              </label>
+
+              <div class="img-wrapper w-full flex justify-center items-center z-50">
+                <img class="absolute transform -translate-y-1/2" v-show="!!curFrameSplitFrameImg" :src="curFrameSplitFrameImg" alt=""/>
+              </div>
+
+              <slider class="flex-1 py-0"
+                v-model="frameSplitRange"
+                :disabled="!canEdit"
+                :min="1"
+                :max="!!this.frameList.length ? this.frameList.length : 10"
+                :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
+                :contained="true"
+                tooltip="always"
+                tooltip-placement="bottom"
+                @dragging="onFrameSplitRangeDragging"
+                @drag-end="onFrameSplitRangeDragEnd"
+                style="width: calc(100% - 14px);"
+               ></slider>
+            </div>
+
+            <div class="flex flex-col justify-center items-start mb-4 pt-4 pb-8 w-full">
+              <label for="">
+                <span>区间去除：</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">删除指定区间内的帧，受制于区间裁剪数值</span>
+              </label>
+              <sbtn class="mb-1" :disabled="!canEdit" @click="enableFrameRangeRemove = !enableFrameRangeRemove">区间去除：{{ enableFrameRangeRemove ? '开启' : '关闭' }}</sbtn>
+
+              <div class="img-wrapper w-full flex justify-center items-center z-50">
+                <img class="absolute transform -translate-y-1/2" v-show="!!curFrameRemoveFrameImg" :src="curFrameRemoveFrameImg" alt=""/>
+              </div>
+
+              <slider class="flex-1 w-full"
+                v-show="enableFrameRangeRemove"
+                :disabled="!canEdit"
+                ref="frameRemoveRange"
+                v-model="frameRemoveRange"
+                :min="frameSplitRange[0]"
+                :max="frameSplitRange[1]"
+                :marks="[frameSplitRange[0], frameSplitRange[1]]"
+                :contained="true"
+                tooltip="always"
+                tooltip-placement="bottom"
+                @dragging="onFrameRemoveRangeDragging"
+                @drag-end="onFrameRemoveRangeDragEnd"
+                style="width: calc(100% - 14px);"
+               ></slider>
+            </div>
+          </fieldset>
+
+          <fieldset class="pt-8 border-t border-gray-600">
+            <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
+          </fieldset>
+        </div>
+
+        <div class="flex-0 w-full border-t md:border-t-0 mt-4 pt-4 md:pt-0">
+          <label for="" class="hidden md:inline" v-show="generateDone">新图像：（保存图片：右击图片->图片另存为）</label>
+          <label for="" class="inline md:hidden" v-show="generateDone">新图像：（长按图片->保存图片）</label>
+
+          <div class="flex justify-center h-full items-center mt-4">
+            <div class="my-12 md:my-0" v-show="isGenerating">
+              <div class="mb-12 text-center">生成中： {{progress}}%</div>
+
+              <!-- <loading></loading> -->
+              <div class="loading-calm-cat"></div>
+            </div>
+
+            <div v-show="!isGenerating">
+              <div id="dtsgif" class="mt-4 md:mt-0 flex justify-center items-center"> </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+
+
     </div>
   </main>
 
