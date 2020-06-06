@@ -1,7 +1,7 @@
 <template>
   <div class="upload-wrapper flex flex-col items-center justify-center" :style="style">
 
-    <input class="hidden" ref="file" :multiple="multiple" type="file" @change="onUpload"/>
+    <input class="hidden" ref="file" :multiple="multiple" type="file" :accept="accept" @change="onUpload"/>
 
     <div v-if="drag" class="drop-box"
       @click="onChooseFile"
@@ -38,6 +38,12 @@ export default class SUpload extends Vue {
     default: false,
   })
   public multiple?: boolean;
+
+  @Prop({
+    type: String,
+    default: false,
+  })
+  public accept?: boolean;
 
   @Prop({
     type: String,

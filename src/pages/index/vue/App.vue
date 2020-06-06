@@ -2,7 +2,7 @@
   <div class="wrapper p-4 sm:p-4 md:p-8 lg:p-8 max:w-screen overflow-x-hidden">
 
     <div class="top mb-6">
-      <upload class="uploader mx-auto" :before-upload="upload">上传GIF</upload>
+      <upload class="uploader mx-auto" :before-upload="upload" accept=".gif">上传GIF</upload>
       <span class="text-sm text-color-neutral mt-2 block md:hidden">Tips: 请不要上传尺寸过大的Gif，否则会导致显示异常，站长修复ing。</span>
     </div>
 
@@ -335,6 +335,11 @@ export default class extends Vue {
 
   public async upload(e: FileList) {
     const gifFile = e[0];
+
+    if (gifFile.type !== 'image/gif') {
+      this.toast('只支持上传Gif文件', 'error');
+      return;
+    }
 
     if (!gifFile || !this.canvas) {
       return;
@@ -858,6 +863,11 @@ export default class extends Vue {
   // 更新可编辑内容
   public updateEditData() {
     this.frameSplitRange = [1, this.frameList.length];
+  }
+
+  public toast(msg: string, type: string = 'info') {
+    // @ts-ignore
+    this.$message(msg, { type, })
   }
 }
 </script>
