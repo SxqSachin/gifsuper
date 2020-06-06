@@ -8,6 +8,8 @@
       :value="value"
       :autofocus="autofocus"
       @input="emitChange($event.target.value)"
+      @focus="emitEvent('focus')"
+      @blur="emitEvent('blur')"
     />
   </div>
 </template>
@@ -46,6 +48,9 @@ export default class SInput extends Vue {
     this.noDivideLine = !!value;
     this.val = value;
     this.$emit('input', value);
+  }
+  public emitEvent(event: string) {
+    this.$emit(event);
   }
 }
 </script>

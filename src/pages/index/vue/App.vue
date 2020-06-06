@@ -66,11 +66,12 @@
           <div class="w-full flex flex-wrap items-start flex-col">
             <div class="flex justify-center items-center mr-4 mb-4 w-full">
               <label for="" class="whitespace-no-wrap">文字内容：</label>
-              <s-input class="w-full" v-model="textContent" placeholder="请输入内容，支持可输入的表情"></s-input>
+              <s-input class="w-full" v-model="textContent" :style="{color: this.textColor}" placeholder="请输入内容，支持可输入的表情"></s-input>
             </div>
-            <div class="flex justify-center items-center mr-4 mb-4 w-full">
+            <div class="flex justify-start items-center mr-4 mb-4 w-full">
               <label for="" class="whitespace-no-wrap">文字颜色：</label>
-              <s-input class="w-full" v-model="textColor"></s-input>
+              <!-- <s-input class="w-full" v-model="textColor" @focus="showTextColorPicker = true"></s-input> -->
+              <color-picker class="z-50 ml-0 border border-gray-700" v-model="textColorObj"></color-picker>
             </div>
             <!-- <div class="flex justify-center items-center mr-4 mb-4 w-full">
               <label for="" class="whitespace-no-wrap">文字边线色：</label>
@@ -159,6 +160,8 @@ import LoadingRing from '@/components/widget/loading-ring.vue';
 import VueSlider from 'vue-slider-component'
 import 'vue-slider-component/theme/default.css'
 
+import { Chrome as ColorPicker } from 'vue-color';
+
 import { parseSrcGif, dataUrlToFile, Gif } from '@/js/gif';
 
 import { fabric } from 'fabric';
@@ -173,6 +176,7 @@ const TextZIndex = 10;
     's-input': sInput,
     'loading': LoadingRing,
     slider: VueSlider,
+    'color-picker': ColorPicker,
   },
 })
 export default class extends Vue {
@@ -188,9 +192,10 @@ export default class extends Vue {
   public generateDone: boolean = false;
 
   public textContent: string = '';
-  public textColor: string = '#fff';
+  public textColorObj: {[key: string]: string} = {};
   public textOutline: string = '#fff';
   public textSize: string = '42';
+  public showTextColorPicker: boolean = false;
 
   public textRange: string = '';
 
@@ -245,6 +250,10 @@ export default class extends Vue {
 
   get canEdit(): boolean {
     return !!this.frameList?.length;
+  }
+
+  get textColor(): string {
+    return this.textColorObj?.hex;
   }
 
   public mounted() {
@@ -740,6 +749,13 @@ export default class extends Vue {
   .wrapper {
     .uploader {
       max-width: calc(100vw - 2rem);
+    }
+  }
+
+  .vc-chrome {
+    box-shadow: none;
+    & /deep/ .vc-chrome-fields-wrap {
+      display: none;
     }
   }
 </style>
