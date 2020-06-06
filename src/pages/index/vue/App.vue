@@ -3,14 +3,16 @@
 
     <div class="top mb-6">
       <upload class="uploader mx-auto" :before-upload="upload" accept=".gif">上传GIF</upload>
-      <span class="text-sm text-color-neutral mt-2 block md:hidden">Tips: 请不要上传尺寸过大的Gif，否则会导致显示异常，站长修复ing。</span>
     </div>
 
     <div class="srcgif-wrapper flex mb-4 items-center">
       <div class="src w-full flex-shrink-0">
         <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block mb-4 hidden md:block">原Gif：</label>
         <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block mb-4 block md:hidden">原始Gif：（调整好设置后点击下方“生成”按钮）</label>
-        <div id="srcgif" class="flex justify-center items-center"> </div>
+        <div id="srcgif" class="flex justify-center items-center hidden"> </div>
+        <div v-show="!!oriImageSrc" class="flex justify-center items-center">
+          <img :src="oriImageSrc" alt="" srcset=""/>
+        </div>
       </div>
     </div>
 
@@ -94,13 +96,13 @@
                ></slider>
             </div>
 
-            <div class="flex justify-center items-center mb-4">
+            <!-- <div class="flex justify-center items-center mb-4">
               <sbtn
                 class="mr-4 mb-1"
                 @click="addText(textContent, textColor)"
                 :disabled="!canEdit">为指定帧添加文字</sbtn>
               <s-input v-model="textRange" placeholder="如:0,1,2,(4-10)"></s-input>
-            </div>
+            </div> -->
             <sbtn
               class="mb-1 w-full"
               @click="addTextToAllFrame"
@@ -275,9 +277,13 @@ export default class extends Vue {
   public curFrameRemoveFrameImg: string = ''; // 当前帧图像
   // 帧区间去除 end
 
-
   // 上传的Gif
   public rawFile: File = null;
+  public oriImageSrc: string = '';
+
+  // 原图片宽高
+  public oriWidth: number = 0;
+  public oriHeight: number = 0;
 
   // 倒放
   public revert: boolean = false;
@@ -324,6 +330,23 @@ export default class extends Vue {
     document.getElementById('loading-ph')?.remove();
   }
 
+  public async getImageData(file: File): Promise<GifFrame> {
+    return new Promise(resolve => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        const data = {
+          imgFileSrc: img.src,
+          width: img.width,
+          height: img.height,
+        };
+        img.remove();
+        resolve(data);
+      }
+      img.src = url;
+    });
+  }
+
   public async upload(e: FileList) {
     const gifFile = e[0];
 
@@ -337,6 +360,12 @@ export default class extends Vue {
     }
 
     this.rawFile = gifFile;
+
+    const { width, height, imgFileSrc }= await this.getImageData(gifFile);
+
+    this.oriWidth = width;
+    this.oriHeight = height;
+    this.oriImageSrc = imgFileSrc;
 
     this.resetStage();
 
@@ -441,8 +470,8 @@ export default class extends Vue {
 
     const firstImg = frameList[0];
 
-    const frameWidth = this.frameWidth = firstImg.width as number;
-    const frameHeight = this.frameHeight = firstImg.height as number;
+    const frameWidth = this.frameWidth = this.oriWidth; // firstImg.width as number;
+    const frameHeight = this.frameHeight = this.oriHeight; // firstImg.height as number;
 
     const canvasTotalWidth = (frameWidth + 1) * this.totalFrameCount;
     const canvasHeight = frameHeight as number + 10;
@@ -451,6 +480,8 @@ export default class extends Vue {
 
     const scale = 1;
     const divideWidth = 1;
+
+    console.log('ori', frameWidth, frameHeight);
 
     this.canvas.setWidth(timelineWrapperWidth);
     this.canvas.setHeight(canvasHeight);
@@ -464,6 +495,8 @@ export default class extends Vue {
 
         const curWidth = img.width * scale;
         const curHeight = img.height * scale;
+
+        console.log('img', curWidth, curHeight);
 
         const nimg = img.set({
           left: index * (curWidth + divideWidth),
@@ -556,11 +589,13 @@ export default class extends Vue {
 
     // const n = this.frameList.map(item => item.imgFileSrc);
 
-    const { width, height } = this.frameList[0];
+    const { width, height } = { width: this.oriWidth, height: this.oriHeight };
     const totalWidth = (width + 1) * this.totalFrameCount;
 
     const gif = new GifGenerator({
       repeat: this.repeat ? 0 : -1,
+      width: this.oriWidth,
+      height: this.oriHeight,
     });
 
     this.canvas!.absolutePan(new fabric.Point(0, 0));

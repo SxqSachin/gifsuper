@@ -51,14 +51,16 @@ async function convertCanvasToImage(canvas: HTMLCanvasElement, filename: string)
 
 async function parseSrcGif(gifFile: File): Promise<GifFrameList> {
   const srcgifDOM = document.querySelector('#srcgif') as HTMLCanvasElement;
-  const gifImg = document.createElement('img');
 
+  const gifImg = document.createElement('img');
   gifImg.setAttribute('rel:animated_src', URL.createObjectURL(gifFile));
   gifImg.setAttribute('rel:auto_play', '0');
   srcgifDOM.appendChild(gifImg);
 
   // @ts-ignore
-  const superGif = new SuperGif({ gif: gifImg });
+  const superGif = new SuperGif({ gif: gifImg, });
+
+  // @ts-ignore
   const frameList: GifFrameList = [];
 
   const promiseList: Promise<GifFrame>[] = [];
@@ -94,7 +96,7 @@ async function parseSrcGif(gifFile: File): Promise<GifFrameList> {
         frameList.push(item);
       })
 
-      superGif.play();
+      // superGif2.play();
 
       resolve(frameList);
     });
