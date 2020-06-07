@@ -470,6 +470,7 @@
         var progressBarHeight = (options.hasOwnProperty('progressbar_height') ? options.progressbar_height : 25);
         var progressBarBackgroundColor = (options.hasOwnProperty('progressbar_background_color') ? options.progressbar_background_color : 'rgba(255,255,255,0.4)');
         var progressBarForegroundColor = (options.hasOwnProperty('progressbar_foreground_color') ? options.progressbar_foreground_color : 'rgba(255,0,22,.8)');
+        var onLoad = (options.hasOwnProperty('on_load') ? options.on_load : function() {});
 
         var clear = function () {
             transparency = null;
@@ -556,6 +557,10 @@
                     mid = ((pos / length) * canvas.width) / (ctx_scaled ? get_canvas_scale() : 1);
                     width = canvas.width / (ctx_scaled ? get_canvas_scale() : 1 );
                     height /= ctx_scaled ? get_canvas_scale() : 1;
+                }
+
+                if (typeof onLoad === 'function') {
+                    onLoad(pos, length);
                 }
 
                 ctx.fillStyle = progressBarBackgroundColor;

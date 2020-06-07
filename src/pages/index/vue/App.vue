@@ -10,8 +10,11 @@
         <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block mb-4 hidden md:block">原Gif：</label>
         <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block mb-4 block md:hidden">原始Gif：（调整好设置后点击下方“生成”按钮）</label>
         <div id="srcgif" class="flex justify-center items-center hidden"> </div>
-        <div v-show="!!oriImageSrc" class="flex justify-center items-center">
-          <img :src="oriImageSrc" alt="" srcset=""/>
+        <div v-show="!!oriImageSrc" class="flex flex-col justify-center items-center">
+          <img ref="oriImageDom" :src="oriImageSrc" alt="" srcset=""/>
+          <div v-show="!!oriImageSrc && oriGifLoadProgress < 1" class="mask w-full h-full float-left absolute flex justify-center items-center bg-opacity-75 bg-gray-800 text-white text-lg" :style="{width: `${showWidth}px`, height: `${showHeight}px`}"> 
+            读取数据中： {{ (oriGifLoadProgress * 100).toFixed(0) }} %
+          </div>
         </div>
       </div>
     </div>
@@ -246,36 +249,6 @@ export default class extends Vue {
   public canvas!: fabric.Canvas;
   public dragBarCanvas!: fabric.Canvas;
 
-  // 帧列表
-  public frameList: GifFrameList = [];
-  public oriFrameList: any[] = [];
-
-  public generateOption: {[key: string]: any};
-
-  // 默认帧间隔
-  public interval: number = 80;
-
-  public isGenerating: boolean = false;
-  public generateDone: boolean = false;
-
-  public textContent: string = '';
-  public textColorObj: {[key: string]: string} = {};
-  public textOutline: string = '#fff';
-  public textSize: string = '42';
-  public showTextColorPicker: boolean = false;
-
-  public textRange: string = '';
-
-  // 帧区间裁剪 start
-  public frameSplitRange: [number, number] = [1, 10]; // 区间裁剪起始值
-  public curFrameSplitFrameImg: string = ''; // 当前帧图像
-  // 帧区间裁剪 end
-
-  // 帧区间去除 start
-  public enableFrameRangeRemove: boolean = false;
-  public frameRemoveRange: [number, number] = [1, 1]; // 区间去除起始值
-  public curFrameRemoveFrameImg: string = ''; // 当前帧图像
-  // 帧区间去除 end
 
   // 上传的Gif
   public rawFile: File = null;
@@ -284,6 +257,50 @@ export default class extends Vue {
   // 原图片宽高
   public oriWidth: number = 0;
   public oriHeight: number = 0;
+
+  // 表面显示图片宽高
+  public showWidth: number = 0;
+  public showHeight: number = 0;
+
+
+  // 帧列表
+  public frameList: GifFrameList = [];
+  public oriFrameList: any[] = [];
+
+  public generateOption: {[key: string]: any};
+
+  public oriGifLoadProgress: number = 0;
+
+  // 默认帧间隔
+  public interval: number = 80;
+
+  public isGenerating: boolean = false;
+  public generateDone: boolean = false;
+
+
+  // 文字操作 start
+  public textContent: string = '';
+  public textColorObj: {[key: string]: string} = {};
+  public textOutline: string = '#fff';
+  public textSize: string = '42';
+  public showTextColorPicker: boolean = false;
+
+  public textRange: string = '';
+  // 文字操作 end 
+
+
+  // 帧区间裁剪 start
+  public frameSplitRange: [number, number] = [1, 10]; // 区间裁剪起始值
+  public curFrameSplitFrameImg: string = ''; // 当前帧图像
+  // 帧区间裁剪 end
+
+
+  // 帧区间去除 start
+  public enableFrameRangeRemove: boolean = false;
+  public frameRemoveRange: [number, number] = [1, 1]; // 区间去除起始值
+  public curFrameRemoveFrameImg: string = ''; // 当前帧图像
+  // 帧区间去除 end
+
 
   // 倒放
   public revert: boolean = false;
@@ -361,15 +378,26 @@ export default class extends Vue {
 
     this.rawFile = gifFile;
 
-    const { width, height, imgFileSrc }= await this.getImageData(gifFile);
+    const { width, height, imgFileSrc } = await this.getImageData(gifFile);
 
     this.oriWidth = width;
     this.oriHeight = height;
     this.oriImageSrc = imgFileSrc;
 
+    await this.$nextTick();
+
+    const {width: showWidth, height: showHeight} = this.$refs?.oriImageDom as any;
+
+    this.showWidth = showWidth;
+    this.showHeight = showHeight;
+
     this.resetStage();
 
-    const frameList = await parseSrcGif(gifFile);
+    const frameList = await parseSrcGif(gifFile, (cur, total) => {
+      this.oriGifLoadProgress = cur / total;
+    });
+    this.oriGifLoadProgress = 1;
+
     this.frameList = frameList;
     this.oriFrameList = frameList;
 
@@ -481,8 +509,6 @@ export default class extends Vue {
     const scale = 1;
     const divideWidth = 1;
 
-    console.log('ori', frameWidth, frameHeight);
-
     this.canvas.setWidth(timelineWrapperWidth);
     this.canvas.setHeight(canvasHeight);
 
@@ -495,8 +521,6 @@ export default class extends Vue {
 
         const curWidth = img.width * scale;
         const curHeight = img.height * scale;
-
-        console.log('img', curWidth, curHeight);
 
         const nimg = img.set({
           left: index * (curWidth + divideWidth),
