@@ -54,8 +54,8 @@
             <slider class="flex-1"
               v-model="interval"
               :min="15"
-              :max="200"
-              :marks="[15, 200]"
+              :max="300"
+              :marks="[15, 300]"
               :lazy="true"
               :disabled="!canEdit"
               :drag-on-click="true"
@@ -203,7 +203,7 @@
       <label class="inline-block py-4">
         <span> 时间轴</span> 
         <sup class="text-red-300"> alpha </sup>
-        <span>：（ctrl+c复制、ctrl+v粘贴、delete删除）</span>
+        <!-- <span>：（ctrl+c复制、ctrl+v粘贴、delete删除）</span> -->
       </label>
       <div ref="timeline-wrapper" class="canvas-wrapper border rounded-sm border-gray-600">
         <canvas id="stage"></canvas>
@@ -639,7 +639,7 @@ export default class extends Vue {
     const endFrameIndex = (this.frameSplitRange[1]);
 
     const removeRangeStartIndex = this.frameRemoveRange[0] - 1;
-    const removeRangeEndIndex = this.frameRemoveRange[1];
+    const removeRangeEndIndex = this.frameRemoveRange[1] - 1;
 
     for (let i = startFrameIndex; i < endFrameIndex; (this.rs ? i+=2 : i++))  {
       if (this.enableFrameRangeRemove && i >= removeRangeStartIndex && i <= removeRangeEndIndex) {
