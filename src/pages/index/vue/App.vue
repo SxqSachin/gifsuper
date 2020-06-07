@@ -21,6 +21,10 @@
 
     <div class="edit-panel w-full p-4 md:p-8 border rounded-md border-color-2 mt-8 flex flex-col">
 
+      <fieldset v-if="!canEdit" class="border-b border-gray-600 pb-4 mb-8">
+        <legend class="mb-4 text-lg color-info"> 提示： 上传Gif后可在下方进行编辑 </legend>
+      </fieldset>
+
       <div class="flex-1 flex flex-col mr-0 mb-4 w-full">
 
         <fieldset class="flex items-start flex-col md:flex-row pb-4 mb-8 border-b border-gray-600 w-full" v-show="canEdit">
@@ -196,7 +200,11 @@
     </div>
 
     <div class="timeline mt-8 border-t">
-      <label class="inline-block py-4">时间轴：（ctrl+c复制、ctrl+v粘贴、delete删除）</label>
+      <label class="inline-block py-4">
+        <span> 时间轴</span> 
+        <sup class="text-red-300"> alpha </sup>
+        <span>：（ctrl+c复制、ctrl+v粘贴、delete删除）</span>
+      </label>
       <div ref="timeline-wrapper" class="canvas-wrapper border rounded-sm border-gray-600">
         <canvas id="stage"></canvas>
         <canvas id="dragbar"></canvas>
