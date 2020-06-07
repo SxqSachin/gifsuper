@@ -344,6 +344,8 @@ export default class extends Vue {
   }
 
   public mounted() {
+    document.getElementById('loading-ph')?.remove();
+
     fabric.Object.prototype.objectCaching = false;
 
     this.canvas = new fabric.Canvas('stage');
@@ -351,8 +353,6 @@ export default class extends Vue {
     this.dragBarCanvas = new fabric.Canvas('dragbar');
 
     this.initKeyPressEvent();
-
-    document.getElementById('loading-ph')?.remove();
   }
 
   public async getImageData(file: File): Promise<GifFrame> {
