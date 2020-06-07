@@ -16,7 +16,7 @@
       </div>
     </div>
 
-    <s-btn v-if="!drag" full @click="onChooseFile"><slot>{{ placeholder }}</slot></s-btn>
+    <s-btn v-if="!drag" full @click="onChooseFile" :disabled="disabled"><slot>{{ placeholder }}</slot></s-btn>
 
   </div>
 
@@ -40,10 +40,16 @@ export default class SUpload extends Vue {
   public multiple?: boolean;
 
   @Prop({
-    type: String,
+    type: Boolean,
     default: false,
   })
-  public accept?: boolean;
+  public disabled?: boolean;
+
+  @Prop({
+    type: String,
+    default: '*',
+  })
+  public accept?: string;
 
   @Prop({
     type: String,

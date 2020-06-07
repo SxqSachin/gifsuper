@@ -1,6 +1,7 @@
 <template>
   <div class="wrapper p-4 sm:p-4 md:p-8 lg:p-8 max:w-screen overflow-x-hidden">
 
+    <!-- todo 严重bug 长度过大的gif上传后存在内存爆栈 导致标签页假死 -->
     <div class="top mb-6">
       <upload class="uploader mx-auto" :before-upload="upload" accept=".gif">上传GIF</upload>
     </div>
@@ -77,8 +78,8 @@
 
         <fieldset class="flex items-start flex-col md:flex-row pb-8 mb-8 border-b border-gray-600 w-full">
           <legend class="mb-4 text-lg">
-            <span> 文字操作 </span>
-            <span class="ml-2 inline-block mb-4 pb-2 text-color-neutral text-sm border-gray-400">生成文字后可于下方“时间轴”处调整文字位置</span>
+            <span> 添加文字/图片 </span>
+            <span class="ml-2 inline-block mb-4 pb-2 text-color-neutral text-sm border-gray-400">添加后可于下方“时间轴”处调整文字/图片位置</span>
           </legend>
           <div class="w-full flex flex-wrap items-start flex-col">
             <div class="flex justify-center items-center mr-4 mb-4 w-full">
@@ -114,6 +115,12 @@
               class="mb-1 w-full"
               @click="addTextToAllFrame"
               :disabled="!canEdit">为所有帧添加文字</sbtn>
+
+
+            <div class="flex flex-col justify-center items-start mt-6 w-full">
+              <label for="" class="whitespace-no-wrap">添加图片：</label>
+              <upload class="mt-2 uploader w-full" :before-upload="addImage" :disabled="!canEdit">为所有帧添加图片</upload>
+            </div>
 
           </div>
         </fieldset>
@@ -176,6 +183,7 @@
 
         <fieldset class="pt-8 border-t border-gray-600">
           <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
+          <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">tips: 受原Gif大小影响，点击“生成”按钮后可能会有短暂卡顿，此时耐心等候即可。</span>
         </fieldset>
       </div>
 
@@ -280,7 +288,7 @@ export default class extends Vue {
   public oriGifLoadProgress: number = 0;
 
   // 默认帧间隔
-  public interval: number = 80;
+  public interval: number = 60;
 
   public isGenerating: boolean = false;
   public generateDone: boolean = false;
@@ -462,8 +470,7 @@ export default class extends Vue {
     }
 
     if (!textContent) {
-      // @ts-ignore
-      this.$message('请填写文字内容', {type: 'warn'});
+      this.toast('请填写文字内容', 'warn');
       return;
     }
 
@@ -483,8 +490,47 @@ export default class extends Vue {
     this.canvas.setActiveObject(group).renderAll();
     // group.toActiveSelection();
 
-    // @ts-ignore
-    this.$message('添加成功，可在下方时间轴调整文字位置', {type: 'success'});
+    this.toast('添加成功，可在下方时间轴调整文字位置', 'success');
+  }
+
+  public async addImage(imgList: FileList) {
+    const img = imgList[0];
+
+    if (!img.type.includes('image')) {
+      this.toast('只支持上传图片', 'error');
+      return;
+    }
+
+    const frameData = await this.getImageData(img);
+
+    const pimgArr: Promise<fabric.Object>[] = [];
+
+    const group = new fabric.Group()
+
+    this.frameList.forEach((val, index)=> {
+      pimgArr.push(new Promise(resolve => {
+        fabric.Image.fromURL(frameData.imgFileSrc, img => {
+          const nimg = img.set({
+            left: index * ((this.frameWidth ?? 0) + 1),
+            top: 5,
+            width: frameData.width,
+            height: frameData.height,
+          });
+
+          resolve(nimg);
+        });
+      }));
+    });
+
+    const res = await Promise.all(pimgArr);
+
+    res.forEach(val => {
+      group.addWithUpdate(val);
+    })
+
+    this.canvas.add(group).renderAll();
+
+    this.toast('添加成功，可在下方时间轴调整图片位置', 'success');
   }
 
   public async makeTimeline(frameList: GifFrameList) {
