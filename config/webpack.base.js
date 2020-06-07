@@ -5,6 +5,7 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const uglifyJS = require('uglify-js');
 
 const resolve = (dir) => {
   return path.join(__dirname, '..', dir);
@@ -89,6 +90,9 @@ const config = {
         },
         {
           from: path.resolve(__dirname, '../src/pages/index/public/static'),//"/src/public/static",
+          transform: (content) => {
+            return uglifyJS.minify(content.toString()).code.toString();
+          },
           to: path.resolve(__dirname, '../dist/static')
         },
         // {
