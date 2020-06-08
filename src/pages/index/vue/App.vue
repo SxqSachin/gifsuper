@@ -86,15 +86,18 @@
               <label for="" class="whitespace-no-wrap">文字内容：</label>
               <s-input class="w-full" v-model="textContent" :style="{color: this.textColor}" placeholder="请输入内容，支持可输入的表情"></s-input>
             </div>
-            <div class="flex justify-start items-center mb-4 w-full">
+
+            <div class="flex items-center mb-4">
               <label for="" class="whitespace-no-wrap">文字颜色：</label>
               <color-picker class="z-50 ml-0 border border-gray-500" v-model="textColorObj"></color-picker>
             </div>
+
             <div class="flex justify-center items-center mb-4 pb-8 w-full">
               <label for="" class="whitespace-no-wrap">文字大小：</label>
               <slider class="flex-1"
                 v-model="textSize"
-                :min="14"
+                :marks="[10, 128]"
+                :min="10"
                 :max="128"
                 :lazy="true"
                 :disabled="!canEdit"
@@ -102,6 +105,31 @@
                 tooltip="always"
                 tooltip-placement="bottom"
                ></slider>
+            </div>
+
+            <sbtn class="mb-4" :disabled="!canEdit" @click="enableTextStroke = !enableTextStroke">文字边线：{{ enableTextStroke ? '开启' : '关闭' }}</sbtn>
+
+            <div class="flex flex-col justify-start mb-4 w-full" v-show="enableTextStroke">
+              <div class="flex items-center mb-4">
+                <label for="" class="whitespace-no-wrap">字边线色：</label>
+                <color-picker class="z-50 ml-0 border border-gray-500" v-model="textStrokeObj"></color-picker>
+              </div>
+
+              <div class="flex justify-center items-center mb-4 pb-8 w-full">
+                <label for="" class="whitespace-no-wrap">边线粗细：</label>
+                <slider class="flex-1"
+                  v-model="textStrokeWidth"
+                  :marks="[1, 12]"
+                  :min="1"
+                  :max="12"
+                  :lazy="true"
+                  :disabled="!canEdit"
+                  :drag-on-click="true"
+                  tooltip="always"
+                  tooltip-placement="bottom"
+                 ></slider>
+              </div>
+
             </div>
 
             <!-- <div class="flex justify-center items-center mb-4">
@@ -302,12 +330,12 @@ export default class extends Vue {
   // 文字操作 start
   public textContent: string = '';
   public textColorObj: {[key: string]: string} = {};
-  public textOutline: string = '#fff';
+  public textStrokeObj: {[key: string]: string} = {};
   public textSize: string = '42';
-  public showTextColorPicker: boolean = false;
+  public textStrokeWidth: number = 1;
 
-  public textRange: string = '';
-  // 文字操作 end 
+  public enableTextStroke: boolean = false;
+  // 文字操作 end
 
 
   // 帧区间裁剪 start
@@ -349,7 +377,11 @@ export default class extends Vue {
   }
 
   get textColor(): string {
-    return this.textColorObj?.hex;
+    return this.textColorObj?.hex ?? '#000';
+  }
+
+  get textStrokeColor(): string {
+    return this.textStrokeObj?.hex ?? '#fff';
   }
 
   get totalFrameCount(): number {
@@ -484,8 +516,15 @@ export default class extends Vue {
         fill: textColor,
         left: index * ((this.frameWidth ?? 0) + 1),
         top: 40,
-        // fontSize: parseInt(this.textSize),
+        fontSize: parseInt(this.textSize),
       });
+
+      if (this.enableTextStroke) {
+        itext.set({
+          stroke: this.textStrokeColor,
+          strokeWidth: this.textStrokeWidth,
+        });
+      }
 
       group.addWithUpdate(itext);
     });
