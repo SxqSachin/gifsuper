@@ -84,7 +84,7 @@
           <div class="w-full flex flex-wrap items-start flex-col">
             <div class="flex justify-center items-center mr-4 mb-4 w-full">
               <label for="" class="whitespace-no-wrap">文字内容：</label>
-              <s-input class="w-full" v-model="textContent" placeholder="请输入内容，支持可输入的表情"></s-input>
+              <s-input class="w-full" v-model="textContent" placeholder="请输入内容，支持Emoji等表情符号"></s-input>
             </div>
 
             <div class="flex items-center mb-4">
