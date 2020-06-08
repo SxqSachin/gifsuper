@@ -22,7 +22,7 @@
 
     <div class="edit-panel w-full p-1 md:p-8 rounded-md border-color-2 flex flex-col">
 
-      <fieldset v-if="!canEdit" class="pb-4 bg-assets">
+      <fieldset v-if="!canEdit" class="pb-4 ">
         <h2 class="font-normal text-lg color-info"> 提示： 上传Gif后可在下方进行编辑 </h2>
       </fieldset>
 
