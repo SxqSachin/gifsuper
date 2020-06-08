@@ -13,8 +13,8 @@
         <div id="srcgif" class="flex justify-center items-center hidden"> </div>
         <div v-show="!!oriImageSrc" class="flex flex-col justify-center items-center">
           <img ref="oriImageDom" :src="oriImageSrc" alt="" srcset=""/>
-          <div v-show="!!oriImageSrc && oriGifLoadProgress < 1" class="mask w-full h-full float-left absolute flex justify-center items-center bg-opacity-75 bg-gray-800 text-white text-lg" :style="{width: `${showWidth}px`, height: `${showHeight}px`}"> 
-            读取数据中： {{ (oriGifLoadProgress * 100).toFixed(0) }} %
+          <div v-show="!!oriImageSrc && oriGifLoadProgress < 1" class="mask w-full h-full float-left absolute flex justify-center items-center bg-opacity-75 bg-gray-800 text-white text-lg text-center" :style="{width: `${showWidth}px`, height: `${showHeight}px`}"> 
+            读取数据中： {{ Math.max(0, (oriGifLoadProgress * 100 - 1).toFixed(0)) }} %
           </div>
         </div>
       </div>
@@ -118,7 +118,12 @@
 
 
             <div class="flex flex-col justify-center items-start mt-6 w-full">
-              <label for="" class="whitespace-no-wrap">添加图片：</label>
+              <label for="" class="whitespace-no-wrap mb-1">
+                <span> 添加图片 </span>
+                <sup class="text-red-300"> 测试 </sup>
+                <span>：</span>
+              </label>
+              <span class="inline-block mb-3 pb-2 text-color-neutral text-sm border-gray-400">图片的宽高暂时不会自动调整，请在外部调整好尺寸再进行上传。</span>
               <upload class="mt-2 uploader w-full" :before-upload="addImage" :disabled="!canEdit">为所有帧添加图片</upload>
             </div>
 
