@@ -111,6 +111,10 @@ export default class SUpload extends Vue {
   }
 
   public upload(files: FileList) {
+    if (!files || !files.length) {
+      return;
+    }
+
     if (this.beforeUpload && typeof this.beforeUpload === 'function') {
       this.beforeUpload(files);
     }

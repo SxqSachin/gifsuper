@@ -923,6 +923,7 @@ export default class extends Vue {
   // 更新可编辑内容
   public updateEditData() {
     this.frameSplitRange = [1, this.frameList.length];
+    this.frameRemoveRange = [1, 1];
   }
 
   public toast(msg: string, type: string = 'info') {
