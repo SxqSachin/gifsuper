@@ -20,16 +20,16 @@
       </div>
     </div>
 
-    <div class="edit-panel w-full p-4 md:p-8 border rounded-md border-color-2 mt-8 flex flex-col">
+    <div class="edit-panel w-full p-1 md:p-8 rounded-md border-color-2 flex flex-col">
 
-      <fieldset v-if="!canEdit" class="border-b border-gray-600 pb-4 mb-8">
-        <legend class="mb-4 text-lg color-info"> 提示： 上传Gif后可在下方进行编辑 </legend>
+      <fieldset v-if="!canEdit" class="pb-4 bg-assets">
+        <h2 class="font-normal text-lg color-info"> 提示： 上传Gif后可在下方进行编辑 </h2>
       </fieldset>
 
       <div class="flex-1 flex flex-col mr-0 mb-4 w-full">
 
-        <fieldset class="flex items-start flex-col md:flex-row pb-4 mb-8 border-b border-gray-600 w-full" v-show="canEdit">
-          <legend class="mb-4 text-lg"> 图片信息 </legend>
+        <fieldset class="flex items-start flex-col md:flex-row p-4 mb-8 w-full bg-assets shadow hover:shadow-lg rounded-md" v-show="canEdit">
+          <h2 class="mb-4 text-lg"> 图片信息 </h2>
 
           <div class="flex w-full">
             <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
@@ -43,10 +43,10 @@
           </div>
         </fieldset>
 
-        <fieldset class="flex items-start flex-col md:flex-row pb-8 mb-8 border-b border-gray-600 w-full">
-          <legend class="mb-4 text-lg"> 基础调整 </legend>
+        <fieldset class="flex items-start flex-col md:flex-row p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
+          <h2 class="mb-4 text-lg"> 基础调整 </h2>
 
-          <div class="flex flex-col justify-center items-start mb-4 pt-4 pb-8 w-full">
+          <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
             <label for="">
               <span>帧间隔：</span>
               <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">毫秒单位，帧间隔越小，生成后的Gif就越流畅，同时总时长变短</span>
@@ -76,11 +76,11 @@
 
         </fieldset>
 
-        <fieldset class="flex items-start flex-col md:flex-row pb-8 mb-8 border-b border-gray-600 w-full">
-          <legend class="mb-4 text-lg">
+        <fieldset class="flex items-start flex-col md:flex-row p-4 mt-8 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
+          <h2 class="mb-4 text-lg">
             <span> 添加文字/图片 </span>
-            <span class="ml-2 inline-block mb-4 pb-2 text-color-neutral text-sm border-gray-400">添加后可于下方“时间轴”处调整文字/图片位置</span>
-          </legend>
+            <span class="inline-block pb-2 text-color-neutral text-sm font-normal border-gray-400">添加后可于下方“时间轴”处调整文字/图片位置</span>
+          </h2>
           <div class="w-full flex flex-wrap items-start flex-col">
             <div class="flex justify-center items-center mr-4 mb-4 w-full">
               <label for="" class="whitespace-no-wrap">文字内容：</label>
@@ -130,9 +130,9 @@
           </div>
         </fieldset>
 
-        <fieldset class="flex items-start flex-col md:flex-row border-gray-600 w-full">
-          <legend class="mb-4 text-lg"> 帧操作 </legend>
-          <div class="flex flex-col justify-center items-start mb-4 pt-4 pb-8 w-full">
+        <fieldset class="flex items-start flex-col md:flex-row p-4 mt-8 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
+          <h2 class="mb-4 text-lg"> 帧操作 </h2>
+          <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
             <label for="">
               <span>区间裁剪：</span>
               <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">生成后的Gif仅保留指定区间内的帧图像</span>
@@ -186,13 +186,13 @@
           </div>
         </fieldset>
 
-        <fieldset class="pt-8 border-t border-gray-600">
+        <fieldset class="pt-8 ">
           <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
           <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">tips: 受原Gif大小影响，点击“生成”按钮后可能会有短暂卡顿，此时耐心等候即可。</span>
         </fieldset>
       </div>
 
-      <div class="flex-0 w-full border-t md:border-t-0 mt-4 pt-4 md:pt-0">
+      <div class="flex-0 w-full p-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
         <label for="" class="hidden md:inline" v-show="generateDone">新图像：（保存图片：右击图片->图片另存为）</label>
         <label for="" class="inline md:hidden" v-show="generateDone">新图像：（长按图片->保存图片）</label>
 

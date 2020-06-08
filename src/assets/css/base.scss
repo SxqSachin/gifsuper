@@ -68,11 +68,10 @@ $ft-size-xxlarge: 28px;
   border-color: $border-color;
 }
 
-@mixin transition-time-func {
+.transition-time-func {
   transition-duration: 0.38s;
 
   transition-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
-  // transition-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 @mixin card {
@@ -97,7 +96,12 @@ $ft-size-xxlarge: 28px;
 }
 
 body {
+  background-color: var(--body-bg);
   color: var(--content-text-color);
+}
+
+.shadow-diy {
+  box-shadow: var(--shadow);
 }
 
 .bg-primary {
@@ -170,7 +174,7 @@ body {
   --third-bg: #555;
   --body-bg: var(--secondary-bg);
 
-  --assets-bg: #141414;
+  --assets-bg: #404040;
 
   --r-primary-bg: #fff;
   --r-secondary-bg: #fafafa;
@@ -189,6 +193,7 @@ body {
 
   --link-color: #69aee3;
 
+  --border-color: #777;
   --border-color-light: #f0f0f0;
   --border-color-mid: #777;
 }
