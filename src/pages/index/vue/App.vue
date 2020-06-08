@@ -244,9 +244,9 @@
       <label class="inline-block pb-4">
         <span> 时间轴</span>
         <sup class="text-red-300"> alpha </sup>
-        <span>：（delete键：删除当前选中文字/图片）</span>
+        <span class="hidden md:inline">：（delete键：删除当前选中文字/图片）</span>
       </label>
-      <div class="show md:hidden my-2 flex justify-start flex-wrap">
+      <div class="md:hidden my-2 flex justify-start flex-wrap">
         <sbtn class="mb-1" title="删除当前选中元素" @click="deleteActivedObject" type="error">删除当前选中文字/图片</sbtn>
       </div>
       <div ref="timeline-wrapper" class="canvas-wrapper border rounded-sm border-gray-300">
