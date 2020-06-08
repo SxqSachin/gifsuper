@@ -68,8 +68,10 @@
       <sup class="text-red-300 ml-1"> Beta </sup>
       <div class="hidden md:block ml-8"> 帮助您在线操作GIF文件 </div>
     </div>
-    <div>
-      <a href="/about.html" class="hidden md:block ml-8 cursor-pointer text-color-primary"> 关于 </a>
+
+    <div class="flex">
+      <a href="javascript:void(0);" class="hidden md:block ml-8 cursor-pointer text-red-400" onclick="add2Favorite()" rel="sidebar"> 收藏本站 </a>
+      <a href="/about.html" class="hidden md:block ml-8 cursor-pointer text-color-primary"> 关于GifSuper </a>
     </div>
   </header>
 
@@ -316,6 +318,28 @@
   <script src="/static/js/libgif.js"></script>
   <script src="/static/js/gif.js"></script>
   <script type="module" src="https://unpkg.com/ionicons@5.0.0/dist/ionicons/ionicons.esm.js"></script>
+  <script>
+    function add2Favorite() {
+      var url = window.location || 'https://gifsuper.com';
+      var title = document.title || 'Gif Super，一个帮助您快速编辑GIF的在线工具网站';
+      var ua = navigator.userAgent.toLowerCase();
+      if (ua.indexOf("360se") > -1) {
+        alert("由于360浏览器功能限制，请 Ctrl+D 手动收藏！");
+      } else if (ua.indexOf("msie 8") > -1) {
+        window.external.AddToFavoritesBar(url, title); //IE8
+      } else if (document.all) {
+        try{
+          window.external.addFavorite(url, title);
+        }catch(e){
+          alert('您的浏览器不支持自动收藏，请 Ctrl+D 手动收藏!');
+        }
+      } else if (window.sidebar) {
+        window.sidebar.addPanel(title, url, "");
+      } else {
+        alert('您的浏览器不支持自动收藏，请 Ctrl+D 手动收藏!');
+      }
+    }
+  </script>
 </body>
 
 </html>

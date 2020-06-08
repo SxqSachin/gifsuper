@@ -58,14 +58,16 @@
       <sup class="text-red-300 ml-1"> Beta </sup>
       <div class="hidden md:block ml-8"> 帮助您在线操作GIF文件 </div>
     </div>
-    <div>
-      <a href="/about.html" class="hidden md:block ml-8 cursor-pointer text-color-primary"> 关于 </a>
+
+    <div class="flex">
+      <a href="javascript:void(0);" class="hidden md:block ml-8 cursor-pointer text-red-400" onclick="add2Favorite()" rel="sidebar"> 收藏本站 </a>
+      <a href="/about.html" class="hidden md:block ml-8 cursor-pointer text-color-primary"> 关于GifSuper </a>
     </div>
   </header>
 
   <main class="w-full md:w-3/5 mx-auto p-4 md:p-8 text-color-primary">
     <article class="leading-8">
-      <h1 class="mb-4 text-xl">关于Super Gif</h1>
+      <h1 class="mb-4 text-xl">关于Gif Super</h1>
       <p>这是一个帮助您在线编辑Gif的工具站。</p>
       <p>即开即用无需登陆等多余操作，减少您的使用成本。</p>
       <!-- <p>开发初衷：微信表情包10mb限制。</p> -->
@@ -76,26 +78,40 @@
         <li>Gif倒放</li>
         <li>开启/关闭Gif循环</li>
         <li>添加文字</li>
+        <li>添加图片（半成品）</li>
         <li>复制/删除Gif帧</li>
         <li>抽取半数帧</li>
         <li>Gif裁剪（范围裁剪，范围删除）</li>
       </ol>
       <p class="mt-4">正在着手开发的功能：</p>
       <ol class="list-disc list-inside">
-        <li>大尺寸Gif显示优化</li>
         <li>Gif压缩</li>
         <li>Gif尺寸裁剪</li>
         <li>Gif拼接</li>
         <li>Gif分离（分解为多张Gif）</li>
+        <li>添加图片自动调整大小</li>
       </ol>
       <p>功能会不断扩充，期待您的建议与反馈，帮助Gif Super变得更好。</p>
 
       <h1 class="mt-6 mb-4 text-xl">关于作者</h1>
       <!-- <p>SxqSachin</p> -->
-      <!-- <p>Blog： <a class="text-color-primary" href="https://www.sxqsachin.com" target="_blank">LunchBox</a></p> -->
+      <p>Blog： <a class="text-color-link" href="https://www.sxqsachin.com" target="_blank">LunchBox</a></p>
       <p>QQ： 2512870210</p>
       <p>邮箱： sxqsachin@yahoo.com</p>
       <p>期待您的建议与反馈</p>
+
+      <h1 class="mt-6 mb-4 text-xl">打赏一下</h1>
+
+      <p class="mt-4 mb-1">请作者喝瓶饮料</p>
+
+      <div class="flex flex-col md:flex-row items-center">
+        <div class="max-w-full">
+          <img class="w-full" src="https://static.sxqsachin.com/imgs/wechat-receive-5-min.jpg" alt="打赏一下" srcset="">
+        </div>
+        <div class="ml-0 md:ml-4 mt-4 md:mt-0 max-w-full">
+          <img class="w-full" src="https://static.sxqsachin.com/imgs/alipay-receive-5-min.jpg" alt="打赏一下" srcset="">
+        </div>
+      </div>
 
       <h1 class="mt-6 mb-4 text-xl">源代码使用</h1>
       <ol class="list-disc list-inside">
@@ -136,6 +152,29 @@
   </script>
 
   <script type="module" src="https://unpkg.com/ionicons@5.0.0/dist/ionicons/ionicons.esm.js"></script>
+
+  <script>
+    function add2Favorite() {
+      var url = window.location || 'https://gifsuper.com';
+      var title = document.title || 'Gif Super，一个帮助您快速编辑GIF的在线工具网站';
+      var ua = navigator.userAgent.toLowerCase();
+      if (ua.indexOf("360se") > -1) {
+        alert("由于360浏览器功能限制，请 Ctrl+D 手动收藏！");
+      } else if (ua.indexOf("msie 8") > -1) {
+        window.external.AddToFavoritesBar(url, title); //IE8
+      } else if (document.all) {
+        try{
+          window.external.addFavorite(url, title);
+        }catch(e){
+          alert('您的浏览器不支持自动收藏，请 Ctrl+D 手动收藏!');
+        }
+      } else if (window.sidebar) {
+        window.sidebar.addPanel(title, url, "");
+      } else {
+        alert('您的浏览器不支持自动收藏，请 Ctrl+D 手动收藏!');
+      }
+    }
+  </script>
 </body>
 
 </html>
