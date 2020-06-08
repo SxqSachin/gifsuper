@@ -188,11 +188,11 @@
 
         <fieldset class="pt-8 ">
           <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
-          <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">tips: 受原Gif大小影响，点击“生成”按钮后可能会有短暂卡顿，此时耐心等候即可。</span>
+          <span class="inline-block py-2 text-color-neutral text-sm border-gray-400">tips: 受原Gif大小影响，点击“生成”按钮后可能会有短暂卡顿，此时耐心等候即可。</span>
         </fieldset>
       </div>
 
-      <div class="flex-0 w-full p-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
+      <div v-show="isGenerating || generateDone" class="flex-0 w-full p-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
         <label for="" class="hidden md:inline" v-show="generateDone">新图像：（保存图片：右击图片->图片另存为）</label>
         <label for="" class="inline md:hidden" v-show="generateDone">新图像：（长按图片->保存图片）</label>
 
@@ -214,7 +214,7 @@
 
     <div class="timeline mt-8 border-t">
       <label class="inline-block py-4">
-        <span> 时间轴</span> 
+        <span> 时间轴</span>
         <sup class="text-red-300"> alpha </sup>
         <!-- <span>：（ctrl+c复制、ctrl+v粘贴、delete删除）</span> -->
       </label>
