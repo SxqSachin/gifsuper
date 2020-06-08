@@ -6,7 +6,7 @@
       <upload class="uploader mx-auto" :before-upload="upload" accept=".gif">上传GIF</upload>
     </div>
 
-    <div class="srcgif-wrapper flex mb-4 items-center">
+    <div v-show="!!oriImageSrc" class="srcgif-wrapper flex mb-4 items-center  p-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
       <div class="src w-full flex-shrink-0">
         <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block mb-4 hidden md:block">原Gif：</label>
         <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block mb-4 block md:hidden">原始Gif：（调整好设置后点击下方“生成”按钮）</label>
@@ -20,7 +20,7 @@
       </div>
     </div>
 
-    <div class="edit-panel w-full p-1 md:p-8 rounded-md border-color-2 flex flex-col">
+    <div class="edit-panel w-full p-1 md:p-6 rounded-md border-color-2 flex flex-col">
 
       <fieldset v-if="!canEdit" class="pb-4 ">
         <h2 class="font-normal text-lg color-info"> 提示： 上传Gif后可在下方进行编辑 </h2>
@@ -84,7 +84,7 @@
           <div class="w-full flex flex-wrap items-start flex-col">
             <div class="flex justify-center items-center mr-4 mb-4 w-full">
               <label for="" class="whitespace-no-wrap">文字内容：</label>
-              <s-input class="w-full" v-model="textContent" :style="{color: this.textColor}" placeholder="请输入内容，支持可输入的表情"></s-input>
+              <s-input class="w-full" v-model="textContent" placeholder="请输入内容，支持可输入的表情"></s-input>
             </div>
 
             <div class="flex items-center mb-4">
@@ -240,13 +240,16 @@
 
     </div>
 
-    <div class="timeline mt-8 border-t">
-      <label class="inline-block py-4">
+    <div class="timeline mt-4 p-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
+      <label class="inline-block pb-4">
         <span> 时间轴</span>
         <sup class="text-red-300"> alpha </sup>
-        <!-- <span>：（ctrl+c复制、ctrl+v粘贴、delete删除）</span> -->
+        <span>：（delete键：删除当前选中文字/图片）</span>
       </label>
-      <div ref="timeline-wrapper" class="canvas-wrapper border rounded-sm border-gray-600">
+      <div class="show md:hidden my-2 flex justify-start flex-wrap">
+        <sbtn class="mb-1" title="删除当前选中元素" @click="deleteActivedObject" type="error">删除当前选中文字/图片</sbtn>
+      </div>
+      <div ref="timeline-wrapper" class="canvas-wrapper border rounded-sm border-gray-300">
         <canvas id="stage"></canvas>
         <canvas id="dragbar"></canvas>
       </div>
@@ -329,8 +332,8 @@ export default class extends Vue {
 
   // 文字操作 start
   public textContent: string = '';
-  public textColorObj: {[key: string]: string} = {};
-  public textStrokeObj: {[key: string]: string} = {};
+  public textColorObj: {[key: string]: string} = { hex: '#fff' };
+  public textStrokeObj: {[key: string]: string} = { hex: '#000' };
   public textSize: string = '42';
   public textStrokeWidth: number = 1;
 
@@ -600,7 +603,7 @@ export default class extends Vue {
     const frameHeight = this.frameHeight = this.oriHeight; // firstImg.height as number;
 
     const canvasTotalWidth = (frameWidth + 1) * this.totalFrameCount;
-    const canvasHeight = frameHeight as number + 10;
+    const canvasHeight = frameHeight as number;
 
     const timelineWrapperWidth = (this.$refs['timeline-wrapper'] as HTMLElement).offsetWidth - 2;
 
@@ -622,7 +625,7 @@ export default class extends Vue {
 
         const nimg = img.set({
           left: index * (curWidth + divideWidth),
-          top: 5,
+          top: 0,
           width: img.width,
           name: 'frame' + index,
           lockMovementX: true,
@@ -740,7 +743,7 @@ export default class extends Vue {
         width,
         height,
         left: !this.revert ? (width + 1) * i : totalWidth - (width + 1) * (i + 1),
-        top: 5,
+        top: 0,
         format: 'png',
       });
 
@@ -796,7 +799,7 @@ export default class extends Vue {
       const keycode = e.keyCode;
 
       if (keycode === 127) { // Delete
-        this.onDeletePress();
+        this.deleteActivedObject();
         return;
       }
     };
@@ -906,25 +909,15 @@ export default class extends Vue {
 
   }
 
-  public onDeletePress() {
+  public deleteActivedObject() {
     const activedObjects = this.canvas.getActiveObjects();
 
-    const frameList = this.frameList;
-
-    if (!frameList || !frameList.length || !activedObjects.length) {
+    if (!activedObjects.length) {
+      this.toast('当前没有选中元素', 'error');
       return;
     }
 
-    activedObjects.forEach(object => {
-      // @ts-ignore
-      const frameIndex = object.frameIndex;
-
-      frameList.splice(frameIndex, 1);
-
-      this.canvas.remove(object);
-    });
-
-    this.makeTimeline(frameList);
+    this.canvas.remove(...activedObjects);
   }
 
   // 更新可编辑内容
