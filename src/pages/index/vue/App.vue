@@ -347,6 +347,7 @@
 </template>
 
 <script lang="ts">
+// @ts-nocheck
 
 import { Vue, Component, Prop } from 'vue-property-decorator';
 
@@ -361,7 +362,7 @@ import { Chrome as ColorPicker } from 'vue-color';
 
 import { parseSrcGif, dataUrlToFile, GifGenerator, GifFrameList, GifFrame } from '@/js/gif';
 
-import { fabric } from 'fabric';
+// import { fabric } from 'fabric';
 
 const FrameIndex = 1;
 const TextZIndex = 10;

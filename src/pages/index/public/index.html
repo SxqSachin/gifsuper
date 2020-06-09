@@ -23,7 +23,6 @@
   <title>Gif Super，一个帮助您快速编辑GIF的在线工具网站</title>
 
   <link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
-  <!-- <script type="module" src="https://unpkg.com/ionicons@5.0.0/dist/ionicons/ionicons.esm.js"></script> -->
 
   <style>
     @import url('/static/css/theme-light.css') (prefers-color-scheme: light), (prefers-color-scheme: no-preference);
@@ -318,6 +317,7 @@
 
   <script src="/static/js/libgif.js"></script>
   <script src="/static/js/gif.js"></script>
+  <script src="/static/js/fabric.min.js"></script>
   <script>
     function add2Favorite() { var url = window.location || 'https://gifsuper.com'; var title = document.title || 'Gif Super，一个帮助您快速编辑GIF的在线工具网站'; var ua = navigator.userAgent.toLowerCase(); if (ua.indexOf("360se") > -1) { alert("由于360浏览器功能限制，请 Ctrl+D 手动收藏！"); } else if (ua.indexOf("msie 8") > -1) { window.external.AddToFavoritesBar(url, title); } else if (document.all) { try{ window.external.addFavorite(url, title); }catch(e){ alert('您的浏览器不支持自动收藏，请 Ctrl+D 手动收藏!'); } } else if (window.sidebar) { window.sidebar.addPanel(title, url, ""); } else { alert('您的浏览器不支持自动收藏，请 Ctrl+D 手动收藏!'); } }
   </script>
