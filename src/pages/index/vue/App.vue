@@ -169,10 +169,10 @@
 
             <div class="flex w-full justify-around items-center">
               <sbtn class="w-1/2" @click="addText" :disabled="!canEdit">
-                为指定范围添加文字
+                范围添加文字
               </sbtn>
 
-              <sbtn class="w-1/2 ml-4" @click="addTextToAllFrame" :disabled="!canEdit">为所有帧添加文字</sbtn>
+              <sbtn class="w-1/2 ml-4" @click="addTextToAllFrame" :disabled="!canEdit">添加文字</sbtn>
             </div>
 
             <div class="flex flex-col justify-center items-start mt-6 w-full">
