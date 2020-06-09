@@ -11,11 +11,8 @@ import { Prop, Vue, Component } from 'vue-property-decorator';
 
 export type BTN_TYPE = 'info' | 'success' | 'warn' | 'error' | 'disabled' | 'ghost';
 
-import loading from '@/components/widget/loading-spinner.vue';
-
 @Component({
   components: {
-    loading,
   },
 })
 export default class SBtn extends Vue {

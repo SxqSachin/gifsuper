@@ -317,7 +317,6 @@
           <div class="my-12 md:my-0" v-show="isGenerating">
             <div class="mb-12 text-center">生成中： {{progress}}%</div>
 
-            <!-- <loading></loading> -->
             <div class="loading-calm-cat"></div>
           </div>
 
@@ -354,10 +353,9 @@ import { Vue, Component, Prop } from 'vue-property-decorator';
 import Upload from '@/components/widget/s-upload.vue';
 import sbtn from '@/components/widget/s-btn.vue';
 import sInput from '@/components/widget/s-input.vue';
-import LoadingRing from '@/components/widget/loading-ring.vue';
 
-import VueSlider from 'vue-slider-component'
-import 'vue-slider-component/theme/default.css'
+import VueSlider from 'vue-slider-component';
+import 'vue-slider-component/theme/default.css';
 
 import { Chrome as ColorPicker } from 'vue-color';
 
@@ -380,7 +378,6 @@ interface GenerateOption {
     'upload': Upload,
     sbtn,
     's-input': sInput,
-    'loading': LoadingRing,
     slider: VueSlider,
     'color-picker': ColorPicker,
   },
