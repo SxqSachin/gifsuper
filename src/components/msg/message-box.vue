@@ -1,10 +1,10 @@
 <template>
   <div :class="getAnimClass" :style="getStyle" v-if="!destroy">
     <div class="content">
-      <ion-icon v-if="type === 'info'" class="icon color-info" name="information-circle-outline"></ion-icon>
+      <!-- <ion-icon v-if="type === 'info'" class="icon color-info" name="information-circle-outline"></ion-icon>
       <ion-icon v-if="type === 'success'" class="icon color-success" name="checkmark-circle-outline"></ion-icon>
       <ion-icon v-if="type === 'warn'" class="icon color-warn" name="warning-outline"></ion-icon>
-      <ion-icon v-if="type === 'error'" class="icon color-error" name="close-circle-outline"></ion-icon>
+      <ion-icon v-if="type === 'error'" class="icon color-error" name="close-circle-outline"></ion-icon> -->
       <span class="msg">{{ msg }}</span>
     </div>
   </div>

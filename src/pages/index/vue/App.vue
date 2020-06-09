@@ -33,7 +33,7 @@
             :class="{'bg-assets': curTab === 'base'}"
             @click="switchTab('base')"
           >
-            <ion-icon class="flex-shrink-0" name="hammer"></ion-icon>
+            <img class="w-4 h-4 flex-shrink-0" src="/static/icons/hammer.svg"/>
             <span class="ml-2 md:inline" :class="{inline: curTab === 'base', 'hidden': curTab !== 'base'}">基础设置</span>
           </li>
           <li
@@ -41,7 +41,7 @@
             :class="{'bg-assets': curTab === 'addText'}"
             @click="switchTab('addText')"
           >
-            <ion-icon class="flex-shrink-0" name="text"></ion-icon>
+            <img class="w-4 h-4 flex-shrink-0" src="/static/icons/text.svg"/>
             <span class="ml-2 md:inline" :class="{inline: curTab === 'addText', 'hidden': curTab !== 'addText'}">添加文字</span>
           </li>
           <li
@@ -49,7 +49,7 @@
             :class="{'bg-assets': curTab === 'addPic'}"
             @click="switchTab('addPic')"
           >
-            <ion-icon class="flex-shrink-0" name="image"></ion-icon>
+            <img class="w-4 h-4 flex-shrink-0"  src="/static/icons/image.svg"/>
             <span class="ml-2 md:inline" :class="{inline: curTab === 'addPic', 'hidden': curTab !== 'addPic'}">添加图片</span>
           </li>
           <li
@@ -57,7 +57,7 @@
             :class="{'bg-assets': curTab === 'cut'}"
             @click="switchTab('cut')"
           >
-            <ion-icon class="flex-shrink-0" name="cut"></ion-icon>
+            <img class="w-4 h-4 flex-shrink-0" src="/static/icons/cut.svg"/>
             <span class="ml-2 md:inline" :class="{inline: curTab === 'cut', 'hidden': curTab !== 'cut'}">帧裁剪</span>
           </li>
         </ul>
