@@ -15,6 +15,7 @@ const config = {
   entry: {    //js的入口文件，支持多入口 注释①
     index: path.resolve(__dirname, '../src/pages/index/index.js'),
     about: path.resolve(__dirname, '../src/pages/about/index.js'),
+    comment: path.resolve(__dirname, '../src/pages/comment/index.js'),
   },
   output: {   //js打包压缩后的出口文件，多入口时对应的配置应做相对变化 注释②
     path: path.resolve(__dirname, '../dist'),
@@ -80,6 +81,11 @@ const config = {
       template: './src/pages/about/public/index.html',
       chunks: ['about'],
     }),
+    new HtmlWebpackPlugin({
+      filename: 'comment.html',
+      template: './src/pages/comment/public/index.html',
+      chunks: ['comment'],
+    }),
     new CleanWebpackPlugin(),
     new VueLoaderPlugin(),
     new CopyWebpackPlugin({
@@ -93,6 +99,13 @@ const config = {
           transform: (content) => {
             return uglifyJS.minify(content.toString()).code.toString();
           },
+          to: path.resolve(__dirname, '../dist/static')
+        },
+        {
+          from: path.resolve(__dirname, '../src/pages/comment/public/static'),//"/src/public/static",
+          // transform: (content) => {
+          //   return uglifyJS.minify(content.toString()).code.toString();
+          // },
           to: path.resolve(__dirname, '../dist/static')
         },
         // {
