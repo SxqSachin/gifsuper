@@ -91,8 +91,8 @@ const config = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: path.resolve(__dirname, '../src/public/static'),//"/src/public/static",
-          to: path.resolve(__dirname, '../dist/static')
+          from: path.resolve(__dirname, '../src/public'),//"/src/public/static",
+          to: path.resolve(__dirname, '../dist')
         },
         {
           from: path.resolve(__dirname, '../src/pages/index/public/static'),//"/src/public/static",
