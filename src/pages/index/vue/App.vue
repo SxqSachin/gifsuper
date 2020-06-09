@@ -20,69 +20,109 @@
       </div>
     </div>
 
+    <fieldset v-if="!canEdit && !oriImageSrc" class="pb-4">
+      <h2 class="font-normal text-lg color-info"> 提示： 上传Gif后可在下方进行编辑 </h2>
+    </fieldset>
+
     <div class="edit-panel w-full p-1 md:p-6 rounded-md border-color-2 flex flex-col">
 
-      <fieldset v-if="!canEdit" class="pb-4 ">
-        <h2 class="font-normal text-lg color-info"> 提示： 上传Gif后可在下方进行编辑 </h2>
-      </fieldset>
+      <div class="flex flex-row">
+        <ul class="flex flex-row">
+          <li
+            class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
+            :class="{'bg-assets': curTab === 'base'}"
+            @click="switchTab('base')"
+          >
+            <ion-icon class="flex-shrink-0" name="hammer"></ion-icon>
+            <span class="ml-2 md:inline" :class="{inline: curTab === 'base', 'hidden': curTab !== 'base'}">基础设置</span>
+          </li>
+          <li
+            class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
+            :class="{'bg-assets': curTab === 'addText'}"
+            @click="switchTab('addText')"
+          >
+            <ion-icon class="flex-shrink-0" name="text"></ion-icon>
+            <span class="ml-2 md:inline" :class="{inline: curTab === 'addText', 'hidden': curTab !== 'addText'}">添加文字</span>
+          </li>
+          <li
+            class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
+            :class="{'bg-assets': curTab === 'addPic'}"
+            @click="switchTab('addPic')"
+          >
+            <ion-icon class="flex-shrink-0" name="image"></ion-icon>
+            <span class="ml-2 md:inline" :class="{inline: curTab === 'addPic', 'hidden': curTab !== 'addPic'}">添加图片</span>
+          </li>
+          <li
+            class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
+            :class="{'bg-assets': curTab === 'cut'}"
+            @click="switchTab('cut')"
+          >
+            <ion-icon class="flex-shrink-0" name="cut"></ion-icon>
+            <span class="ml-2 md:inline" :class="{inline: curTab === 'cut', 'hidden': curTab !== 'cut'}">帧裁剪</span>
+          </li>
+        </ul>
+      </div>
 
       <div class="flex-1 flex flex-col mr-0 mb-4 w-full">
 
-        <fieldset class="flex items-start flex-col md:flex-row p-4 mb-8 w-full bg-assets shadow hover:shadow-lg rounded-md" v-show="canEdit">
-          <h2 class="mb-4 text-lg"> 图片信息 </h2>
+        <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md rounded-tl-none"
+          v-show="curTab === 'base'"
+          >
+          <section class="flex flex-col">
+            <h2 class="mb-4 text-lg"> 图片信息 </h2>
 
-          <div class="flex w-full">
-            <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
-              <label for="interval" class="whitespace-no-wrap flex-0 inline-block">总帧数：</label>
-              <div>{{ this.frameList.length }}</div>
+            <div class="flex w-full">
+              <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
+                <label for="interval" class="whitespace-no-wrap flex-0 inline-block">总帧数：</label>
+                <div>{{ this.frameList.length }}</div>
+              </div>
+              <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
+                <label for="interval" class="whitespace-no-wrap flex-0 inline-block">大小：</label>
+                <div>{{ this.rawFile ? +(this.rawFile.size / (1024 * 1024)).toFixed(2) : 0 }}MB</div>
+              </div>
             </div>
-            <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
-              <label for="interval" class="whitespace-no-wrap flex-0 inline-block">大小：</label>
-              <div>{{ this.rawFile ? +(this.rawFile.size / (1024 * 1024)).toFixed(2) : 0 }}MB</div>
+          </section>
+
+          <section class="flex flex-col mt-4">
+            <h2 class="mb-4 text-lg"> 基础调整 </h2>
+
+            <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
+              <label for="">
+                <span>帧间隔：</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">毫秒单位，帧间隔越小，生成后的Gif就越流畅，同时总时长变短</span>
+              </label>
+
+              <slider class="flex-1"
+                v-model="interval"
+                :min="15"
+                :max="300"
+                :marks="[15, 300]"
+                :lazy="true"
+                :disabled="!canEdit"
+                :drag-on-click="true"
+                :contained="true"
+                tooltip="always"
+                tooltip-placement="bottom"
+                style="width: calc(100% - 14px);"
+               ></slider>
             </div>
-          </div>
+
+            <div class="flex flex-col md:flex-row">
+              <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleRevert">倒放：{{ revert ? '开' : '关' }}</sbtn>
+              <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleRepeat">循环：{{ repeat ? '开' : '关' }}</sbtn>
+              <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后将会抽去原Gif中一般的帧数，可以减小文件大小，代价是Gif流畅程度将会下降" :disabled="!canEdit" @click="toggleRs">抽帧：{{ rs ? '开' : '关' }}</sbtn>
+              <!-- <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="重置时间轴" :disabled="!canEdit" type="error" @click="makeTimeline">重置</sbtn> -->
+            </div>
+          </section>
+
         </fieldset>
 
-        <fieldset class="flex items-start flex-col md:flex-row p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
-          <h2 class="mb-4 text-lg"> 基础调整 </h2>
+        <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+          v-show="curTab === 'addText'"
+          >
 
-          <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
-            <label for="">
-              <span>帧间隔：</span>
-              <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">毫秒单位，帧间隔越小，生成后的Gif就越流畅，同时总时长变短</span>
-            </label>
-
-            <slider class="flex-1"
-              v-model="interval"
-              :min="15"
-              :max="300"
-              :marks="[15, 300]"
-              :lazy="true"
-              :disabled="!canEdit"
-              :drag-on-click="true"
-              :contained="true"
-              tooltip="always"
-              tooltip-placement="bottom"
-              style="width: calc(100% - 14px);"
-             ></slider>
-          </div>
-
-          <div class="flex flex-col md:flex-row">
-            <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleRevert">倒放：{{ revert ? '开' : '关' }}</sbtn>
-            <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleRepeat">循环：{{ repeat ? '开' : '关' }}</sbtn>
-            <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后将会抽去原Gif中一般的帧数，可以减小文件大小，代价是Gif流畅程度将会下降" :disabled="!canEdit" @click="toggleRs">抽帧：{{ rs ? '开' : '关' }}</sbtn>
-            <!-- <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="重置时间轴" :disabled="!canEdit" type="error" @click="makeTimeline">重置</sbtn> -->
-          </div>
-
-        </fieldset>
-
-        <fieldset class="flex items-start flex-col md:flex-row p-4 mt-8 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
-          <h2 class="mb-4 text-lg">
-            <span> 添加文字/图片 </span>
-            <span class="inline-block pb-2 text-color-neutral text-sm font-normal border-gray-400">添加后可于下方“时间轴”处调整文字/图片位置</span>
-          </h2>
-          <div class="w-full flex flex-wrap items-start flex-col">
-            <div class="flex justify-center items-center mr-4 mb-4 w-full">
+          <section class="flex flex-col w-full">
+            <div class="flex justify-center items-center mb-4 w-full">
               <label for="" class="whitespace-no-wrap">文字内容：</label>
               <s-input class="w-full" v-model="textContent" placeholder="请输入内容，支持Emoji等表情符号"></s-input>
             </div>
@@ -107,40 +147,36 @@
                ></slider>
             </div>
 
-            <sbtn class="mb-4" :disabled="!canEdit" @click="enableTextStroke = !enableTextStroke">文字边线：{{ enableTextStroke ? '开启' : '关闭' }}</sbtn>
-
-            <div class="flex flex-col justify-start mb-4 w-full" v-show="enableTextStroke">
-              <div class="flex items-center mb-4">
-                <label for="" class="whitespace-no-wrap">字边线色：</label>
-                <color-picker class="z-50 ml-0 border border-gray-500" v-model="textStrokeObj"></color-picker>
+            <section class="flex flex-col w-full mb-4">
+              <div class="flex flex-row items-center mb-4">
+                <span>文字边线：</span><sbtn @click="enableTextStroke = !enableTextStroke">{{ enableTextStroke ? '开启' : '关闭' }}</sbtn>
               </div>
 
-              <div class="flex justify-center items-center mb-4 pb-8 w-full">
-                <label for="" class="whitespace-no-wrap">边线粗细：</label>
-                <slider class="flex-1"
-                  v-model="textStrokeWidth"
-                  :marks="[1, 12]"
-                  :min="1"
-                  :max="12"
-                  :lazy="true"
-                  :disabled="!canEdit"
-                  :drag-on-click="true"
-                  tooltip="always"
-                  tooltip-placement="bottom"
-                 ></slider>
+              <div class="flex flex-col justify-start w-full" v-show="enableTextStroke">
+                <div class="flex items-center mb-4">
+                  <label for="" class="whitespace-no-wrap">字边线色：</label>
+                  <color-picker class="z-50 ml-0 border border-gray-500" v-model="textStrokeObj"></color-picker>
+                </div>
+
+                <div class="flex justify-center items-center pb-8 w-full">
+                  <label for="" class="whitespace-no-wrap">边线粗细：</label>
+                  <slider class="flex-1"
+                    v-model="textStrokeWidth"
+                    :marks="[1, 12]"
+                    :min="1"
+                    :max="12"
+                    :lazy="true"
+                    :disabled="!canEdit"
+                    :drag-on-click="true"
+                    tooltip="always"
+                    tooltip-placement="bottom"
+                   ></slider>
+                </div>
+
               </div>
+            </section>
 
-            </div>
-
-            <!-- <div class="flex justify-center items-center mb-4">
-              <sbtn
-                class="mr-4 mb-1"
-                @click="addText(textContent, textColor)"
-                :disabled="!canEdit">为指定帧添加文字</sbtn>
-              <s-input v-model="textRange" placeholder="如:0,1,2,(4-10)"></s-input>
-            </div> -->
-
-            <div class="flex flex-col justify-center items-start mb-4 mt-2 pb-8 w-full">
+            <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
               <label for="">
                 <span>范围添加文字</span>
                 <sup class="text-red-400"> new </sup>
@@ -175,22 +211,37 @@
               <sbtn class="w-1/2 ml-4" @click="addTextToAllFrame" :disabled="!canEdit">添加文字</sbtn>
             </div>
 
-            <div class="flex flex-col justify-center items-start mt-6 w-full">
-              <label for="" class="whitespace-no-wrap mb-1">
-                <span> 添加图片 </span>
-                <sup class="text-red-300"> 测试 </sup>
-                <span>：</span>
-              </label>
-              <span class="inline-block mb-3 pb-2 text-color-neutral text-sm border-gray-400">图片的宽高暂时不会自动调整，请在外部调整好尺寸再进行上传。</span>
-              <upload class="mt-2 uploader w-full" :before-upload="addImage" :disabled="!canEdit">为所有帧添加图片</upload>
-            </div>
+            <p class="text-lg">
+              <span class="inline-block pb-2 text-color-neutral text-sm font-normal border-gray-400">添加后可于下方“时间轴”处调整文字/图片位置</span>
+            </p>
 
-          </div>
+          </section>
+
         </fieldset>
 
-        <fieldset class="flex items-start flex-col md:flex-row p-4 mt-8 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
-          <h2 class="mb-4 text-lg"> 帧操作 </h2>
-          <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
+        <fieldset class="flex items-start flex-col md:flex-row p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+          v-show="curTab === 'addPic'"
+          >
+          <div class="flex flex-col justify-center items-start w-full">
+            <label for="" class="whitespace-no-wrap mb-1">
+              <span> 添加图片 </span>
+              <sup class="text-red-300"> 测试 </sup>
+              <span>：</span>
+            </label>
+            <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">图片的宽高暂时不会自动调整，请在外部调整好尺寸再进行上传。</span>
+          </div>
+
+          <upload class="mt-4 uploader w-full" :before-upload="addImage" :disabled="!canEdit">为所有帧添加图片</upload>
+          <h2 class="text-lg">
+            <span class="inline-block pb-2 text-color-neutral text-sm font-normal border-gray-400">添加后可于下方“时间轴”处调整文字/图片位置</span>
+          </h2>
+
+        </fieldset>
+
+        <fieldset class="flex items-start flex-col md:flex-row p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+          v-show="curTab === 'cut'"
+          >
+          <section class="flex flex-col justify-center items-start mb-4 w-full">
             <label for="">
               <span>区间裁剪：</span>
               <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">生成后的Gif仅保留指定区间内的帧图像</span>
@@ -200,48 +251,56 @@
               <img class="absolute transform -translate-y-1/2" v-show="!!curFrameSplitFrameImg" :src="curFrameSplitFrameImg" alt=""/>
             </div>
 
-            <slider class="flex-1 py-0"
-              v-model="frameSplitRange"
-              :disabled="!canEdit"
-              :min="1"
-              :max="!!this.frameList.length ? this.frameList.length : 10"
-              :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
-              :contained="true"
-              tooltip="always"
-              tooltip-placement="bottom"
-              @dragging="onFrameSplitRangeDragging"
-              @drag-end="onFrameSplitRangeDragEnd"
-              style="width: calc(100% - 14px);"
-             ></slider>
-          </div>
+            <div class="pb-8 w-full">
+              <slider class="flex-1 py-0"
+                v-model="frameSplitRange"
+                :disabled="!canEdit"
+                :min="1"
+                :max="!!this.frameList.length ? this.frameList.length : 10"
+                :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
+                :contained="true"
+                tooltip="always"
+                tooltip-placement="bottom"
+                @dragging="onFrameSplitRangeDragging"
+                @drag-end="onFrameSplitRangeDragEnd"
+                style="width: calc(100% - 14px);"
+               ></slider>
+            </div>
+          </section>
 
-          <div class="flex flex-col justify-center items-start mb-4 pt-4 pb-8 w-full">
+          <section class="flex flex-col justify-center items-start w-full">
             <label for="">
               <span>区间去除：</span>
               <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">删除指定区间内的帧，受制于区间裁剪数值</span>
             </label>
-            <sbtn class="mb-1" :disabled="!canEdit" @click="enableFrameRangeRemove = !enableFrameRangeRemove">区间去除：{{ enableFrameRangeRemove ? '开启' : '关闭' }}</sbtn>
+
+            <div class="flex flex-row items-center">
+              <sbtn @click="enableFrameRangeRemove = !enableFrameRangeRemove ">{{ enableFrameRangeRemove ? '开启' : '关闭' }}</sbtn>
+            </div>
 
             <div class="img-wrapper w-full flex justify-center items-center z-50">
               <img class="absolute transform -translate-y-1/2" v-show="!!curFrameRemoveFrameImg" :src="curFrameRemoveFrameImg" alt=""/>
             </div>
 
-            <slider class="flex-1 w-full"
+            <div class="pb-8 w-full mt-4"
               v-show="enableFrameRangeRemove"
-              :disabled="!canEdit"
-              ref="frameRemoveRange"
-              v-model="frameRemoveRange"
-              :min="frameSplitRange[0]"
-              :max="frameSplitRange[1]"
-              :marks="[frameSplitRange[0], frameSplitRange[1]]"
-              :contained="true"
-              tooltip="always"
-              tooltip-placement="bottom"
-              @dragging="onFrameRemoveRangeDragging"
-              @drag-end="onFrameRemoveRangeDragEnd"
-              style="width: calc(100% - 14px);"
-             ></slider>
-          </div>
+            >
+              <slider class="flex-1 w-full"
+                :disabled="!canEdit"
+                ref="frameRemoveRange"
+                v-model="frameRemoveRange"
+                :min="frameSplitRange[0]"
+                :max="frameSplitRange[1]"
+                :marks="[frameSplitRange[0], frameSplitRange[1]]"
+                :contained="true"
+                tooltip="always"
+                tooltip-placement="bottom"
+                @dragging="onFrameRemoveRangeDragging"
+                @drag-end="onFrameRemoveRangeDragEnd"
+                style="width: calc(100% - 14px);"
+               ></slider>
+            </div>
+          </section>
         </fieldset>
 
         <fieldset class="pt-8 ">
@@ -1026,6 +1085,11 @@ export default class extends Vue {
   public toast(msg: string, type: string = 'info') {
     // @ts-ignore
     this.$message(msg, { type, })
+  }
+
+  public curTab: string = 'base';
+  public switchTab(tab: string) {
+    this.curTab = tab;
   }
 }
 </script>
