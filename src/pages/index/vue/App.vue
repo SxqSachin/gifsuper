@@ -139,11 +139,41 @@
                 :disabled="!canEdit">为指定帧添加文字</sbtn>
               <s-input v-model="textRange" placeholder="如:0,1,2,(4-10)"></s-input>
             </div> -->
-            <sbtn
-              class="mb-1 w-full"
-              @click="addTextToAllFrame"
-              :disabled="!canEdit">为所有帧添加文字</sbtn>
 
+            <div class="flex flex-col justify-center items-start mb-4 mt-2 pb-8 w-full">
+              <label for="">
+                <span>范围添加文字</span>
+                <sup class="text-red-400"> new </sup>
+                <span>：</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">只在指定范围内添加文字</span>
+              </label>
+
+              <div class="img-wrapper w-full flex justify-center items-center z-50">
+                <img class="absolute transform -translate-y-1/2" v-show="!!curAddTextFrameImg" :src="curAddTextFrameImg" alt=""/>
+              </div>
+
+              <slider class="flex-1 pt-0"
+                v-model="addTextRange"
+                :disabled="!canEdit"
+                :min="1"
+                :max="!!this.frameList.length ? this.frameList.length : 10"
+                :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
+                :contained="true"
+                tooltip="always"
+                tooltip-placement="bottom"
+                @dragging="onAddTextRangeDragging"
+                @drag-end="onAddTextRangeDragEnd"
+                style="width: calc(100% - 14px);"
+               ></slider>
+            </div>
+
+            <div class="flex w-full justify-around items-center">
+              <sbtn class="w-1/2" @click="addText" :disabled="!canEdit">
+                为指定范围添加文字
+              </sbtn>
+
+              <sbtn class="w-1/2 ml-4" @click="addTextToAllFrame" :disabled="!canEdit">为所有帧添加文字</sbtn>
+            </div>
 
             <div class="flex flex-col justify-center items-start mt-6 w-full">
               <label for="" class="whitespace-no-wrap mb-1">
@@ -300,7 +330,7 @@ export default class extends Vue {
   // fabric canvas对象
   public canvas!: fabric.Canvas;
   public dragBarCanvas!: fabric.Canvas;
-
+  public dragBar!: fabric.Object;
 
   // 上传的Gif
   public rawFile: File = null;
@@ -336,6 +366,9 @@ export default class extends Vue {
   public textStrokeObj: {[key: string]: string} = { hex: '#000' };
   public textSize: string = '42';
   public textStrokeWidth: number = 1;
+
+  public addTextRange: [number, number] = [1, 1]; // 添加文字起始值
+  public curAddTextFrameImg: string = ''; // 当前帧图像
 
   public enableTextStroke: boolean = false;
   // 文字操作 end
@@ -497,7 +530,7 @@ export default class extends Vue {
   public addTextToAllFrame(textContent?: string, textColor?: string) {
     const textArr: fabric.IText[] = [];
 
-    this.canvas!.discardActiveObject();
+    this.canvas.discardActiveObject();
 
     const group: fabric.Group = new fabric.Group();
 
@@ -536,6 +569,61 @@ export default class extends Vue {
     this.canvas.add(group);
     this.canvas.setActiveObject(group).renderAll();
     // group.toActiveSelection();
+
+    this.toast('添加成功，可在下方时间轴调整文字位置', 'success');
+  }
+
+  public addText(textContent?: string, textColor?: string) {
+    const textArr: fabric.IText[] = [];
+
+    this.canvas.discardActiveObject();
+
+    const group: fabric.Group = new fabric.Group();
+
+    if (!textContent) {
+      textContent = this.textContent;
+    }
+
+    if (!textColor) {
+      textColor = this.textColor ?? '#333';
+    }
+
+    if (!textContent) {
+      this.toast('请填写文字内容', 'warn');
+      return;
+    }
+
+    Array.from(this.frameList.keys()).forEach(index => {
+      if (index < this.addTextRange[0] || index > this.addTextRange[1]) {
+        return;
+      }
+
+      const itext = new fabric.IText(textContent, {
+        fill: textColor,
+        left: index * ((this.frameWidth ?? 0) + 1),
+        top: 40,
+        fontSize: parseInt(this.textSize),
+      });
+
+      if (this.enableTextStroke) {
+        itext.set({
+          stroke: this.textStrokeColor,
+          strokeWidth: this.textStrokeWidth,
+        });
+      }
+
+      group.addWithUpdate(itext);
+    });
+
+    this.canvas.enableRetinaScaling = true;
+    this.canvas.add(group);
+    this.canvas.setActiveObject(group).renderAll();
+
+    this.canvas.absolutePan(new fabric.Point(this.addTextRange[0] * this.frameWidth, 0));
+    // this.dragBar.set({
+    //   left: 200,
+    // })
+    // this.dragBarCanvas.renderAll();
 
     this.toast('添加成功，可在下方时间轴调整文字位置', 'success');
   }
@@ -663,8 +751,8 @@ export default class extends Vue {
     const dragBarWidth =  percent * containerWidth;
     const dragBar = new fabric.Rect({
       name: 'dragbar',
-      width: Math.max(dragBarWidth, 16),
-      height: 20,
+      width: Math.max(dragBarWidth, 25),
+      height: 25,
 
       top: 0,
       left: 0,
@@ -673,7 +761,7 @@ export default class extends Vue {
       lockMovementY: true,
       hasControls: false,
     }).on('moving', ({target}) => {
-      let left = target!.left as number;
+      let left = target.left as number;
 
       if (left + dragBarWidth >= containerWidth) {
         left = containerWidth - dragBarWidth;
@@ -688,11 +776,13 @@ export default class extends Vue {
         left,
       });
 
-      this.canvas!.absolutePan(new fabric.Point(left / percent, 0));
+      this.canvas.absolutePan(new fabric.Point(left / percent, 0));
     });
 
 
     this.dragBarCanvas.add(dragBar);
+
+    this.dragBar = dragBar;
 
     dragBar.set({
       left: this.timelineLeft,
@@ -723,7 +813,7 @@ export default class extends Vue {
       height: this.oriHeight,
     });
 
-    this.canvas!.absolutePan(new fabric.Point(0, 0));
+    this.canvas.absolutePan(new fabric.Point(0, 0));
 
     const dataUrlArr: string[] = [];
 
@@ -793,6 +883,12 @@ export default class extends Vue {
     this.curFrameRemoveFrameImg = '';
   }
 
+  public onAddTextRangeDragging(value, index) {
+    this.curAddTextFrameImg = this.frameList[value[index] - 1]?.imgFileSrc;
+  }
+  public onAddTextRangeDragEnd(value, index) {
+    this.curAddTextFrameImg = '';
+  }
 
   public initKeyPressEvent() {
     window.onkeypress = (e: KeyboardEvent) => {
@@ -923,6 +1019,7 @@ export default class extends Vue {
   // 更新可编辑内容
   public updateEditData() {
     this.frameSplitRange = [1, this.frameList.length];
+    this.addTextRange = [1, this.frameList.length];
     this.frameRemoveRange = [1, 1];
   }
 
@@ -937,6 +1034,10 @@ export default class extends Vue {
   .wrapper {
     .uploader {
       max-width: calc(100vw - 2rem);
+    }
+
+    & /deep/ .canvas-container + .canvas-container {
+      margin-top: 1rem;
     }
   }
 
