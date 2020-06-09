@@ -24,13 +24,13 @@
       <h2 class="font-normal text-lg color-info"> 提示： 上传Gif后可在下方进行编辑 </h2>
     </fieldset>
 
-    <div class="edit-panel w-full p-1 md:p-6 rounded-md border-color-2 flex flex-col">
+    <div class="edit-panel w-full px-1 py-1 md:px-6 md:py-3 rounded-md border-color-2 flex flex-col">
 
       <div class="flex flex-row">
         <ul class="flex flex-row">
           <li
             class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-            :class="{'bg-assets': curTab === 'base'}"
+            :class="{'bg-assets shadow': curTab === 'base'}"
             @click="switchTab('base')"
           >
             <img class="w-4 h-4 flex-shrink-0" src="/static/icons/hammer.svg"/>
@@ -38,7 +38,7 @@
           </li>
           <li
             class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-            :class="{'bg-assets': curTab === 'addText'}"
+            :class="{'bg-assets shadow': curTab === 'addText'}"
             @click="switchTab('addText')"
           >
             <img class="w-4 h-4 flex-shrink-0" src="/static/icons/text.svg"/>
@@ -46,15 +46,15 @@
           </li>
           <li
             class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-            :class="{'bg-assets': curTab === 'addPic'}"
+            :class="{'bg-assets shadow': curTab === 'addPic'}"
             @click="switchTab('addPic')"
           >
-            <img class="w-4 h-4 flex-shrink-0"  src="/static/icons/image.svg"/>
+            <img class="w-4 h-4 flex-shrink-0" src="/static/icons/image.svg"/>
             <span class="ml-2 md:inline" :class="{inline: curTab === 'addPic', 'hidden': curTab !== 'addPic'}">添加图片</span>
           </li>
           <li
             class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-            :class="{'bg-assets': curTab === 'cut'}"
+            :class="{'bg-assets shadow': curTab === 'cut'}"
             @click="switchTab('cut')"
           >
             <img class="w-4 h-4 flex-shrink-0" src="/static/icons/cut.svg"/>
@@ -149,7 +149,7 @@
 
             <section class="flex flex-col w-full mb-4">
               <div class="flex flex-row items-center mb-4">
-                <span>文字边线：</span><sbtn @click="enableTextStroke = !enableTextStroke">{{ enableTextStroke ? '开启' : '关闭' }}</sbtn>
+                <span>文字边线：</span><sbtn :disabled="!canEdit" @click="enableTextStroke = !enableTextStroke">{{ !enableTextStroke ? '开启' : '关闭' }}</sbtn>
               </div>
 
               <div class="flex flex-col justify-start w-full" v-show="enableTextStroke">
@@ -275,7 +275,7 @@
             </label>
 
             <div class="flex flex-row items-center">
-              <sbtn @click="enableFrameRangeRemove = !enableFrameRangeRemove ">{{ enableFrameRangeRemove ? '开启' : '关闭' }}</sbtn>
+              <sbtn :disabled="!canEdit" @click="enableFrameRangeRemove = !enableFrameRangeRemove">{{ !enableFrameRangeRemove ? '开启' : '关闭' }}</sbtn>
             </div>
 
             <div class="img-wrapper w-full flex justify-center items-center z-50">
@@ -329,7 +329,7 @@
 
     </div>
 
-    <div class="timeline mt-4 p-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
+    <div class="timeline p-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
       <label class="inline-block pb-4">
         <span> 时间轴</span>
         <sup class="text-red-300"> alpha </sup>
