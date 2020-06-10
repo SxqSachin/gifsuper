@@ -5,11 +5,6 @@ const webpack = require('webpack');
 const prodWebpackConfig = merge(baseWebpackConfig, {
   mode: 'production',
 
-  optimization: {
-    splitChunks: {
-      chunks: 'all',
-    },
-  },
 })
 
 module.exports = prodWebpackConfig;
