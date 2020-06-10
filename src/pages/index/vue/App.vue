@@ -116,7 +116,7 @@
             <div class="flex flex-col md:flex-row">
               <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleRevert">倒放：{{ revert ? '开' : '关' }}</sbtn>
               <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleRepeat">循环：{{ repeat ? '开' : '关' }}</sbtn>
-              <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后将会抽去原Gif中一般的帧数，可以减小文件大小，代价是Gif流畅程度将会下降" :disabled="!canEdit" @click="toggleRs">抽帧：{{ rs ? '开' : '关' }}</sbtn>
+              <!-- <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后将会抽去原Gif中一般的帧数，可以减小文件大小，代价是Gif流畅程度将会下降" :disabled="!canEdit" @click="toggleRs">抽帧：{{ rs ? '开' : '关' }}</sbtn> -->
               <!-- <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="重置时间轴" :disabled="!canEdit" type="error" @click="makeTimeline">重置</sbtn> -->
             </div>
           </section>
@@ -574,6 +574,7 @@ export default class extends Vue {
   public toggleRevert() {
     this.revert = !this.revert;
 
+    this.renderPreview();
     // @ts-ignore
     this.$message(`已${this.revert ? '开启' : '关闭'}倒放`, {type: 'info'})
   }
@@ -581,12 +582,16 @@ export default class extends Vue {
   public toggleRepeat() {
     this.repeat = !this.repeat;
 
+    this.renderPreview();
+
     // @ts-ignore
     this.$message(`已${this.repeat? '开启' : '关闭'}循环播放`, {type: 'info'})
   }
 
   public toggleRs() {
     this.rs = !this.rs;
+
+    this.renderPreview();
 
     // @ts-ignore
     this.$message(`已${this.rs? '开启' : '关闭'}抽帧${this.rs? '，将抽去原Gif一半的帧数' : ''}`, {type: 'info'})
@@ -1144,6 +1149,8 @@ export default class extends Vue {
       frameRemoveRange,
       enableFrameRangeRemove,
       interval,
+      revert,
+      repeat,
     } = this;
 
     const removeRange = frameRemoveRange.length == 2 ? this.expandRange2Array(frameRemoveRange) : [0, 0];
@@ -1158,12 +1165,20 @@ export default class extends Vue {
 
     const frameArray = this.expandRange2Array([startFrameIndex + 1, endFrameIndex + 1]).filter(index => !enableFrameRangeRemove || !removeRange.includes(index));
 
+    if (revert) {
+      frameArray.sort((a, b) => b - a);
+    }
+
     let left = 0;
     let frameIndex = startFrameIndex;
     let framePointer = 0;
     let replay = false;
     // 这里通过帧移动 来模拟GIF播放效果
     this.gifTimer = setInterval(() => {
+      if (!repeat && replay) {
+        return;
+      }
+
       if (replay) {
         replay = false;
 
