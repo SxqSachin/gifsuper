@@ -1111,6 +1111,30 @@ export default class extends Vue {
           top: 0,
           width: frameData.width,
           height: frameData.height,
+        }).on('moving', ({target}) => {
+
+          let left = target.left as number;
+          let top = target.top as number;
+
+          if (left + frameData.width >= showWidth) {
+            left = showWidth - frameData.width;
+          }
+          if (left < 0) {
+            left = 0;
+          }
+
+          if (top < 0) {
+            top = 0;
+          }
+          if (top + frameData.height >= showHeight) {
+            top = showHeight - frameData.height;
+          }
+
+          nimg.set({
+            left,
+            top,
+          });
+
         });
 
         resolve(nimg);
