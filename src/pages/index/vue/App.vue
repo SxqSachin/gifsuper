@@ -1030,8 +1030,8 @@ export default class extends Vue {
     const initImageData: Promise<fabric.Object> = new Promise(resolve => {
       fabric.Image.fromURL(frameData.imgFileSrc, img => {
         const nimg = img.set({
-          left: 0,
-          top: 0,
+          left: 15,
+          top: 15,
           width: frameData.width,
           height: frameData.height,
         }).on('moving', ({target}) => { // todo 可以做成开关 控制是否锁边
@@ -1076,6 +1076,7 @@ export default class extends Vue {
     const imgObj = await initImageData;
 
     canvas.add(imgObj).renderAll();
+    canvas.setActiveObject(imgObj);
 
     this.toast('添加成功', 'success');
   }
@@ -1089,8 +1090,8 @@ export default class extends Vue {
 
     const itext = new fabric.IText(textContent, {
       fill: textColor,
-      left: 0,
-      top: 0,
+      left: 15,
+      top: 15,
       fontSize: parseInt(textSize),
     });
 
@@ -1109,6 +1110,7 @@ export default class extends Vue {
     });
 
     canvas.add(itext).renderAll();
+    canvas.setActiveObject(itext);
 
     this.toast('添加成功', 'success');
   }
