@@ -1,6 +1,11 @@
 <template>
   <div class="wrapper p-4 sm:p-4 md:p-8 lg:p-8 max:w-screen overflow-x-hidden">
 
+    <div v-if="!getNotification(1)" data-n-ver="1" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
+      <div> 新功能：现在可以实时预览各项编辑操作啦！ </div>
+      <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(1);"> + </div>
+    </div>
+
     <!-- todo 严重bug 长度过大的gif上传后存在内存爆栈 导致标签页假死 -->
     <div class="top mb-6">
       <upload class="uploader mx-auto" :before-upload="upload" accept=".gif">上传GIF</upload>
@@ -14,8 +19,8 @@
 
         <div id="srcgif" class="flex justify-center items-center hidden"> </div>
 
-        <div ref="edit-canvas" v-show="!!oriImageSrc && oriGifLoadProgress === 1" class="w-auto mx-auto mb-0 mt-4">
-          <div class="flex justify-center items-center">
+        <div ref="edit-canvas" v-show="!!oriImageSrc && oriGifLoadProgress === 1" class="w-full mx-auto mb-0 mt-4">
+          <div class="flex justify-center items-center w-full">
             <canvas id="edit-canvas"> </canvas>
           </div>
 
@@ -321,7 +326,7 @@
 
         <fieldset class="pt-8 ">
           <sbtn title="应用修改" @click="apply2Timeline" type="success" :disabled="!canEdit">将修改应用到时间轴</sbtn>
-          <span class="inline-block py-2 mb-4 text-color-neutral text-sm border-gray-400">若进行过“添加文字/图片”操作，则在生成最终结果前，需要先将修改应用到时间轴。</span>
+          <span class="inline-block py-2 mb-4 text-color-neutral text-sm border-gray-400">若进行过“添加文字/图片”操作，则在生成最终结果前，需要先将修改应用到时间轴，等到提示“应用成功”后方可生成GIF。</span>
           <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
           <span class="inline-block py-2 text-color-neutral text-sm border-gray-400">tips: 受原Gif大小影响，点击“生成”按钮后可能会有短暂卡顿，此时耐心等候即可。</span>
         </fieldset>
@@ -1265,6 +1270,8 @@ export default class extends Vue {
 
       await this.applyObjectToTimeline(obj);
     }
+
+    this.toast('应用成功', 'success');
   }
 
   public async applyObjectToTimeline(obj: fabric.Object): Promise<void> {
@@ -1323,6 +1330,19 @@ export default class extends Vue {
     }
 
     return res;
+  }
+
+  public clearNotification(ver: number) {
+    localStorage.setItem(`notification-update-${ver}`, '1');
+
+    const notificationDOM = document.querySelector(`[data-n-ver="${ver}"]`);
+
+    if (notificationDOM) {
+      notificationDOM.remove();
+    }
+  }
+  public getNotification(ver: number): boolean {
+    return !!localStorage.getItem(`notification-update-${ver}`);
   }
 }
 </script>
