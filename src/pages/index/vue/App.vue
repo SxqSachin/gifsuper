@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapper p-4 sm:p-4 md:p-8 lg:p-8 max:w-screen overflow-x-hidden">
+  <div class="wrapper p-4 sm:p-4 md:p-8 lg:p-8 max:w-screen overflow-x-hidden w-full">
 
     <div v-if="!getNotification(1)" data-n-ver="1" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
       <div> 新功能：现在可以实时预览各项编辑操作啦！ </div>
@@ -11,15 +11,15 @@
       <upload class="uploader mx-auto" :before-upload="upload" accept=".gif">上传GIF</upload>
     </div>
 
-    <div v-show="!!oriImageSrc" class="srcgif-wrapper flex mb-4 items-center  p-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
-      <div class="src w-full flex-shrink-0">
+    <div v-show="!!oriImageSrc" class="srcgif-wrapper w-full flex mb-4 items-center  p-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
+      <div class="src w-full">
         <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block block">预览：</label>
         <label v-show="canEdit || isGenerating" for="srcgif" class="hidden md:block w-full">点击添加的文字/图片来进行缩放/旋转操作。可用鼠标框选元素进行组合操作。</label>
         <label v-show="canEdit || isGenerating" for="srcgif" class="block md:hidden w-full">点击添加的文字/图片来进行缩放/旋转操作。（长按+拖动）可框选元素进行组合操作。</label>
 
         <div id="srcgif" class="flex justify-center items-center hidden"> </div>
 
-        <div ref="edit-canvas" v-show="!!oriImageSrc && oriGifLoadProgress === 1" class="w-full mx-auto mb-0 mt-4">
+        <div ref="edit-canvas" v-show="!!oriImageSrc && oriGifLoadProgress === 1" class="mt-4">
           <div class="flex justify-center items-center w-full">
             <canvas id="edit-canvas"> </canvas>
           </div>
