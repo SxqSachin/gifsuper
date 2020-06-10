@@ -8,12 +8,21 @@
 
     <div v-show="!!oriImageSrc" class="srcgif-wrapper flex mb-4 items-center  p-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
       <div class="src w-full flex-shrink-0">
-        <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block hidden md:block">预览：</label>
-        <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block block md:hidden">预览：（调整好设置后点击下方“生成”按钮）</label>
+        <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block block">预览：</label>
+        <label v-show="canEdit || isGenerating" for="srcgif" class="hidden md:block w-full">点击添加的文字/图片来进行缩放/旋转操作。可用鼠标框选元素进行组合操作。</label>
+        <label v-show="canEdit || isGenerating" for="srcgif" class="block md:hidden w-full">点击添加的文字/图片来进行缩放/旋转操作。（长按+拖动）可框选元素进行组合操作。</label>
+
         <div id="srcgif" class="flex justify-center items-center hidden"> </div>
 
-        <div ref="edit-canvas" v-show="!!oriImageSrc && oriGifLoadProgress === 1" class="w-auto mx-auto my-0">
-          <canvas id="edit-canvas" class="flex justify-center items-center"> </canvas>
+        <div ref="edit-canvas" v-show="!!oriImageSrc && oriGifLoadProgress === 1" class="w-auto mx-auto mb-0 mt-4">
+          <div class="flex justify-center items-center">
+            <canvas id="edit-canvas"> </canvas>
+          </div>
+
+          <div class="mt-2 flex justify-start flex-wrap">
+            <sbtn class="mb-1" title="删除当前选中元素" @click="deletePreviewActivedObject" type="error">删除当前选中文字/图片</sbtn>
+          </div>
+
         </div>
 
         <div v-show="!!oriImageSrc && oriGifLoadProgress < 1" class="flex flex-col justify-center items-center">
@@ -222,10 +231,10 @@
           <div class="flex flex-col justify-center items-start w-full">
             <label for="" class="whitespace-no-wrap mb-1">
               <span> 添加图片 </span>
-              <sup class="text-red-300"> 测试 </sup>
+              <sup class="text-red-300"> Beta! </sup>
               <span>：</span>
             </label>
-            <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">图片的宽高暂时不会自动调整，请在外部调整好尺寸再进行上传。</span>
+            <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">若上传的图片尺寸过大，请至“预览”处拖动并调整大小。</span>
           </div>
 
           <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
@@ -249,8 +258,7 @@
              ></slider>
           </div>
 
-          <upload class="mt-4 uploader w-full" :before-upload="addImage" :disabled="!canEdit">上传图片</upload>
-
+          <upload class="mt-4 uploader w-full" :before-upload="addImage" :disabled="!canEdit">添加图片</upload>
 
         </fieldset>
 
@@ -312,7 +320,8 @@
         </fieldset>
 
         <fieldset class="pt-8 ">
-          <sbtn class="mb-4" title="应用修改" @click="apply2Timeline" type="success" :disabled="!canEdit">将修改应用到时间轴</sbtn>
+          <sbtn title="应用修改" @click="apply2Timeline" type="success" :disabled="!canEdit">将修改应用到时间轴</sbtn>
+          <span class="inline-block py-2 mb-4 text-color-neutral text-sm border-gray-400">若进行过“添加文字/图片”操作，则在生成最终结果前，需要先将修改应用到时间轴。</span>
           <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
           <span class="inline-block py-2 text-color-neutral text-sm border-gray-400">tips: 受原Gif大小影响，点击“生成”按钮后可能会有短暂卡顿，此时耐心等候即可。</span>
         </fieldset>
@@ -939,6 +948,22 @@ export default class extends Vue {
     }
 
     this.canvas.remove(...activedObjects);
+
+    this.toast('删除成功', 'success');
+  }
+  public deletePreviewActivedObject() {
+    const activedObjects = this.previewCanvas.getActiveObjects();
+
+    if (!activedObjects.length) {
+      this.toast('当前没有选中元素', 'error');
+      return;
+    }
+
+    console.log(activedObjects);
+
+    this.previewCanvas.remove(...activedObjects);
+
+    this.toast('删除成功', 'success');
   }
 
   // 更新可编辑内容
