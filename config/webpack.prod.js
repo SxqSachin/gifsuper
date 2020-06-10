@@ -1,6 +1,11 @@
 const baseWebpackConfig = require('./webpack.base.js');
 const merge = require('webpack-merge');
 const webpack = require('webpack');
+const path = require('path');
+
+const resolve = (dir) => {
+  return path.join(__dirname, '..', dir);
+}
 
 const prodWebpackConfig = merge(baseWebpackConfig, {
   mode: 'production',
