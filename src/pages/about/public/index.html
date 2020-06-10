@@ -67,9 +67,9 @@
         <li>Gif倒放</li>
         <li>开启/关闭Gif循环</li>
         <li>添加文字</li>
-        <li>添加图片（半成品）</li>
+        <li>添加图片</li>
         <li>复制/删除Gif帧</li>
-        <li>抽取半数帧</li>
+        <!-- <li>抽取半数帧</li> -->
         <li>Gif裁剪（范围裁剪，范围删除）</li>
       </ol>
       <p class="mt-4">正在着手开发的功能：</p>
@@ -104,6 +104,7 @@
       <ol class="list-disc list-inside">
         <li>vue.js</li>
         <li>vue-slider-components.js</li>
+        <li>vue-color</li>
         <li>gif.js</li>
         <li>libgif.js</li>
         <li>fabric.js</li>
@@ -118,6 +119,15 @@
     <div class="ml-4">@GifSuper</div>
     <!-- <a class="ml-4" href="http://www.beian.miit.gov.cn/">苏ICP备17070289号</a> -->
   </footer>
+
+  <script>
+    (function() {
+      if (new Date().getHours() > 20 || new Date().getHours < 6) {
+        document.body.classList.remove('theme');
+        document.body.classList.add('theme--dark');
+      }
+    })()
+  </script>
 
   <script>
   var _hmt = _hmt || [];

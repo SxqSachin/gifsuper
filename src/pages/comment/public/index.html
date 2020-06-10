@@ -77,6 +77,15 @@
   </footer>
 
   <script>
+    (function() {
+      if (new Date().getHours() > 20 || new Date().getHours < 6) {
+        document.body.classList.remove('theme');
+        document.body.classList.add('theme--dark');
+      }
+    })()
+  </script>
+
+  <script>
   var _hmt = _hmt || [];
   (function() {
     var hm = document.createElement("script");
