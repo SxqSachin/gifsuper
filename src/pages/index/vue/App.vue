@@ -106,7 +106,7 @@
                 :disabled="!canEdit"
                 :drag-on-click="true"
                 :contained="true"
-                @change="onSetInterval"
+                @change="renderPreview"
                 tooltip="always"
                 tooltip-placement="bottom"
                 style="width: calc(100% - 14px);"
@@ -190,10 +190,6 @@
                 <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">只在指定范围内添加文字</span>
               </label>
 
-              <div class="img-wrapper w-full flex justify-center items-center z-50">
-                <img class="absolute transform -translate-y-1/2" v-show="!!curAddTextFrameImg" :src="curAddTextFrameImg" alt=""/>
-              </div>
-
               <slider class="flex-1 pt-0"
                 v-model="addTextRange"
                 :disabled="!canEdit"
@@ -203,8 +199,6 @@
                 :contained="true"
                 tooltip="always"
                 tooltip-placement="bottom"
-                @dragging="onAddTextRangeDragging"
-                @drag-end="onAddTextRangeDragEnd"
                 style="width: calc(100% - 14px);"
                ></slider>
             </div>
@@ -242,10 +236,6 @@
               <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">只在指定范围内添加图片</span>
             </label>
 
-            <div class="img-wrapper w-full flex justify-center items-center z-50">
-              <img class="absolute transform -translate-y-1/2" v-show="!!curAddImgFrameImg" :src="curAddImgFrameImg" alt=""/>
-            </div>
-
             <slider class="flex-1 pt-0"
               v-model="addImgRange"
               :disabled="!canEdit"
@@ -255,8 +245,6 @@
               :contained="true"
               tooltip="always"
               tooltip-placement="bottom"
-              @dragging="onAddImgRangeDragging"
-              @drag-end="onAddImgRangeDragEnd"
               style="width: calc(100% - 14px);"
              ></slider>
           </div>
@@ -275,10 +263,6 @@
               <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">生成后的Gif仅保留指定区间内的帧图像</span>
             </label>
 
-            <div class="img-wrapper w-full flex justify-center items-center z-50">
-              <img class="absolute transform -translate-y-1/2" v-show="!!curFrameSplitFrameImg" :src="curFrameSplitFrameImg" alt=""/>
-            </div>
-
             <div class="pb-8 w-full">
               <slider class="flex-1 py-0"
                 v-model="frameSplitRange"
@@ -289,8 +273,8 @@
                 :contained="true"
                 tooltip="always"
                 tooltip-placement="bottom"
-                @dragging="onFrameSplitRangeDragging"
-                @drag-end="onFrameSplitRangeDragEnd"
+                :lazy="true"
+                @change="renderPreview"
                 style="width: calc(100% - 14px);"
                ></slider>
             </div>
@@ -303,11 +287,7 @@
             </label>
 
             <div class="flex flex-row items-center">
-              <sbtn :disabled="!canEdit" @click="enableFrameRangeRemove = !enableFrameRangeRemove">{{ !enableFrameRangeRemove ? '开启' : '关闭' }}</sbtn>
-            </div>
-
-            <div class="img-wrapper w-full flex justify-center items-center z-50">
-              <img class="absolute transform -translate-y-1/2" v-show="!!curFrameRemoveFrameImg" :src="curFrameRemoveFrameImg" alt=""/>
+              <sbtn :disabled="!canEdit" @click="enableFrameRangeRemove = !enableFrameRangeRemove; renderPreview()">{{ !enableFrameRangeRemove ? '开启' : '关闭' }}</sbtn>
             </div>
 
             <div class="pb-8 w-full mt-4"
@@ -323,8 +303,8 @@
                 :contained="true"
                 tooltip="always"
                 tooltip-placement="bottom"
-                @dragging="onFrameRemoveRangeDragging"
-                @drag-end="onFrameRemoveRangeDragEnd"
+                :lazy="true"
+                @change="renderPreview"
                 style="width: calc(100% - 14px);"
                ></slider>
             </div>
@@ -458,7 +438,6 @@ export default class extends Vue {
   public textStrokeWidth: number = 1;
 
   public addTextRange: [number, number] = [1, 1]; // 添加文字起始值
-  public curAddTextFrameImg: string = ''; // 当前帧图像
 
   public enableTextStroke: boolean = false;
   // 文字操作 end
@@ -466,20 +445,17 @@ export default class extends Vue {
 
   // 图片操作 start
   public addImgRange: [number, number] = [1, 1]; // 添加图片起始值
-  public curAddImgFrameImg: string = ''; // 当前帧图像
   // 图片操作 end
 
 
   // 帧区间裁剪 start
   public frameSplitRange: [number, number] = [1, 10]; // 区间裁剪起始值
-  public curFrameSplitFrameImg: string = ''; // 当前帧图像
   // 帧区间裁剪 end
 
 
   // 帧区间去除 start
   public enableFrameRangeRemove: boolean = false;
   public frameRemoveRange: [number, number] = [1, 1]; // 区间去除起始值
-  public curFrameRemoveFrameImg: string = ''; // 当前帧图像
   // 帧区间去除 end
 
 
@@ -588,11 +564,11 @@ export default class extends Vue {
     this.frameList = frameList;
     this.oriFrameList = frameList;
 
+    this.updateEditData();
+
     await this.makeTimeline(frameList);
 
     await this.initPreviewCanvas();
-
-    this.updateEditData();
   }
 
   public toggleRevert() {
@@ -820,41 +796,18 @@ export default class extends Vue {
   }
 
   public onFrameSplitRangeDragging(value, index) {
-    this.curFrameSplitFrameImg = this.frameList[value[index] - 1]?.imgFileSrc;
+    // this.curFrameSplitFrameImg = this.frameList[value[index] - 1]?.imgFileSrc;
 
-    const frameRemoveRange: [number, number] = [1, 1];
+    // const frameRemoveRange: [number, number] = [1, 1];
 
-    frameRemoveRange[0] = Math.min(Math.max(this.frameRemoveRange[0], this.frameSplitRange[0]), this.frameSplitRange[1]);
-    frameRemoveRange[1] = Math.max(Math.min(this.frameRemoveRange[1], this.frameSplitRange[1]), this.frameSplitRange[0]);
+    // frameRemoveRange[0] = Math.min(Math.max(this.frameRemoveRange[0], this.frameSplitRange[0]), this.frameSplitRange[1]);
+    // frameRemoveRange[1] = Math.max(Math.min(this.frameRemoveRange[1], this.frameSplitRange[1]), this.frameSplitRange[0]);
 
-    const frameRemoveRangeSlider = this.$refs['frameRemoveRange'] as VueSlider;
+    // const frameRemoveRangeSlider = this.$refs['frameRemoveRange'] as VueSlider;
 
-    if (frameRemoveRange) {
-      frameRemoveRangeSlider.setValue(frameRemoveRange);
-    }
-  }
-  public onFrameSplitRangeDragEnd(value, index) {
-    this.curFrameSplitFrameImg = '';
-  }
-
-  public onFrameRemoveRangeDragging(value, index) {
-    this.curFrameRemoveFrameImg = this.frameList[value[index] - 1]?.imgFileSrc;
-  }
-  public onFrameRemoveRangeDragEnd(value, index) {
-    this.curFrameRemoveFrameImg = '';
-  }
-
-  public onAddTextRangeDragging(value, index) {
-    this.curAddTextFrameImg = this.frameList[value[index] - 1]?.imgFileSrc;
-  }
-  public onAddTextRangeDragEnd(value, index) {
-    this.curAddTextFrameImg = '';
-  }
-  public onAddImgRangeDragging(value, index) {
-    this.curAddImgFrameImg = this.frameList[value[index] - 1]?.imgFileSrc;
-  }
-  public onAddImgRangeDragEnd(value, index) {
-    this.curAddImgFrameImg = '';
+    // if (frameRemoveRange) {
+    //   frameRemoveRangeSlider.setValue(frameRemoveRange);
+    // }
   }
 
   public initKeyPressEvent() {
@@ -1021,7 +974,7 @@ export default class extends Vue {
 
     canvas.add(frameGroup).renderAll();
 
-    this.resetGifViewerInterval(this.interval);
+    this.renderPreview();
   }
 
   public async addImage(imgList: FileList) {
@@ -1174,7 +1127,7 @@ export default class extends Vue {
 
   public gifTimer: NodeJS.Timeout = null;
   // 重置预览GIF播放间隔
-  public resetGifViewerInterval(interval: number) {
+  public renderPreview() {
     const totalFrameCount = this.totalFrameCount;
 
     const firstFrame = this.frameGroup.getObjects()[0];
@@ -1187,25 +1140,37 @@ export default class extends Vue {
       previewCanvas: canvas,
       frameGroup,
       gifTimer,
+      frameSplitRange,
+      frameRemoveRange,
+      enableFrameRangeRemove,
+      interval,
     } = this;
+
+    const removeRange = frameRemoveRange.length == 2 ? this.expandRange2Array(frameRemoveRange) : [0, 0];
 
     if (gifTimer) {
       clearInterval(gifTimer);
     }
 
-    let left = 0;
-    let frameIndex = 0;
+    const startFrameIndex = frameSplitRange[0] - 1;
+    const endFrameIndex = frameSplitRange[1] - 1;
+    const startLeft = startFrameIndex * frameWidth;
 
+    const frameArray = this.expandRange2Array([startFrameIndex + 1, endFrameIndex + 1]).filter(index => !enableFrameRangeRemove || !removeRange.includes(index));
+
+    let left = 0;
+    let frameIndex = startFrameIndex;
+    let framePointer = 0;
+    let replay = false;
     // 这里通过帧移动 来模拟GIF播放效果
     this.gifTimer = setInterval(() => {
-      if (Math.abs(left) === totalWidth || frameIndex > totalFrameCount - 1) {
-        left = 0;
-        frameIndex = 0;
-      }
+      if (replay) {
+        replay = false;
 
-      this.frameGroup.set({
-        left,
-      });
+        left = startLeft;
+        framePointer = 0;
+        frameIndex = frameArray[framePointer];
+      }
 
       const objects = canvas.getObjects();
 
@@ -1219,18 +1184,26 @@ export default class extends Vue {
         } else {
           obj.opacity = 0;
         }
-
       })
 
-      left -= frameWidth;
-      frameIndex++;
+      this.frameGroup.set({
+        left,
+      });
 
       canvas.renderAll();
+
+      left = -(frameWidth * frameIndex);
+      frameIndex = frameArray[++framePointer];
+
+      if (framePointer > frameArray.length - 1) {
+        replay = true;
+      }
+
     }, interval);
   }
 
   public onSetInterval(interval: number) {
-    this.resetGifViewerInterval(interval);
+    this.renderPreview();
   }
 
   public async apply2Timeline() {
