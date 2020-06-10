@@ -108,6 +108,10 @@ export default class SUpload extends Vue {
     }
 
     this.upload(files);
+
+    if (this.$refs['file']) {
+      (this.$refs['file'] as HTMLInputElement).value = '';
+    }
   }
 
   public upload(files: FileList) {
