@@ -114,9 +114,6 @@ const config = {
         // },
       ]
     }),
-
-    // new ExtractTextPlugin('css/index.css'),
-
     new MiniCssExtractPlugin({
       filename: '[name].css',
       chunkFilename: '[id].css',

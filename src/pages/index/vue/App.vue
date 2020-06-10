@@ -209,16 +209,13 @@
                ></slider>
             </div>
 
-            <div class="flex w-full justify-around items-center">
-              <sbtn class="w-1/2" @click="addText" :disabled="!canEdit">
-                范围添加文字
-              </sbtn>
-
-              <sbtn class="w-1/2 ml-4" @click="addTextToAllFrame" :disabled="!canEdit">添加文字</sbtn>
+            <div class="flex w-full justify-around items-center mb-4">
+              <sbtn class="w-full" @click="addText" :disabled="!canEdit">添加文字</sbtn>
             </div>
 
-            <p class="text-lg">
-              <span class="inline-block pb-2 text-color-neutral text-sm font-normal border-gray-400">添加后可于下方“时间轴”处调整文字/图片位置</span>
+            <p class="flex flex-col text-lg">
+              <span class="inline-block pb-2 text-color-neutral text-sm font-normal border-gray-400">添加文字后，可于上方“预览”处，对文字进行位置、缩放、旋转等调整。</span>
+              <span class="inline-block pb-2 text-color-neutral text-sm font-normal border-gray-400">也可于下方“时间轴”处进行更细粒度的调整。</span>
             </p>
 
           </section>
@@ -237,12 +234,35 @@
             <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">图片的宽高暂时不会自动调整，请在外部调整好尺寸再进行上传。</span>
           </div>
 
+          <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
+            <label for="">
+              <span>范围添加图片</span>
+              <sup class="text-red-400"> new </sup>
+              <span>：</span>
+              <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">只在指定范围内添加图片</span>
+            </label>
+
+            <div class="img-wrapper w-full flex justify-center items-center z-50">
+              <img class="absolute transform -translate-y-1/2" v-show="!!curAddImgFrameImg" :src="curAddImgFrameImg" alt=""/>
+            </div>
+
+            <slider class="flex-1 pt-0"
+              v-model="addImgRange"
+              :disabled="!canEdit"
+              :min="1"
+              :max="!!this.frameList.length ? this.frameList.length : 10"
+              :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
+              :contained="true"
+              tooltip="always"
+              tooltip-placement="bottom"
+              @dragging="onAddImgRangeDragging"
+              @drag-end="onAddImgRangeDragEnd"
+              style="width: calc(100% - 14px);"
+             ></slider>
+          </div>
 
           <upload class="mt-4 uploader w-full" :before-upload="addImage" :disabled="!canEdit">上传图片</upload>
 
-          <div class="my-2 w-full">
-            <sbtn class="mb-1" title="应用添加图片" @click="applyAddImage" type="success" :disabled="!canEdit">将修改应用到时间轴</sbtn>
-          </div>
 
         </fieldset>
 
@@ -312,6 +332,7 @@
         </fieldset>
 
         <fieldset class="pt-8 ">
+          <sbtn class="mb-4" title="应用修改" @click="apply2Timeline" type="success" :disabled="!canEdit">将修改应用到时间轴</sbtn>
           <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
           <span class="inline-block py-2 text-color-neutral text-sm border-gray-400">tips: 受原Gif大小影响，点击“生成”按钮后可能会有短暂卡顿，此时耐心等候即可。</span>
         </fieldset>
@@ -381,6 +402,8 @@ interface GenerateOption {
   removeRange?: [number, number];
 }
 
+type RangedFrameObject = fabric.Object & { inFrame: number[] };
+
 @Component({
   components: {
     'upload': Upload,
@@ -397,7 +420,7 @@ export default class extends Vue {
   public dragBar!: fabric.Object;
 
   // 添加图片裁剪用canvas
-  public addImgCanvas!: fabric.Canvas;
+  public previewCanvas!: fabric.Canvas;
 
   // 上传的Gif
   public rawFile: File = null;
@@ -439,6 +462,12 @@ export default class extends Vue {
 
   public enableTextStroke: boolean = false;
   // 文字操作 end
+
+
+  // 图片操作 start
+  public addImgRange: [number, number] = [1, 1]; // 添加图片起始值
+  public curAddImgFrameImg: string = ''; // 当前帧图像
+  // 图片操作 end
 
 
   // 帧区间裁剪 start
@@ -500,7 +529,7 @@ export default class extends Vue {
 
     this.dragBarCanvas = new fabric.Canvas('dragbar');
 
-    this.addImgCanvas = new fabric.Canvas('edit-canvas');
+    this.previewCanvas = new fabric.Canvas('edit-canvas');
 
     this.initKeyPressEvent();
   }
@@ -561,7 +590,7 @@ export default class extends Vue {
 
     await this.makeTimeline(frameList);
 
-    await this.initAddImgCanvas();
+    await this.initPreviewCanvas();
 
     this.updateEditData();
   }
@@ -598,108 +627,6 @@ export default class extends Vue {
       this.canvas.clear();
     }
   }
-
-  public addTextToAllFrame(textContent?: string, textColor?: string) {
-    const textArr: fabric.IText[] = [];
-
-    this.canvas.discardActiveObject();
-
-    const group: fabric.Group = new fabric.Group();
-
-    if (!textContent) {
-      textContent = this.textContent;
-    }
-
-    if (!textColor) {
-      textColor = this.textColor ?? '#333';
-    }
-
-    if (!textContent) {
-      this.toast('请填写文字内容', 'warn');
-      return;
-    }
-
-    Array.from(this.frameList.keys()).forEach(index => {
-      const itext = new fabric.IText(textContent, {
-        fill: textColor,
-        left: index * ((this.frameWidth ?? 0) + 1),
-        top: 40,
-        fontSize: parseInt(this.textSize),
-      });
-
-      if (this.enableTextStroke) {
-        itext.set({
-          stroke: this.textStrokeColor,
-          strokeWidth: this.textStrokeWidth,
-        });
-      }
-
-      group.addWithUpdate(itext);
-    });
-
-    this.canvas.enableRetinaScaling = true;
-    this.canvas.add(group);
-    this.canvas.setActiveObject(group).renderAll();
-    // group.toActiveSelection();
-
-    this.toast('添加成功，可在下方时间轴调整文字位置', 'success');
-  }
-
-  public addText(textContent?: string, textColor?: string) {
-    const textArr: fabric.IText[] = [];
-
-    this.canvas.discardActiveObject();
-
-    const group: fabric.Group = new fabric.Group();
-
-    if (!textContent) {
-      textContent = this.textContent;
-    }
-
-    if (!textColor) {
-      textColor = this.textColor ?? '#333';
-    }
-
-    if (!textContent) {
-      this.toast('请填写文字内容', 'warn');
-      return;
-    }
-
-    Array.from(this.frameList.keys()).forEach(index => {
-      if (index < this.addTextRange[0] || index > this.addTextRange[1]) {
-        return;
-      }
-
-      const itext = new fabric.IText(textContent, {
-        fill: textColor,
-        left: index * ((this.frameWidth ?? 0) + 1),
-        top: 40,
-        fontSize: parseInt(this.textSize),
-      });
-
-      if (this.enableTextStroke) {
-        itext.set({
-          stroke: this.textStrokeColor,
-          strokeWidth: this.textStrokeWidth,
-        });
-      }
-
-      group.addWithUpdate(itext);
-    });
-
-    this.canvas.enableRetinaScaling = true;
-    this.canvas.add(group);
-    this.canvas.setActiveObject(group).renderAll();
-
-    this.canvas.absolutePan(new fabric.Point(this.addTextRange[0] * this.frameWidth, 0));
-    // this.dragBar.set({
-    //   left: 200,
-    // })
-    // this.dragBarCanvas.renderAll();
-
-    this.toast('添加成功，可在下方时间轴调整文字位置', 'success');
-  }
-
 
   public async makeTimeline(frameList: GifFrameList) {
     if (!this.canvas) {
@@ -749,6 +676,7 @@ export default class extends Vue {
           top: 0,
           width: img.width,
           name: 'frame' + index,
+          type: 'timeline-frame',
           lockMovementX: true,
           lockMovementY: true,
           hasControls: false,
@@ -922,6 +850,12 @@ export default class extends Vue {
   public onAddTextRangeDragEnd(value, index) {
     this.curAddTextFrameImg = '';
   }
+  public onAddImgRangeDragging(value, index) {
+    this.curAddImgFrameImg = this.frameList[value[index] - 1]?.imgFileSrc;
+  }
+  public onAddImgRangeDragEnd(value, index) {
+    this.curAddImgFrameImg = '';
+  }
 
   public initKeyPressEvent() {
     window.onkeypress = (e: KeyboardEvent) => {
@@ -1053,6 +987,7 @@ export default class extends Vue {
   public updateEditData() {
     this.frameSplitRange = [1, this.frameList.length];
     this.addTextRange = [1, this.frameList.length];
+    this.addImgRange = [1, this.frameList.length];
     this.frameRemoveRange = [1, 1];
   }
 
@@ -1068,10 +1003,10 @@ export default class extends Vue {
 
   // 添加图片数据
   public frameGroup: fabric.Group = null;
-  public async initAddImgCanvas() {
+  public async initPreviewCanvas() {
     const {
       frameList,
-      addImgCanvas: canvas,
+      previewCanvas: canvas,
       showWidth: width,
       showHeight: height,
       oriImageSrc,
@@ -1097,7 +1032,7 @@ export default class extends Vue {
       return;
     }
 
-    const { addImgCanvas: canvas, showWidth, showHeight } = this;
+    const { previewCanvas: canvas, showWidth, showHeight, addImgRange } = this;
     const frameData = await this.getImageData(img);
 
     const pimgArr: Promise<fabric.Object>[] = [];
@@ -1111,7 +1046,9 @@ export default class extends Vue {
           top: 0,
           width: frameData.width,
           height: frameData.height,
-        }).on('moving', ({target}) => {
+        }).on('moving', ({target}) => { // todo 可以做成开关 控制是否锁边
+
+          return;
 
           let left = target.left as number;
           let top = target.top as number;
@@ -1137,6 +1074,13 @@ export default class extends Vue {
 
         });
 
+        nimg.set({
+          type: 'nimg',
+
+          // @ts-ignore
+          inFrame: this.expandRange2Array(addImgRange),
+        });
+
         resolve(nimg);
       });
     });
@@ -1144,20 +1088,53 @@ export default class extends Vue {
     const imgObj = await initImageData;
 
     canvas.add(imgObj).renderAll();
+
+    this.toast('添加成功', 'success');
+  }
+
+  public async addText() {
+    const { previewCanvas: canvas, textContent, textSize, textColor, textStrokeColor, textStrokeWidth, addTextRange } = this;
+
+    if (!textContent) {
+      return this.toast('请输入文字后再进行“添加文字”操作', 'warn');
+    }
+
+    const itext = new fabric.IText(textContent, {
+      fill: textColor,
+      left: 0,
+      top: 0,
+      fontSize: parseInt(textSize),
+    });
+
+    if (this.enableTextStroke) {
+      itext.set({
+        stroke: this.textStrokeColor,
+        strokeWidth: this.textStrokeWidth,
+      });
+    }
+
+    itext.set({
+      type: 'text',
+
+      // @ts-ignore
+      inFrame: this.expandRange2Array(addTextRange),
+    });
+
+    canvas.add(itext).renderAll();
+
+    this.toast('添加成功', 'success');
   }
 
   // 生成指定宽高的帧Group
   public async genSrcGIFFrameGroup(frameWidth: number, frameHeight: number): Promise<fabric.Group> {
     const {
       frameList,
-      addImgCanvas: canvas,
+      previewCanvas: canvas,
       oriImageSrc,
     } = this;
 
     const width = frameWidth;
     const height = frameHeight;
-
-    console.log(width);
 
     const promiseGroup: Promise<fabric.Object>[] = [];
 
@@ -1206,13 +1183,10 @@ export default class extends Vue {
 
     const totalWidth = totalFrameCount * frameWidth;
 
-
-    console.log(2, frameWidth, firstFrame);
-
     const {
-      addImgCanvas: canvas,
+      previewCanvas: canvas,
       frameGroup,
-      gifTimer
+      gifTimer,
     } = this;
 
     if (gifTimer) {
@@ -1220,16 +1194,36 @@ export default class extends Vue {
     }
 
     let left = 0;
-    this.gifTimer = setInterval(() => {
-      left -= frameWidth;
+    let frameIndex = 0;
 
-      if (Math.abs(left) === totalWidth) {
+    // 这里通过帧移动 来模拟GIF播放效果
+    this.gifTimer = setInterval(() => {
+      if (Math.abs(left) === totalWidth || frameIndex > totalFrameCount - 1) {
         left = 0;
+        frameIndex = 0;
       }
 
       this.frameGroup.set({
         left,
+      });
+
+      const objects = canvas.getObjects();
+
+      objects.forEach((obj: RangedFrameObject) => {
+        if (!obj.inFrame) {
+          return;
+        }
+
+        if (obj.inFrame.includes(frameIndex)) {
+          obj.opacity = 1;
+        } else {
+          obj.opacity = 0;
+        }
+
       })
+
+      left -= frameWidth;
+      frameIndex++;
 
       canvas.renderAll();
     }, interval);
@@ -1239,20 +1233,30 @@ export default class extends Vue {
     this.resetGifViewerInterval(interval);
   }
 
-  public applyAddImage() {
+  public async apply2Timeline() {
     const {
-      addImgCanvas: canvas,
+      canvas: timelineCanvas,
+      previewCanvas: canvas,
     } = this;
 
-    const allObject = canvas.getObjects().filter(obj => !obj.isType('bg') && !obj.isType('bg-group'));
-    allObject.forEach(obj => {
-      this.applyObjectToTimeline(obj);
+    timelineCanvas.getObjects().filter(obj => !obj.isType('timeline-frame')).forEach(obj => {
+      timelineCanvas.remove(obj);
     });
+    timelineCanvas.renderAll();
+
+    // todo 给每次添加的object设置唯一group id 并将他们添加至组中
+    const allObject = canvas.getObjects().filter(obj => !obj.isType('bg') && !obj.isType('bg-group'));
+
+    for (let i = 0; i < allObject.length; i++) {
+      const obj = allObject[i];
+
+      await this.applyObjectToTimeline(obj);
+    }
   }
 
-  public applyObjectToTimeline(obj: fabric.Object) {
+  public async applyObjectToTimeline(obj: fabric.Object): Promise<void> {
     const {
-      addImgCanvas: canvas,
+      previewCanvas: canvas,
       showWidth: width,
       showHeight: height,
       canvas: timelineCanvas,
@@ -1264,21 +1268,48 @@ export default class extends Vue {
     const scaleX = width / this.frameWidth;
     const scaleY = height / this.frameHeight;
 
+    const allDonePromise: Promise<void>[] = [];
+
     this.frameList.forEach((frame, index) => {
-      obj.clone((cloneObj: fabric.Object) => {
+      allDonePromise.push(new Promise(resolve => {
+        obj.clone((cloneObj: RangedFrameObject) => {
 
-        const {left: oriLeft, top: oriTop, scaleX: oriScaleX, scaleY: oriScaleY} = cloneObj;
+          const {left: oriLeft, top: oriTop, scaleX: oriScaleX, scaleY: oriScaleY, inFrame} = cloneObj;
 
-        cloneObj = cloneObj.set({
-          left: oriLeft / scaleX + ((this.frameWidth + 1) * index),
-          top: oriTop / scaleY,
-          scaleX: oriScaleX / scaleX,
-          scaleY: oriScaleY / scaleY,
-        });
+          if (inFrame.includes(index)) {
+            const newObj = cloneObj.set({
+              left: oriLeft / scaleX + ((this.frameWidth + 1) * index),
+              top: oriTop / scaleY,
+              scaleX: oriScaleX / scaleX,
+              scaleY: oriScaleY / scaleY,
+              opacity: 1,
+            });
 
-        timelineCanvas.add(cloneObj).renderAll();
-      });
+            timelineCanvas.add(newObj).renderAll();
+          }
+
+          resolve();
+
+        }, ['inFrame']);
+      }))
     });
+
+    await Promise.all(allDonePromise);
+
+    return Promise.resolve();
+  }
+
+  public expandRange2Array(rangeArr: [number, number]): number[] {
+    const start = Math.max(rangeArr[0] - 1, 0); // 因为slider都是从1开始的 所以这里要-1
+    const end = rangeArr[1];
+
+    const res: number[] = [];
+
+    for (let i = start; i < end; i++) {
+      res.push(i);
+    }
+
+    return res;
   }
 }
 </script>
