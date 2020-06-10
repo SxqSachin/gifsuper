@@ -8,10 +8,15 @@
 
     <div v-show="!!oriImageSrc" class="srcgif-wrapper flex mb-4 items-center  p-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
       <div class="src w-full flex-shrink-0">
-        <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block mb-4 hidden md:block">原Gif：</label>
-        <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block mb-4 block md:hidden">原始Gif：（调整好设置后点击下方“生成”按钮）</label>
+        <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block hidden md:block">预览：</label>
+        <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block block md:hidden">预览：（调整好设置后点击下方“生成”按钮）</label>
         <div id="srcgif" class="flex justify-center items-center hidden"> </div>
-        <div v-show="!!oriImageSrc" class="flex flex-col justify-center items-center">
+
+        <div ref="edit-canvas" v-show="!!oriImageSrc && oriGifLoadProgress === 1" class="w-auto mx-auto my-0">
+          <canvas id="edit-canvas" class="flex justify-center items-center"> </canvas>
+        </div>
+
+        <div v-show="!!oriImageSrc && oriGifLoadProgress < 1" class="flex flex-col justify-center items-center">
           <img ref="oriImageDom" :src="oriImageSrc" alt="" srcset=""/>
           <div v-show="!!oriImageSrc && oriGifLoadProgress < 1" class="mask w-full h-full float-left absolute flex justify-center items-center bg-opacity-75 bg-gray-800 text-white text-lg text-center" :style="{width: `${showWidth}px`, height: `${showHeight}px`}"> 
             读取数据中： {{ Math.max(0, (oriGifLoadProgress * 100 - 1).toFixed(0)) }} %
@@ -101,6 +106,7 @@
                 :disabled="!canEdit"
                 :drag-on-click="true"
                 :contained="true"
+                @change="onSetInterval"
                 tooltip="always"
                 tooltip-placement="bottom"
                 style="width: calc(100% - 14px);"
@@ -231,10 +237,12 @@
             <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">图片的宽高暂时不会自动调整，请在外部调整好尺寸再进行上传。</span>
           </div>
 
-          <upload class="mt-4 uploader w-full" :before-upload="addImage" :disabled="!canEdit">为所有帧添加图片</upload>
-          <h2 class="text-lg">
-            <span class="inline-block pb-2 text-color-neutral text-sm font-normal border-gray-400">添加后可于下方“时间轴”处调整文字/图片位置</span>
-          </h2>
+
+          <upload class="mt-4 uploader w-full" :before-upload="addImage" :disabled="!canEdit">上传图片</upload>
+
+          <div class="my-2 w-full">
+            <sbtn class="mb-1" title="应用添加图片" @click="applyAddImage" type="success" :disabled="!canEdit">将修改应用到时间轴</sbtn>
+          </div>
 
         </fieldset>
 
@@ -347,7 +355,6 @@
 </template>
 
 <script lang="ts">
-// @ts-nocheck
 
 import { Vue, Component, Prop } from 'vue-property-decorator';
 
@@ -362,7 +369,7 @@ import { Chrome as ColorPicker } from 'vue-color';
 
 import { parseSrcGif, dataUrlToFile, GifGenerator, GifFrameList, GifFrame } from '@/js/gif';
 
-// import { fabric } from 'fabric';
+import { fabric } from 'fabric';
 
 const FrameIndex = 1;
 const TextZIndex = 10;
@@ -388,6 +395,9 @@ export default class extends Vue {
   public canvas!: fabric.Canvas;
   public dragBarCanvas!: fabric.Canvas;
   public dragBar!: fabric.Object;
+
+  // 添加图片裁剪用canvas
+  public addImgCanvas!: fabric.Canvas;
 
   // 上传的Gif
   public rawFile: File = null;
@@ -490,6 +500,8 @@ export default class extends Vue {
 
     this.dragBarCanvas = new fabric.Canvas('dragbar');
 
+    this.addImgCanvas = new fabric.Canvas('edit-canvas');
+
     this.initKeyPressEvent();
   }
 
@@ -548,6 +560,9 @@ export default class extends Vue {
     this.oriFrameList = frameList;
 
     await this.makeTimeline(frameList);
+
+    await this.initAddImgCanvas();
+
     this.updateEditData();
   }
 
@@ -685,45 +700,6 @@ export default class extends Vue {
     this.toast('添加成功，可在下方时间轴调整文字位置', 'success');
   }
 
-  public async addImage(imgList: FileList) {
-    const img = imgList[0];
-
-    if (!img.type.includes('image')) {
-      this.toast('只支持上传图片', 'error');
-      return;
-    }
-
-    const frameData = await this.getImageData(img);
-
-    const pimgArr: Promise<fabric.Object>[] = [];
-
-    const group = new fabric.Group()
-
-    this.frameList.forEach((val, index)=> {
-      pimgArr.push(new Promise(resolve => {
-        fabric.Image.fromURL(frameData.imgFileSrc, img => {
-          const nimg = img.set({
-            left: index * ((this.frameWidth ?? 0) + 1),
-            top: 5,
-            width: frameData.width,
-            height: frameData.height,
-          });
-
-          resolve(nimg);
-        });
-      }));
-    });
-
-    const res = await Promise.all(pimgArr);
-
-    res.forEach(val => {
-      group.addWithUpdate(val);
-    })
-
-    this.canvas.add(group).renderAll();
-
-    this.toast('添加成功，可在下方时间轴调整图片位置', 'success');
-  }
 
   public async makeTimeline(frameList: GifFrameList) {
     if (!this.canvas) {
@@ -1089,6 +1065,197 @@ export default class extends Vue {
   public switchTab(tab: string) {
     this.curTab = tab;
   }
+
+  // 添加图片数据
+  public frameGroup: fabric.Group = null;
+  public async initAddImgCanvas() {
+    const {
+      frameList,
+      addImgCanvas: canvas,
+      showWidth: width,
+      showHeight: height,
+      oriImageSrc,
+    } = this;
+
+    this.frameGroup = null;
+    canvas.clear().setWidth(width).setHeight(height);
+
+    const frameGroup = await this.genSrcGIFFrameGroup(width, height);
+
+    this.frameGroup = frameGroup;
+
+    canvas.add(frameGroup).renderAll();
+
+    this.resetGifViewerInterval(this.interval);
+  }
+
+  public async addImage(imgList: FileList) {
+    const img = imgList[0];
+
+    if (!img.type.includes('image')) {
+      this.toast('只支持上传图片', 'error');
+      return;
+    }
+
+    const { addImgCanvas: canvas, showWidth, showHeight } = this;
+    const frameData = await this.getImageData(img);
+
+    const pimgArr: Promise<fabric.Object>[] = [];
+
+    const isVerticalImg = frameData.width < frameData.height;
+
+    const initImageData: Promise<fabric.Object> = new Promise(resolve => {
+      fabric.Image.fromURL(frameData.imgFileSrc, img => {
+        const nimg = img.set({
+          left: 0,
+          top: 0,
+          width: frameData.width,
+          height: frameData.height,
+        });
+
+        resolve(nimg);
+      });
+    });
+
+    const imgObj = await initImageData;
+
+    canvas.add(imgObj).renderAll();
+  }
+
+  // 生成指定宽高的帧Group
+  public async genSrcGIFFrameGroup(frameWidth: number, frameHeight: number): Promise<fabric.Group> {
+    const {
+      frameList,
+      addImgCanvas: canvas,
+      oriImageSrc,
+    } = this;
+
+    const width = frameWidth;
+    const height = frameHeight;
+
+    console.log(width);
+
+    const promiseGroup: Promise<fabric.Object>[] = [];
+
+    frameList.forEach((frame, index) => {
+      promiseGroup.push(new Promise(resolve => {
+        fabric.Image.fromURL(frame.imgFileSrc, img => {
+          if (!img.width || !img.height) {
+            return;
+          }
+
+          const nimg = img.set({
+            left: index * width,
+            top: 0,
+            name: `frame-${index}`,
+            hasControls: false,
+            selectable: false,
+            type: 'bg',
+          }).scaleToWidth(width).scaleToHeight(height);
+
+          resolve(nimg);
+        });
+      }))
+    });
+
+    const res = await Promise.all(promiseGroup);
+
+    const fgroup = new fabric.Group(res);
+    fgroup.set({
+      selectable: false,
+      hasControls: false,
+      name: 'bg-group',
+      type: 'bg',
+    })
+
+    return fgroup;
+  }
+
+  public gifTimer: NodeJS.Timeout = null;
+  // 重置预览GIF播放间隔
+  public resetGifViewerInterval(interval: number) {
+    const totalFrameCount = this.totalFrameCount;
+
+    const firstFrame = this.frameGroup.getObjects()[0];
+
+    const frameWidth = Math.round(firstFrame.width * firstFrame.scaleX);
+
+    const totalWidth = totalFrameCount * frameWidth;
+
+
+    console.log(2, frameWidth, firstFrame);
+
+    const {
+      addImgCanvas: canvas,
+      frameGroup,
+      gifTimer
+    } = this;
+
+    if (gifTimer) {
+      clearInterval(gifTimer);
+    }
+
+    let left = 0;
+    this.gifTimer = setInterval(() => {
+      left -= frameWidth;
+
+      if (Math.abs(left) === totalWidth) {
+        left = 0;
+      }
+
+      this.frameGroup.set({
+        left,
+      })
+
+      canvas.renderAll();
+    }, interval);
+  }
+
+  public onSetInterval(interval: number) {
+    this.resetGifViewerInterval(interval);
+  }
+
+  public applyAddImage() {
+    const {
+      addImgCanvas: canvas,
+    } = this;
+
+    const allObject = canvas.getObjects().filter(obj => !obj.isType('bg') && !obj.isType('bg-group'));
+    allObject.forEach(obj => {
+      this.applyObjectToTimeline(obj);
+    });
+  }
+
+  public applyObjectToTimeline(obj: fabric.Object) {
+    const {
+      addImgCanvas: canvas,
+      showWidth: width,
+      showHeight: height,
+      canvas: timelineCanvas,
+      oriImageSrc,
+    } = this;
+
+    const allObject = canvas.getObjects().filter(obj => !obj.isType('bg') && !obj.isType('bg-group'));
+
+    const scaleX = width / this.frameWidth;
+    const scaleY = height / this.frameHeight;
+
+    this.frameList.forEach((frame, index) => {
+      obj.clone((cloneObj: fabric.Object) => {
+
+        const {left: oriLeft, top: oriTop, scaleX: oriScaleX, scaleY: oriScaleY} = cloneObj;
+
+        cloneObj = cloneObj.set({
+          left: oriLeft / scaleX + ((this.frameWidth + 1) * index),
+          top: oriTop / scaleY,
+          scaleX: oriScaleX / scaleX,
+          scaleY: oriScaleY / scaleY,
+        });
+
+        timelineCanvas.add(cloneObj).renderAll();
+      });
+    });
+  }
 }
 </script>
 
@@ -1098,8 +1265,8 @@ export default class extends Vue {
       max-width: calc(100vw - 2rem);
     }
 
-    & /deep/ .canvas-container + .canvas-container {
-      margin-top: 1rem;
+    & /deep/ .canvas-container {
+      margin: 0 auto;
     }
   }
 
