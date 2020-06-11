@@ -587,15 +587,21 @@ export default class extends Vue {
     this.rawFile = gifFile;
 
     const { width, height, imgFileSrc } = await this.getImageData(gifFile);
+    const imgDOM = this.$refs.oriImageDom as HTMLImageElement;
 
     this.oriWidth = width;
     this.oriHeight = height;
+
+    // 监听图片加载完成事件 如果不等待图片显示完成 获取到的showWidth/Height将会是异常值
+    const oriImageOnLoadPromise = new Promise(resolve => {
+      imgDOM.onload = () => {
+        resolve();
+      }
+    });
     this.oriImageSrc = imgFileSrc;
+    await oriImageOnLoadPromise;
 
-    await this.$nextTick();
-
-    const {width: showWidth, height: showHeight} = this.$refs?.oriImageDom as any;
-
+    const {width: showWidth, height: showHeight} = imgDOM;
     this.showWidth = showWidth;
     this.showHeight = showHeight;
 
@@ -612,7 +618,6 @@ export default class extends Vue {
     this.updateEditData();
 
     await this.makeTimeline(frameList);
-
     await this.initPreviewCanvas();
   }
 
@@ -1382,6 +1387,10 @@ export default class extends Vue {
 
   public renderPreviewImage(range: [number, number], index: number) {
     this.curPreviewImg = this.frameList[range[index] - 1].imgFileSrc;
+  }
+
+  public globalClick(e) {
+    console.log(e);
   }
 }
 </script>
