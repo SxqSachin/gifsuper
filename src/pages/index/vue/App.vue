@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapper p-4 sm:p-4 md:p-8 lg:p-8 max:w-screen overflow-x-hidden w-full">
+  <div class="wrapper p-4 sm:p-4 md:p-8 lg:p-8 max:w-screen w-full">
 
     <div v-if="!getNotification(1)" data-n-ver="1" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
       <div> 新功能：现在可以实时预览各项编辑操作啦！ </div>
@@ -11,29 +11,44 @@
       <upload class="uploader mx-auto" :before-upload="upload" accept=".gif">上传GIF</upload>
     </div>
 
-    <div v-show="!!oriImageSrc" class="srcgif-wrapper w-full flex mb-4 items-center  p-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
-      <div class="src w-full">
-        <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block block">预览：</label>
-        <label v-show="canEdit || isGenerating" for="srcgif" class="hidden md:block w-full">点击添加的文字/图片来进行缩放/旋转操作。可用鼠标框选元素进行组合操作。</label>
-        <label v-show="canEdit || isGenerating" for="srcgif" class="block md:hidden w-full">点击添加的文字/图片来进行缩放/旋转操作。（长按+拖动）可框选元素进行组合操作。</label>
+    <div v-show="!!oriImageSrc" class="w-full flex items-center p-4 pb-0 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md rounded-bl-none rounded-br-none">
+      <div class="w-full">
+        <div class="flex">
+          <div class="flex-1">
+            <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block block">预览：</label>
+            <label v-show="canEdit || isGenerating" for="srcgif" class="hidden md:block w-full">点击添加的文字/图片来进行缩放/旋转操作。可用鼠标框选元素进行组合操作。</label>
+            <label v-show="canEdit || isGenerating" for="srcgif" class="block md:hidden w-full">点击添加的文字/图片来进行缩放/旋转操作。（长按+拖动）可框选元素进行组合操作。</label>
+          </div>
+          <div class="flex-0 w-6">
+            <img v-show="stickyPreviewCanvas" style="width: 1.7rem;" class="h-6 flex-shrink-0 cursor-pointer" @click="stickyPreviewCanvas = false" src="/static/icons/pin.png"/>
+            <img v-show="!stickyPreviewCanvas" style="width: 1.6rem; height: 1.6rem;" class="flex-shrink-0 cursor-pointer" @click="stickyPreviewCanvas = true" src="/static/icons/pin-1.png"/>
+          </div>
+        </div>
 
         <div id="srcgif" class="flex justify-center items-center hidden"> </div>
-
-        <div ref="edit-canvas" v-show="!!oriImageSrc && oriGifLoadProgress === 1" class="mt-4">
-          <div class="flex justify-center items-center w-full">
-            <canvas id="edit-canvas"> </canvas>
-          </div>
-
-          <div class="mt-2 flex justify-start flex-wrap">
-            <sbtn class="mb-1" title="删除当前选中元素" @click="deletePreviewActivedObject" type="error">删除当前选中文字/图片</sbtn>
-          </div>
-
-        </div>
 
         <div v-show="!!oriImageSrc && oriGifLoadProgress < 1" class="flex flex-col justify-center items-center">
           <img ref="oriImageDom" :src="oriImageSrc" alt="" srcset=""/>
           <div v-show="!!oriImageSrc && oriGifLoadProgress < 1" class="mask w-full h-full float-left absolute flex justify-center items-center bg-opacity-75 bg-gray-800 text-white text-lg text-center" :style="{width: `${showWidth}px`, height: `${showHeight}px`}"> 
             读取数据中： {{ Math.max(0, (oriGifLoadProgress * 100 - 1).toFixed(0)) }} %
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div v-show="!!oriImageSrc" :class="{'sticky top-0': stickyPreviewCanvas}" class="z-50 w-full flex mb-4 items-center p-4 pt-0 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md rounded-tl-none rounded-tr-none">
+      <div class="src w-full">
+        <div ref="edit-canvas" v-show="!!oriImageSrc && oriGifLoadProgress === 1" class="mt-4">
+          <div class="flex justify-center items-center w-full">
+            <canvas id="edit-canvas"> </canvas>
+          </div>
+
+          <div class="w-full h-full float-left absolute flex justify-center items-center text-white text-lg text-center transform -translate-y-full pointer-events-none" :style="{width: `${showWidth}px`, height: `${showHeight}px`}"> 
+            <img class="w-full h-full" v-show="!!curPreviewImg" :src="curPreviewImg" alt="当前预览帧"/>
+          </div>
+
+          <div class="mt-2 flex justify-start flex-wrap">
+            <sbtn class="mb-1" title="删除当前选中元素" @click="deletePreviewActivedObject" type="error">删除当前选中文字/图片</sbtn>
           </div>
         </div>
       </div>
@@ -214,6 +229,8 @@
                 tooltip="always"
                 tooltip-placement="bottom"
                 style="width: calc(100% - 14px);"
+                @dragging="renderPreviewImage"
+                @drag-end="curPreviewImg = ''"
                ></slider>
             </div>
 
@@ -259,6 +276,8 @@
               :contained="true"
               tooltip="always"
               tooltip-placement="bottom"
+              @dragging="renderPreviewImage"
+              @drag-end="curPreviewImg = ''"
               style="width: calc(100% - 14px);"
              ></slider>
           </div>
@@ -288,6 +307,8 @@
                 tooltip-placement="bottom"
                 :lazy="true"
                 @change="renderPreview"
+                @dragging="renderPreviewImage"
+                @drag-end="curPreviewImg = ''"
                 style="width: calc(100% - 14px);"
                ></slider>
             </div>
@@ -318,6 +339,8 @@
                 tooltip-placement="bottom"
                 :lazy="true"
                 @change="renderPreview"
+                @dragging="renderPreviewImage"
+                @drag-end="curPreviewImg = ''"
                 style="width: calc(100% - 14px);"
                ></slider>
             </div>
@@ -415,6 +438,8 @@ export default class extends Vue {
 
   // 添加图片裁剪用canvas
   public previewCanvas!: fabric.Canvas;
+  public stickyPreviewCanvas: Boolean = false;
+  public curPreviewImg: string = '';
 
   // 上传的Gif
   public rawFile: File = null;
@@ -1346,6 +1371,10 @@ export default class extends Vue {
   }
   public getNotification(ver: number): boolean {
     return !!localStorage.getItem(`notification-update-${ver}`);
+  }
+
+  public renderPreviewImage(range: [number, number], index: number) {
+    this.curPreviewImg = this.frameList[range[index] - 1].imgFileSrc;
   }
 }
 </script>
