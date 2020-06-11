@@ -16,8 +16,8 @@
         <div class="flex">
           <div class="flex-auto">
             <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block block">预览：</label>
-            <label v-show="canEdit || isGenerating" for="srcgif" class="hidden md:block w-full">点击添加的文字/图片来进行缩放/旋转操作。可用鼠标框选元素进行组合操作。</label>
-            <label v-show="canEdit || isGenerating" for="srcgif" class="block md:hidden w-full">点击添加的文字/图片来进行缩放/旋转操作。（长按+拖动）可框选元素进行组合操作。</label>
+            <label v-show="canEdit || isGenerating" for="srcgif" class="hidden md:block w-full">点击添加的文字/图片来进行缩放/旋转操作。可用鼠标框选元素。</label>
+            <label v-show="canEdit || isGenerating" for="srcgif" class="block md:hidden w-full">点击添加的文字/图片来进行缩放/旋转操作。（长按+拖动）可框选元素。</label>
           </div>
           <div class="flex-0 w-6">
           </div>
@@ -41,16 +41,36 @@
             <canvas id="edit-canvas"> </canvas>
           </div>
 
-          <div class="w-full h-full flex justify-center items-center text-white text-lg text-center pointer-events-none"> 
+          <div class="w-full h-full flex justify-center items-center text-white text-lg text-center pointer-events-none">
             <img class="float-left absolute transform -translate-y-1/2" :style="{width: `${showWidth}px`, height: `${showHeight}px`}" v-show="!!curPreviewImg" :src="curPreviewImg" alt="当前预览帧"/>
           </div>
 
           <div class="mt-2 flex justify-between flex-wrap" v-show="!!oriImageSrc && oriGifLoadProgress === 1">
             <div class="flex flex-wrap">
-              <sbtn class="mb-1" title="删除当前选中元素" @click="deletePreviewActivedObject" type="error">删除当前选中文字/图片</sbtn>
+              <sbtn title="删除当前选中元素" @click="deletePreviewActivedObject" type="error" style="padding-left: 0.45rem; padding-right: 0.45rem;">
+                <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/trash.svg"/>
+              </sbtn>
+            </div>
+            <div class="flex flex-no-wrap">
+              <sbtn class="rounded-tr-none rounded-br-none" title="第一帧" type="ghost" @click="setPreviewFrame(0)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-back.svg"/>
+              </sbtn>
+              <sbtn class="rounded-none border-l-0" title="上一帧" type="ghost" @click="setPreviewFrame(Math.max(previewFramePointer-1, 0))" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-back.svg"/>
+              </sbtn>
+              <sbtn class="rounded-none border-l-0" title="播放/暂停" type="ghost" @click="pausePreview = !pausePreview;" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                <img v-show="pausePreview" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play.svg"/>
+                <img v-show="!pausePreview" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pause.svg"/>
+              </sbtn>
+              <sbtn class="rounded-none border-l-0" title="下一帧" type="ghost" @click="setPreviewFrame(Math.min(previewFramePointer+1, frameArray.length - 1))" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-forward.svg"/>
+              </sbtn>
+              <sbtn class="rounded-tl-none rounded-bl-none" title="最后一帧" type="ghost" @click="setPreviewFrame(frameArray.length - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-forward.svg"/>
+              </sbtn>
             </div>
             <div class="flex flex-wrap">
-              <sbtn class="mb-1" title="开启/关闭 固定" @click="stickyPreviewCanvas = !stickyPreviewCanvas" type="ghost">
+              <sbtn class="ml-2" title="开启/关闭 固定" type="ghost" @click="stickyPreviewCanvas = !stickyPreviewCanvas" style="padding-left: 0.25rem; padding-right: 0.25rem;">
                 <img v-show="stickyPreviewCanvas" style="width: 1.7rem;" class="h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pin.png"/>
                 <img v-show="!stickyPreviewCanvas" style="width: 1.6rem; height: 1.6rem;" class="flex-shrink-0 cursor-pointer" src="/static/icons/pin-1.png"/>
               </sbtn>
@@ -380,12 +400,15 @@
 
     </div>
 
-    <div class="timeline p-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
+    <div class="timeline p-2 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
       <label class="inline-block pb-4">
         <span> 时间轴</span>
         <sup class="text-red-300"> alpha </sup>
         <span class="hidden md:inline">：（delete键：删除当前选中文字/图片）</span>
       </label>
+      <div class="mb-4">
+        <span class="text-color-neutral text-sm font-normal">在这里你可以对添加的文字/图片进行逐帧调整。</span>
+      </div>
       <div class="md:hidden my-2 flex justify-start flex-wrap">
         <sbtn class="mb-1" title="删除当前选中元素" @click="deleteActivedObject" type="error">删除当前选中文字/图片</sbtn>
       </div>
@@ -444,8 +467,12 @@ export default class extends Vue {
 
   // 添加图片裁剪用canvas
   public previewCanvas!: fabric.Canvas;
-  public stickyPreviewCanvas: Boolean = false;
+  public stickyPreviewCanvas: boolean = false;
   public curPreviewImg: string = '';
+  public pausePreview: boolean = false;
+
+  public previewFramePointer: number = 0;
+  public frameArray: number[] = []
 
   // 上传的Gif
   public rawFile: File = null;
@@ -1198,6 +1225,49 @@ export default class extends Vue {
     return fgroup;
   }
 
+  public setPreviewFrame(pointer: number) {
+    const {
+      previewCanvas: canvas,
+      frameGroup,
+      gifTimer,
+      frameSplitRange,
+      frameRemoveRange,
+      enableFrameRangeRemove,
+      interval,
+      revert,
+      repeat,
+      frameArray,
+    } = this;
+
+    const firstFrame = this.frameGroup.getObjects()[0];
+
+    // todo 这里有可能会导致1px偏差 导致预览处的gif会向左偏移
+    const frameWidth = Math.round(firstFrame.width * firstFrame.scaleX);
+
+    const frameIndex = frameArray[pointer];
+
+    canvas.getObjects().forEach((obj: RangedFrameObject) => {
+      if (!obj.inFrame) {
+        return;
+      }
+
+      if (obj.inFrame.includes(frameIndex)) {
+        obj.opacity = 1;
+      } else {
+        obj.opacity = 0;
+      }
+    })
+
+    const left = -(frameWidth * frameIndex);
+
+    this.frameGroup.set({
+      left,
+    });
+    this.previewFramePointer = pointer;
+
+    canvas.renderAll();
+  }
+
   public gifTimer: NodeJS.Timeout = null;
   // 重置预览GIF播放间隔
   public renderPreview() {
@@ -1238,14 +1308,25 @@ export default class extends Vue {
       frameArray.sort((a, b) => b - a);
     }
 
-    console.log(frameArray);
-
     let left = 0;
     let frameIndex = startFrameIndex;
-    let framePointer = 0;
+    // let framePointer = 0;
     let replay = false;
+
+    this.previewFramePointer = 0;
+    this.frameArray = frameArray;
+
     // 这里通过帧移动 来模拟GIF播放效果
     this.gifTimer = setInterval(() => {
+      let {
+        pausePreview,
+        previewFramePointer
+      } = this;
+
+      if (pausePreview) {
+        return;
+      }
+
       if (!repeat && replay) {
         return;
       }
@@ -1254,13 +1335,13 @@ export default class extends Vue {
         replay = false;
 
         left = startLeft;
-        framePointer = 0;
-        frameIndex = frameArray[framePointer];
+        previewFramePointer = 0;
+        frameIndex = frameArray[previewFramePointer];
+
+        this.previewFramePointer = previewFramePointer;
       }
 
-      const objects = canvas.getObjects();
-
-      objects.forEach((obj: RangedFrameObject) => {
+      canvas.getObjects().forEach((obj: RangedFrameObject) => {
         if (!obj.inFrame) {
           return;
         }
@@ -1273,14 +1354,15 @@ export default class extends Vue {
       })
 
       left = -(frameWidth * frameIndex);
-      frameIndex = frameArray[++framePointer];
+      frameIndex = frameArray[++previewFramePointer];
 
       this.frameGroup.set({
         left,
       });
+      this.previewFramePointer = previewFramePointer;
 
       canvas.renderAll();
-      if (framePointer > frameArray.length - 1) {
+      if (previewFramePointer > frameArray.length - 1) {
         replay = true;
       }
 
