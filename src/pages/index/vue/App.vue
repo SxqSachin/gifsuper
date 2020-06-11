@@ -170,7 +170,7 @@
 
             <div class="flex items-center mb-4">
               <label for="" class="whitespace-no-wrap">文字颜色：</label>
-              <color-picker class="z-50 ml-0 border border-gray-500" v-model="textColorObj"></color-picker>
+              <color-picker class="z-40 ml-0 border border-gray-500" v-model="textColorObj"></color-picker>
             </div>
 
             <div class="flex justify-center items-center mb-4 pb-8 w-full">
@@ -196,7 +196,7 @@
               <div class="flex flex-col justify-start w-full" v-show="enableTextStroke">
                 <div class="flex items-center mb-4">
                   <label for="" class="whitespace-no-wrap">字边线色：</label>
-                  <color-picker class="z-50 ml-0 border border-gray-500" v-model="textStrokeObj"></color-picker>
+                  <color-picker class="z-40 ml-0 border border-gray-500" v-model="textStrokeObj"></color-picker>
                 </div>
 
                 <div class="flex justify-center items-center pb-8 w-full">
