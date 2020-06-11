@@ -14,7 +14,7 @@
     <div v-show="!!oriImageSrc" class="w-full flex items-center p-4 pb-0 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md rounded-bl-none rounded-br-none">
       <div class="w-full">
         <div class="flex">
-          <div class="flex-1">
+          <div class="flex-auto">
             <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block block">预览：</label>
             <label v-show="canEdit || isGenerating" for="srcgif" class="hidden md:block w-full">点击添加的文字/图片来进行缩放/旋转操作。可用鼠标框选元素进行组合操作。</label>
             <label v-show="canEdit || isGenerating" for="srcgif" class="block md:hidden w-full">点击添加的文字/图片来进行缩放/旋转操作。（长按+拖动）可框选元素进行组合操作。</label>
@@ -103,12 +103,12 @@
         </ul>
       </div>
 
-      <div class="flex-1 flex flex-col mr-0 mb-4 w-full">
+      <div class="flex-auto flex flex-col mr-0 mb-4 w-full">
 
         <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md rounded-tl-none"
           v-show="curTab === 'base'"
           >
-          <section class="flex flex-col">
+          <section class="flex flex-col flex-auto w-full">
             <h2 class="mb-4 text-lg"> 图片信息 </h2>
 
             <div class="flex w-full">
@@ -123,7 +123,7 @@
             </div>
           </section>
 
-          <section class="flex flex-col mt-4">
+          <section class="flex flex-col flex-auto mt-4 w-full">
             <h2 class="mb-4 text-lg"> 基础调整 </h2>
 
             <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
@@ -132,7 +132,7 @@
                 <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">毫秒单位，帧间隔越小，生成后的Gif就越流畅，同时总时长变短</span>
               </label>
 
-              <slider class="flex-1"
+              <slider class="flex-auto"
                 v-model="interval"
                 :min="15"
                 :max="300"
@@ -148,7 +148,7 @@
                ></slider>
             </div>
 
-            <div class="flex flex-col md:flex-row">
+            <div class="flex flex-col">
               <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleRevert">倒放：{{ revert ? '开' : '关' }}</sbtn>
               <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleRepeat">循环：{{ repeat ? '开' : '关' }}</sbtn>
               <!-- <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后将会抽去原Gif中一般的帧数，可以减小文件大小，代价是Gif流畅程度将会下降" :disabled="!canEdit" @click="toggleRs">抽帧：{{ rs ? '开' : '关' }}</sbtn> -->
@@ -175,7 +175,7 @@
 
             <div class="flex justify-center items-center mb-4 pb-8 w-full">
               <label for="" class="whitespace-no-wrap">文字大小：</label>
-              <slider class="flex-1"
+              <slider class="flex-auto"
                 v-model="textSize"
                 :marks="[10, 128]"
                 :min="10"
@@ -201,7 +201,7 @@
 
                 <div class="flex justify-center items-center pb-8 w-full">
                   <label for="" class="whitespace-no-wrap">边线粗细：</label>
-                  <slider class="flex-1"
+                  <slider class="flex-auto"
                     v-model="textStrokeWidth"
                     :marks="[1, 12]"
                     :min="1"
@@ -225,7 +225,7 @@
                 <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">只在指定范围内添加文字</span>
               </label>
 
-              <slider class="flex-1 pt-0"
+              <slider class="flex-auto pt-0"
                 v-model="addTextRange"
                 :disabled="!canEdit"
                 :min="1"
@@ -253,7 +253,7 @@
 
         </fieldset>
 
-        <fieldset class="flex items-start flex-col md:flex-row p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+        <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
           v-show="curTab === 'addPic'"
           >
           <div class="flex flex-col justify-center items-start w-full">
@@ -273,7 +273,7 @@
               <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">只在指定范围内添加图片</span>
             </label>
 
-            <slider class="flex-1 pt-0"
+            <slider class="flex-auto pt-0"
               v-model="addImgRange"
               :disabled="!canEdit"
               :min="1"
@@ -292,7 +292,7 @@
 
         </fieldset>
 
-        <fieldset class="flex items-start flex-col md:flex-row p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+        <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
           v-show="curTab === 'cut'"
           >
           <section class="flex flex-col justify-center items-start mb-4 w-full">
@@ -302,7 +302,7 @@
             </label>
 
             <div class="pb-8 w-full">
-              <slider class="flex-1 py-0"
+              <slider class="flex-auto py-0"
                 v-model="frameSplitRange"
                 :disabled="!canEdit"
                 :min="1"
@@ -333,7 +333,7 @@
             <div class="pb-8 w-full mt-4"
               v-show="enableFrameRangeRemove"
             >
-              <slider class="flex-1 w-full"
+              <slider class="flex-auto w-full"
                 :disabled="!canEdit"
                 ref="frameRemoveRange"
                 v-model="frameRemoveRange"
