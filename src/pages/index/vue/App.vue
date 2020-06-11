@@ -43,8 +43,8 @@
             <canvas id="edit-canvas"> </canvas>
           </div>
 
-          <div class="w-full h-full float-left absolute flex justify-center items-center text-white text-lg text-center transform -translate-y-full pointer-events-none" :style="{width: `${showWidth}px`, height: `${showHeight}px`}"> 
-            <img class="w-full h-full" v-show="!!curPreviewImg" :src="curPreviewImg" alt="当前预览帧"/>
+          <div class="w-full h-full flex justify-center items-center text-white text-lg text-center pointer-events-none"> 
+            <img class="float-left absolute transform -translate-y-1/2" :style="{width: `${showWidth}px`, height: `${showHeight}px`}" v-show="!!curPreviewImg" :src="curPreviewImg" alt="当前预览帧"/>
           </div>
 
           <div class="mt-2 flex justify-start flex-wrap">
@@ -1227,6 +1227,8 @@ export default class extends Vue {
       frameArray.sort((a, b) => b - a);
     }
 
+    console.log(frameArray);
+
     let left = 0;
     let frameIndex = startFrameIndex;
     let framePointer = 0;
@@ -1259,15 +1261,14 @@ export default class extends Vue {
         }
       })
 
+      left = -(frameWidth * frameIndex);
+      frameIndex = frameArray[++framePointer];
+
       this.frameGroup.set({
         left,
       });
 
       canvas.renderAll();
-
-      left = -(frameWidth * frameIndex);
-      frameIndex = frameArray[++framePointer];
-
       if (framePointer > frameArray.length - 1) {
         replay = true;
       }
