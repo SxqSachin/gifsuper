@@ -1169,6 +1169,7 @@ export default class extends Vue {
 
     const firstFrame = this.frameGroup.getObjects()[0];
 
+    // todo 这里有可能会导致1px偏差 导致预览处的gif会向左偏移
     const frameWidth = Math.round(firstFrame.width * firstFrame.scaleX);
 
     const totalWidth = totalFrameCount * frameWidth;
