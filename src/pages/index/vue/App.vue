@@ -652,8 +652,7 @@ export default class extends Vue {
     this.revert = !this.revert;
 
     this.renderPreview();
-    // @ts-ignore
-    this.$message(`已${this.revert ? '开启' : '关闭'}倒放`, {type: 'info'})
+    this.toast(`已${this.revert ? '开启' : '关闭'}倒放`, 'info')
   }
 
   public toggleRepeat() {
@@ -661,8 +660,7 @@ export default class extends Vue {
 
     this.renderPreview();
 
-    // @ts-ignore
-    this.$message(`已${this.repeat? '开启' : '关闭'}循环播放`, {type: 'info'})
+    this.toast(`已${this.repeat? '开启' : '关闭'}循环播放`, 'info')
   }
 
   public toggleRs() {
@@ -670,8 +668,7 @@ export default class extends Vue {
 
     this.renderPreview();
 
-    // @ts-ignore
-    this.$message(`已${this.rs? '开启' : '关闭'}抽帧${this.rs? '，将抽去原Gif一半的帧数' : ''}`, {type: 'info'})
+    this.toast(`已${this.rs? '开启' : '关闭'}抽帧${this.rs? '，将抽去原Gif一半的帧数' : ''}`, 'info')
   }
 
   public resetStage() {
@@ -949,8 +946,7 @@ export default class extends Vue {
     this.clipboard.length = 0;
     this.clipboard.push(...activedObjects);
 
-    // @ts-ignore
-    this.$message(`已复制${frameCount}帧、${objCount}个对象`, { type: 'success' });
+    this.toast(`已复制${frameCount}帧、${objCount}个对象`, 'success');
   }
 
   public onPaste() {
@@ -981,8 +977,7 @@ export default class extends Vue {
 
       frameList.splice(index + 1, 0, ...copiedFrame.map(item => item.frameData));
 
-      // @ts-ignore
-      this.$message(`已粘贴${copiedFrame.length}帧`, { type: 'success' });
+      this.toast(`已粘贴${copiedFrame.length}帧`, 'success');
 
       this.makeTimeline(frameList);
     }
@@ -1001,8 +996,9 @@ export default class extends Vue {
       });
 
       this.canvas.renderAll();
+
       // @ts-ignore
-      this.$message(`已粘贴${this.copiedObj.length}个对象`, { type: 'success' });
+      this.toast(`已粘贴${this.copiedObj.length}个对象`, 'success');
     }
 
   }
@@ -1042,9 +1038,9 @@ export default class extends Vue {
     this.frameRemoveRange = [1, 1];
   }
 
-  public toast(msg: string, type: string = 'info') {
+  public toast(msg: string, type: string = 'info', duration: number = 3000) {
     // @ts-ignore
-    this.$message(msg, { type, })
+    this.$message(msg, { type, duration})
   }
 
   public curTab: string = 'base';
@@ -1141,7 +1137,7 @@ export default class extends Vue {
     canvas.add(imgObj).renderAll();
     canvas.setActiveObject(imgObj);
 
-    this.toast('添加成功', 'success');
+    this.toast('添加成功', 'success', 800);
   }
 
   public async addText() {
@@ -1175,7 +1171,7 @@ export default class extends Vue {
     canvas.add(itext).renderAll();
     canvas.setActiveObject(itext);
 
-    this.toast('添加成功', 'success');
+    this.toast('添加成功', 'success', 800);
   }
 
   // 生成指定宽高的帧Group
