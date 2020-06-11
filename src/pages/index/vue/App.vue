@@ -20,8 +20,6 @@
             <label v-show="canEdit || isGenerating" for="srcgif" class="block md:hidden w-full">点击添加的文字/图片来进行缩放/旋转操作。（长按+拖动）可框选元素进行组合操作。</label>
           </div>
           <div class="flex-0 w-6">
-            <img v-show="stickyPreviewCanvas" style="width: 1.7rem;" class="h-6 flex-shrink-0 cursor-pointer" @click="stickyPreviewCanvas = false" src="/static/icons/pin.png"/>
-            <img v-show="!stickyPreviewCanvas" style="width: 1.6rem; height: 1.6rem;" class="flex-shrink-0 cursor-pointer" @click="stickyPreviewCanvas = true" src="/static/icons/pin-1.png"/>
           </div>
         </div>
 
@@ -47,8 +45,16 @@
             <img class="float-left absolute transform -translate-y-1/2" :style="{width: `${showWidth}px`, height: `${showHeight}px`}" v-show="!!curPreviewImg" :src="curPreviewImg" alt="当前预览帧"/>
           </div>
 
-          <div class="mt-2 flex justify-start flex-wrap">
-            <sbtn class="mb-1" title="删除当前选中元素" @click="deletePreviewActivedObject" type="error">删除当前选中文字/图片</sbtn>
+          <div class="mt-2 flex justify-between flex-wrap" v-show="!!oriImageSrc && oriGifLoadProgress === 1">
+            <div class="flex flex-wrap">
+              <sbtn class="mb-1" title="删除当前选中元素" @click="deletePreviewActivedObject" type="error">删除当前选中文字/图片</sbtn>
+            </div>
+            <div class="flex flex-wrap">
+              <sbtn class="mb-1" title="开启/关闭 固定" @click="stickyPreviewCanvas = !stickyPreviewCanvas" type="ghost">
+                <img v-show="stickyPreviewCanvas" style="width: 1.7rem;" class="h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pin.png"/>
+                <img v-show="!stickyPreviewCanvas" style="width: 1.6rem; height: 1.6rem;" class="flex-shrink-0 cursor-pointer" src="/static/icons/pin-1.png"/>
+              </sbtn>
+            </div>
           </div>
         </div>
       </div>
