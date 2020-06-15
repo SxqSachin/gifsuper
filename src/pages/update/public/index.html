@@ -18,7 +18,7 @@
   <meta name="verify" content="index,follow" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
 
-  <title>关于Gif Super</title>
+  <title>更新内容</title>
 
   <link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
 
@@ -32,6 +32,9 @@
     main { min-height: calc(100vh - 42px - 48px); }
     img.logo { width: 32px; height: 32px; }
     footer { height: 42px; }
+  </style>
+
+  <style>
   </style>
 
   <script>
@@ -76,61 +79,78 @@
 
   <main class="w-full md:w-3/5 mx-auto p-4 md:p-8 text-color-primary">
     <article class="leading-8">
-      <h1 class="mb-4 text-xl">关于Gif Super</h1>
-      <p>这是一个帮助您在线编辑Gif的工具站。</p>
-      <p>即开即用无需登陆等多余操作，减少您的使用成本。</p>
-      <!-- <p>开发初衷：微信表情包10mb限制。</p> -->
-      <p>Gif编辑过程中不包含任何网络请求，操作均在您的终端设备上直接计算。</p>
-      <p class="mt-4">目前包含下列功能：</p>
-      <ol class="list-disc list-inside">
-        <li>Gif调速</li>
-        <li>Gif倒放</li>
-        <li>开启/关闭Gif循环</li>
-        <li>添加文字</li>
-        <li>添加图片</li>
-        <li>复制/删除Gif帧</li>
-        <!-- <li>抽取半数帧</li> -->
-        <li>Gif裁剪（范围裁剪，范围删除）</li>
-      </ol>
-      <p class="mt-4">正在着手开发的功能：</p>
-      <ol class="list-disc list-inside">
-        <li>Gif压缩</li>
-        <li>Gif尺寸裁剪</li>
-        <li>Gif拼接</li>
-        <li>Gif分离（分解为多张Gif）</li>
-        <li>添加图片自动调整大小</li>
-      </ol>
-      <p>功能会不断扩充，期待您的建议与反馈，帮助Gif Super变得更好。</p>
+      <h1 class="mb-4 text-xl">更新记录</h1>
 
-      <h1 class="mt-6 mb-4 text-xl">关于作者</h1>
-      <!-- <p>SxqSachin</p> -->
-      <p>Blog： <a class="text-color-link" href="https://www.sxqsachin.com" target="_blank">LunchBox</a></p>
-      <p>QQ： 2512870210</p>
-      <p>邮箱： sxqsachin@yahoo.com</p>
-      <p>期待您的建议与反馈</p>
-
-      <!-- <h1 class="mt-6 mb-4 text-xl">打赏一下</h1>
-      <p class="mt-4 mb-2">请作者喝瓶饮料</p>
-      <div class="flex flex-col md:flex-row items-center">
-        <div class="w-64 border border-gray-400 rounded-md">
-          <img class="w-full" src="https://static.sxqsachin.com/imgs/wechat-receive-5-min.jpg" alt="打赏一下" srcset="">
-        </div>
-        <div class="ml-0 md:ml-4 mt-4 md:mt-0 w-64 border border-gray-400 rounded-md">
-          <img class="w-full" src="https://static.sxqsachin.com/imgs/alipay-receive-5-min.jpg" alt="打赏一下" srcset="">
-        </div>
-      </div> -->
-
-      <h1 class="mt-6 mb-4 text-xl">源代码使用</h1>
-      <ol class="list-disc list-inside">
-        <li>vue.js</li>
-        <li>vue-slider-components.js</li>
-        <li>vue-color</li>
-        <li>gif.js</li>
-        <li>libgif.js</li>
-        <li>fabric.js</li>
-        <li>ionicons</li>
-        <li>tailwind.css</li>
-      </ol>
+      <ul>
+        <li class="mb-4">
+          <h2>v0.1.11</h2>
+          <ul class="list-inside list-disc">
+            <li>新增“更新日志”页面</lu>
+          </ul>
+        </li>
+        <li class="mb-4">
+          <h2>v0.1.1</h2>
+          <ul class="list-inside list-disc">
+            <li>新增预览界面固定功能</lu>
+            <li>新增预览播放/暂停&逐帧操作功能</lu>
+          </ul>
+        </li>
+        <li class="mb-4">
+          <h2>v0.1.0a</h2>
+          <ul class="list-inside list-disc">
+            <li>修复IOS预览画布非自适应宽高问题</lu>
+            <li>新添加的文字&图片将会被默认选中</lu>
+          </ul>
+        </li>
+        <li class="mb-4">
+          <h2>v0.1.0</h2>
+          <ul class="list-inside list-disc">
+            <li>编辑效果实时预览功能</lu>
+          </ul>
+        </li>
+        <li class="mb-4">
+          <h2>v0.0.6</h2>
+          <ul class="list-inside list-disc">
+            <li>文字描边功能</lu>
+          </ul>
+        </li>
+        <li class="mb-4">
+          <h2>v0.0.5</h2>
+          <ul class="list-inside list-disc">
+            <li>新增帧区间裁剪功能</lu>
+            <li>新增帧区间去除功能</lu>
+          </ul>
+        </li>
+        <li class="mb-4">
+          <h2>v0.0.4</h2>
+          <ul class="list-inside list-disc">
+            <li>新增部分帧添加文字功能</lu>
+            <li>新增部分帧添加图片功能</lu>
+          </ul>
+        </li>
+        <li class="mb-4">
+          <h2>v0.0.3</h2>
+          <ul class="list-inside list-disc">
+            <li>新增添加图片功能</lu>
+            <li>功能模块独立为单个标签页</li>
+            <li>PC端夜间模式</li>
+            <li>添加“留言”页面</li>
+          </ul>
+        </li>
+        <li class="mb-4">
+          <h2>v0.0.2</h2>
+          <ul class="list-inside list-disc">
+            <li>UI调整</li>
+            <li>适配IOS夜间模式</li>
+          </ul>
+        </li>
+        <li>
+          <h2>v0.0.1</h2>
+          <ul class="list-inside list-disc">
+            <li>GifSuper上线测试</li>
+          </ul>
+        </li>
+      </ul>
     </article>
   </main>
 
