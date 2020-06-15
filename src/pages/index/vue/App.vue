@@ -407,7 +407,10 @@
         <span class="hidden md:inline">：（delete键：删除当前选中文字/图片）</span>
       </label>
       <div class="mb-4">
-        <span class="text-color-neutral text-sm font-normal">在这里你可以对添加的文字/图片进行逐帧调整。</span>
+        <p class="mb-2 text-color-neutral text-sm font-normal">在这里你可以对添加的文字/图片进行逐帧调整。</p>
+        <p class="text-color-neutral text-sm font-normal">
+          在这里进行修改后直接点击“生成”按钮生成GIF即可，切勿点击“将修改应用到时间轴”按钮，否则您在时间轴中的修改将会被还原。
+        </p>
       </div>
       <div class="md:hidden my-2 flex justify-start flex-wrap">
         <sbtn class="mb-1" title="删除当前选中元素" @click="deleteActivedObject" type="error">删除当前选中文字/图片</sbtn>
