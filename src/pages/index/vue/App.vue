@@ -47,25 +47,25 @@
 
           <div class="mt-2 flex justify-between flex-wrap" v-show="!!oriImageSrc && oriGifLoadProgress === 1">
             <div class="flex flex-wrap">
-              <sbtn title="删除当前选中元素" @click="deletePreviewActivedObject" type="error" style="padding-left: 0.45rem; padding-right: 0.45rem;">
+              <sbtn title="删除当前选中元素" @click="preview.removeActiveObjects()" type="error" style="padding-left: 0.45rem; padding-right: 0.45rem;">
                 <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/trash.svg"/>
               </sbtn>
             </div>
             <div class="flex flex-no-wrap">
-              <sbtn class="rounded-tr-none rounded-br-none" title="第一帧" type="ghost" @click="setPreviewFrame(0)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+              <sbtn class="rounded-tr-none rounded-br-none" title="第一帧" type="ghost" @click="preview.setPreviewFrame(0)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
                 <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-back.svg"/>
               </sbtn>
-              <sbtn class="rounded-none border-l-0" title="上一帧" type="ghost" @click="setPreviewFrame(Math.max(previewFramePointer-1, 0))" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+              <sbtn class="rounded-none border-l-0" title="上一帧" type="ghost" @click="preview.setPreviewFrame(preview.curFramePointer - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
                 <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-back.svg"/>
               </sbtn>
-              <sbtn class="rounded-none border-l-0" title="播放/暂停" type="ghost" @click="pausePreview = !pausePreview;" style="padding-left: 0.25rem; padding-right: 0.25rem;">
-                <img v-show="pausePreview" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play.svg"/>
-                <img v-show="!pausePreview" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pause.svg"/>
+              <sbtn class="rounded-none border-l-0" title="播放/暂停" type="ghost" @click="togglePause()" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                <img v-show="isPause" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play.svg"/>
+                <img v-show="!isPause" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pause.svg"/>
               </sbtn>
-              <sbtn class="rounded-none border-l-0" title="下一帧" type="ghost" @click="setPreviewFrame(Math.min(previewFramePointer+1, frameArray.length - 1))" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+              <sbtn class="rounded-none border-l-0" title="下一帧" type="ghost" @click="preview.setPreviewFrame(preview.curFramePointer + 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
                 <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-forward.svg"/>
               </sbtn>
-              <sbtn class="rounded-tl-none rounded-bl-none" title="最后一帧" type="ghost" @click="setPreviewFrame(frameArray.length - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+              <sbtn class="rounded-tl-none rounded-bl-none" title="最后一帧" type="ghost" @click="preview.setPreviewFrame(preview.frameArray.length - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
                 <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-forward.svg"/>
               </sbtn>
             </div>
@@ -374,7 +374,7 @@
         </fieldset>
 
         <fieldset class="pt-8 ">
-          <sbtn title="应用修改" @click="apply2Timeline" type="success" :disabled="!canEdit">将修改应用到时间轴</sbtn>
+          <sbtn title="应用修改" @click="applyPreview2Timeline" type="success" :disabled="!canEdit">将修改应用到时间轴</sbtn>
           <span class="inline-block py-2 mb-4 text-color-neutral text-sm border-gray-400">若进行过“添加文字/图片”操作，则在生成最终结果前，需要先将修改应用到时间轴，等到提示“应用成功”后方可生成GIF。</span>
           <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
           <span class="inline-block py-2 text-color-neutral text-sm border-gray-400">tips: 受原Gif大小影响，点击“生成”按钮后可能会有短暂卡顿，此时耐心等候即可。</span>
@@ -448,7 +448,9 @@ interface GenerateOption {
   removeRange?: [number, number];
 }
 
-type RangedFrameObject = fabric.Object & { inFrame: number[] };
+import { RangedFrameObject } from './js/type';
+import { GifPreview } from './js/preview';
+import { Toasted } from './js/type';
 
 @Component({
   components: {
@@ -459,20 +461,19 @@ type RangedFrameObject = fabric.Object & { inFrame: number[] };
     'color-picker': ColorPicker,
   },
 })
-export default class extends Vue {
+export default class extends Vue implements Toasted {
   // fabric canvas对象
   public canvas!: fabric.Canvas;
   public dragBarCanvas!: fabric.Canvas;
   public dragBar!: fabric.Object;
 
   // 添加图片裁剪用canvas
-  public previewCanvas!: fabric.Canvas;
+  // public previewCanvas!: fabric.Canvas;
   public stickyPreviewCanvas: boolean = false;
   public curPreviewImg: string = '';
   public pausePreview: boolean = false;
 
   public previewFramePointer: number = 0;
-  public frameArray: number[] = []
 
   // 上传的Gif
   public rawFile: File = null;
@@ -552,20 +553,27 @@ export default class extends Vue {
 
   public clipboard: any[] = [];
 
+
+  public preview!: GifPreview;
+
   get canEdit(): boolean {
     return !!this.frameList?.length;
   }
 
   get textColor(): string {
-    return this.textColorObj?.hex ?? '#000';
+    return this.textColorObj?.hex8 ?? '#fff';
   }
 
   get textStrokeColor(): string {
-    return this.textStrokeObj?.hex ?? '#fff';
+    return this.textStrokeObj?.hex8 ?? '#000';
   }
 
   get totalFrameCount(): number {
     return this.frameList.length;
+  }
+
+  get enabledFrame(): number[] {
+    return Array.from(new Array(this.frameList.length).keys());
   }
 
   public mounted() {
@@ -577,11 +585,15 @@ export default class extends Vue {
 
     this.dragBarCanvas = new fabric.Canvas('dragbar');
 
-    this.previewCanvas = new fabric.Canvas('edit-canvas');
+    // this.previewCanvas = new fabric.Canvas();
+    this.preview = new GifPreview('edit-canvas', this);
 
     this.initKeyPressEvent();
   }
 
+  /**
+   * 返回一个图片文件的blob url路径，以及它的宽高
+   */
   public async getImageData(file: File): Promise<GifFrame> {
     return new Promise(resolve => {
       const url = URL.createObjectURL(file);
@@ -645,7 +657,9 @@ export default class extends Vue {
     this.updateEditData();
 
     await this.makeTimeline(frameList);
-    await this.initPreviewCanvas();
+    await this.preview.initPreviewCanvas(frameList, showWidth, showHeight);
+
+    await this.preview.renderPreview(Array.from(new Array(frameList.length).keys()))
   }
 
   public toggleRevert() {
@@ -807,6 +821,7 @@ export default class extends Vue {
     // this.dragBarCanvas.renderAll();
   }
 
+  // 将#时间轴#中的每一帧合并为GIF
   public async generate() {
     if (!this.canvas) {
       console.error('generate: canvas not ready');
@@ -817,8 +832,6 @@ export default class extends Vue {
 
     this.progress = 0;
     this.isGenerating = true;
-
-    // const n = this.frameList.map(item => item.imgFileSrc);
 
     const { width, height } = { width: this.oriWidth, height: this.oriHeight };
     const totalWidth = (width + 1) * this.totalFrameCount;
@@ -872,21 +885,6 @@ export default class extends Vue {
 
     this.isGenerating = false;
     this.generateDone = true;
-  }
-
-  public onFrameSplitRangeDragging(value, index) {
-    // this.curFrameSplitFrameImg = this.frameList[value[index] - 1]?.imgFileSrc;
-
-    // const frameRemoveRange: [number, number] = [1, 1];
-
-    // frameRemoveRange[0] = Math.min(Math.max(this.frameRemoveRange[0], this.frameSplitRange[0]), this.frameSplitRange[1]);
-    // frameRemoveRange[1] = Math.max(Math.min(this.frameRemoveRange[1], this.frameSplitRange[1]), this.frameSplitRange[0]);
-
-    // const frameRemoveRangeSlider = this.$refs['frameRemoveRange'] as VueSlider;
-
-    // if (frameRemoveRange) {
-    //   frameRemoveRangeSlider.setValue(frameRemoveRange);
-    // }
   }
 
   public initKeyPressEvent() {
@@ -1015,20 +1013,6 @@ export default class extends Vue {
 
     this.toast('删除成功', 'success');
   }
-  public deletePreviewActivedObject() {
-    const activedObjects = this.previewCanvas.getActiveObjects();
-
-    if (!activedObjects.length) {
-      this.toast('当前没有选中元素', 'error');
-      return;
-    }
-
-    console.log(activedObjects);
-
-    this.previewCanvas.remove(...activedObjects);
-
-    this.toast('删除成功', 'success');
-  }
 
   // 更新可编辑内容
   public updateEditData() {
@@ -1048,331 +1032,62 @@ export default class extends Vue {
     this.curTab = tab;
   }
 
-  // 添加图片数据
-  public frameGroup: fabric.Group = null;
-  public async initPreviewCanvas() {
-    const {
-      frameList,
-      previewCanvas: canvas,
-      showWidth: width,
-      showHeight: height,
-      oriImageSrc,
-    } = this;
+  public addImage(imgList: FileList) {
+    this.preview.addImage(imgList, this.expandRange2Array(this.addImgRange))
+  }
+  public addText() {
+    const { textContent, textSize, textColor, textStrokeColor, textStrokeWidth, addTextRange } = this;
 
-    this.frameGroup = null;
-    canvas.clear().setWidth(width).setHeight(height);
-
-    const frameGroup = await this.genSrcGIFFrameGroup(width, height);
-
-    this.frameGroup = frameGroup;
-
-    canvas.add(frameGroup).renderAll();
-
-    this.renderPreview();
+    this.preview.addText(textContent, {
+      size: parseInt(textSize),
+      color: textColor,
+      enableStroke: this.enableTextStroke,
+      strokeWidth: textStrokeWidth,
+      strokeColor: textStrokeColor,
+    }, this.expandRange2Array(this.addTextRange))
   }
 
-  public async addImage(imgList: FileList) {
-    const img = imgList[0];
-
-    if (!img.type.includes('image')) {
-      this.toast('只支持上传图片', 'error');
-      return;
-    }
-
-    const { previewCanvas: canvas, showWidth, showHeight, addImgRange } = this;
-    const frameData = await this.getImageData(img);
-
-    const pimgArr: Promise<fabric.Object>[] = [];
-
-    const isVerticalImg = frameData.width < frameData.height;
-
-    const initImageData: Promise<fabric.Object> = new Promise(resolve => {
-      fabric.Image.fromURL(frameData.imgFileSrc, img => {
-        const nimg = img.set({
-          left: 15,
-          top: 15,
-          width: frameData.width,
-          height: frameData.height,
-        }).on('moving', ({target}) => { // todo 可以做成开关 控制是否锁边
-
-          return;
-
-          let left = target.left as number;
-          let top = target.top as number;
-
-          if (left + frameData.width >= showWidth) {
-            left = showWidth - frameData.width;
-          }
-          if (left < 0) {
-            left = 0;
-          }
-
-          if (top < 0) {
-            top = 0;
-          }
-          if (top + frameData.height >= showHeight) {
-            top = showHeight - frameData.height;
-          }
-
-          nimg.set({
-            left,
-            top,
-          });
-
-        });
-
-        nimg.set({
-          type: 'nimg',
-
-          // @ts-ignore
-          inFrame: this.expandRange2Array(addImgRange),
-        });
-
-        resolve(nimg);
-      });
-    });
-
-    const imgObj = await initImageData;
-
-    canvas.add(imgObj).renderAll();
-    canvas.setActiveObject(imgObj);
-
-    this.toast('添加成功', 'success', 800);
-  }
-
-  public async addText() {
-    const { previewCanvas: canvas, textContent, textSize, textColor, textStrokeColor, textStrokeWidth, addTextRange } = this;
-
-    if (!textContent) {
-      return this.toast('请输入文字后再进行“添加文字”操作', 'warn');
-    }
-
-    const itext = new fabric.IText(textContent, {
-      fill: textColor,
-      left: 15,
-      top: 15,
-      fontSize: parseInt(textSize),
-    });
-
-    if (this.enableTextStroke) {
-      itext.set({
-        stroke: this.textStrokeColor,
-        strokeWidth: this.textStrokeWidth,
-      });
-    }
-
-    itext.set({
-      type: 'text',
-
-      // @ts-ignore
-      inFrame: this.expandRange2Array(addTextRange),
-    });
-
-    canvas.add(itext).renderAll();
-    canvas.setActiveObject(itext);
-
-    this.toast('添加成功', 'success', 800);
-  }
-
-  // 生成指定宽高的帧Group
-  public async genSrcGIFFrameGroup(frameWidth: number, frameHeight: number): Promise<fabric.Group> {
-    const {
-      frameList,
-      previewCanvas: canvas,
-      oriImageSrc,
-    } = this;
-
-    const width = frameWidth;
-    const height = frameHeight;
-
-    const promiseGroup: Promise<fabric.Object>[] = [];
-
-    frameList.forEach((frame, index) => {
-      promiseGroup.push(new Promise(resolve => {
-        fabric.Image.fromURL(frame.imgFileSrc, img => {
-          if (!img.width || !img.height) {
-            return;
-          }
-
-          const nimg = img.set({
-            left: index * width,
-            top: 0,
-            name: `frame-${index}`,
-            hasControls: false,
-            selectable: false,
-            type: 'bg',
-          }).scaleToWidth(width).scaleToHeight(height);
-
-          resolve(nimg);
-        });
-      }))
-    });
-
-    const res = await Promise.all(promiseGroup);
-
-    const fgroup = new fabric.Group(res);
-    fgroup.set({
-      selectable: false,
-      hasControls: false,
-      name: 'bg-group',
-      type: 'bg',
-    })
-
-    return fgroup;
+  public renderPreview() {
+    console.log(this.getUsefulFrame());
+    this.preview.renderPreview(this.getUsefulFrame(), this.interval);
   }
 
   public setPreviewFrame(pointer: number) {
-    const {
-      previewCanvas: canvas,
-      frameGroup,
-      gifTimer,
-      frameSplitRange,
-      frameRemoveRange,
-      enableFrameRangeRemove,
-      interval,
-      revert,
-      repeat,
-      frameArray,
-    } = this;
-
-    const firstFrame = this.frameGroup.getObjects()[0];
-
-    // todo 这里有可能会导致1px偏差 导致预览处的gif会向左偏移
-    const frameWidth = Math.round(firstFrame.width * firstFrame.scaleX);
-
-    const frameIndex = frameArray[pointer];
-
-    canvas.getObjects().forEach((obj: RangedFrameObject) => {
-      if (!obj.inFrame) {
-        return;
-      }
-
-      if (obj.inFrame.includes(frameIndex)) {
-        obj.opacity = 1;
-      } else {
-        obj.opacity = 0;
-      }
-    })
-
-    const left = -(frameWidth * frameIndex);
-
-    this.frameGroup.set({
-      left,
-    });
-    this.previewFramePointer = pointer;
-
-    canvas.renderAll();
+    this.preview.setPreviewFrame(pointer);
   }
 
-  public gifTimer: NodeJS.Timeout = null;
-  // 重置预览GIF播放间隔
-  public renderPreview() {
-    const totalFrameCount = this.totalFrameCount;
-
-    const firstFrame = this.frameGroup.getObjects()[0];
-
-    // todo 这里有可能会导致1px偏差 导致预览处的gif会向左偏移
-    const frameWidth = Math.round(firstFrame.width * firstFrame.scaleX);
-
-    const totalWidth = totalFrameCount * frameWidth;
-
+  public getUsefulFrame(): number[] {
     const {
-      previewCanvas: canvas,
-      frameGroup,
-      gifTimer,
+      frameList,
       frameSplitRange,
-      frameRemoveRange,
       enableFrameRangeRemove,
-      interval,
-      revert,
-      repeat,
+      frameRemoveRange,
     } = this;
 
-    const removeRange = frameRemoveRange.length == 2 ? this.expandRange2Array(frameRemoveRange) : [0, 0];
-
-    if (gifTimer) {
-      clearInterval(gifTimer);
-    }
+    let usefulFrame: number[] = Array.from(new Array(this.frameList.length).keys());
 
     const startFrameIndex = frameSplitRange[0] - 1;
     const endFrameIndex = frameSplitRange[1] - 1;
-    const startLeft = startFrameIndex * frameWidth;
+    const startRemoveFrameIndex = frameRemoveRange[0] - 1;
+    const endRemoveFrameIndex = frameRemoveRange[1] - 1;
 
-    const frameArray = this.expandRange2Array([startFrameIndex + 1, endFrameIndex + 1]).filter(index => !enableFrameRangeRemove || !removeRange.includes(index));
+    usefulFrame = usefulFrame.filter(index => {
+      return index >= startFrameIndex && index <= endFrameIndex;
+    });
 
-    if (revert) {
-      frameArray.sort((a, b) => b - a);
+    if (enableFrameRangeRemove) {
+      usefulFrame = usefulFrame.filter(index => {
+        return !(index >= startRemoveFrameIndex && index <= endRemoveFrameIndex);
+      });
     }
 
-    let left = 0;
-    let frameIndex = startFrameIndex;
-    // let framePointer = 0;
-    let replay = false;
-
-    this.previewFramePointer = 0;
-    this.frameArray = frameArray;
-
-    // 这里通过帧移动 来模拟GIF播放效果
-    this.gifTimer = setInterval(() => {
-      let {
-        pausePreview,
-        previewFramePointer
-      } = this;
-
-      if (pausePreview) {
-        return;
-      }
-
-      if (!repeat && replay) {
-        return;
-      }
-
-      if (replay) {
-        replay = false;
-
-        left = startLeft;
-        previewFramePointer = 0;
-        frameIndex = frameArray[previewFramePointer];
-
-        this.previewFramePointer = previewFramePointer;
-      }
-
-      canvas.getObjects().forEach((obj: RangedFrameObject) => {
-        if (!obj.inFrame) {
-          return;
-        }
-
-        if (obj.inFrame.includes(frameIndex)) {
-          obj.opacity = 1;
-        } else {
-          obj.opacity = 0;
-        }
-      })
-
-      left = -(frameWidth * frameIndex);
-      frameIndex = frameArray[++previewFramePointer];
-
-      this.frameGroup.set({
-        left,
-      });
-      this.previewFramePointer = previewFramePointer;
-
-      canvas.renderAll();
-      if (previewFramePointer > frameArray.length - 1) {
-        replay = true;
-      }
-
-    }, interval);
+    return usefulFrame;
   }
 
-  public onSetInterval(interval: number) {
-    this.renderPreview();
-  }
-
-  public async apply2Timeline() {
+  public async applyPreview2Timeline() {
     const {
       canvas: timelineCanvas,
-      previewCanvas: canvas,
+      preview,
     } = this;
 
     timelineCanvas.getObjects().filter(obj => !obj.isType('timeline-frame')).forEach(obj => {
@@ -1381,7 +1096,7 @@ export default class extends Vue {
     timelineCanvas.renderAll();
 
     // todo 给每次添加的object设置唯一group id 并将他们添加至组中
-    const allObject = canvas.getObjects().filter(obj => !obj.isType('bg') && !obj.isType('bg-group'));
+    const allObject = preview.getObjects();
 
     for (let i = 0; i < allObject.length; i++) {
       const obj = allObject[i];
@@ -1394,14 +1109,11 @@ export default class extends Vue {
 
   public async applyObjectToTimeline(obj: fabric.Object): Promise<void> {
     const {
-      previewCanvas: canvas,
       showWidth: width,
       showHeight: height,
       canvas: timelineCanvas,
       oriImageSrc,
     } = this;
-
-    const allObject = canvas.getObjects().filter(obj => !obj.isType('bg') && !obj.isType('bg-group'));
 
     const scaleX = width / this.frameWidth;
     const scaleY = height / this.frameHeight;
@@ -1467,8 +1179,22 @@ export default class extends Vue {
     this.curPreviewImg = this.frameList[range[index] - 1].imgFileSrc;
   }
 
-  public globalClick(e) {
-    console.log(e);
+
+  get isPause(): boolean {
+    if (!this.preview) {
+      return false;
+    }
+    return this.preview.isPause;
+  }
+  public togglePause() {
+    if (!this.preview) {
+      return;
+    }
+    if (this.preview.isPause) {
+      this.preview.play();
+    } else {
+      this.preview.pause();
+    }
   }
 }
 </script>
