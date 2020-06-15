@@ -318,7 +318,7 @@
           <section class="flex flex-col justify-center items-start mb-4 w-full">
             <label for="">
               <span>区间裁剪：</span>
-              <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">生成后的Gif仅保留指定区间内的帧图像</span>
+              <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">保留你感兴趣的片段</span>
             </label>
 
             <div class="pb-8 w-full">
@@ -343,7 +343,8 @@
           <section class="flex flex-col justify-center items-start w-full">
             <label for="">
               <span>区间去除：</span>
-              <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">删除指定区间内的帧，受制于区间裁剪数值</span>
+              <!-- <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">删除指定区间内的帧，受制于区间裁剪数值</span> -->
+              <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">删除你不感兴趣的片段</span>
             </label>
 
             <div class="flex flex-row items-center">
