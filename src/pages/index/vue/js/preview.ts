@@ -1,7 +1,17 @@
 import { fabric } from 'fabric';
-import { GifFrameList, GifFrame } from '@/js/gif';
+import { GifFrameList, GifFrame, } from '@/js/gif';
 import { RangedFrameObject, Toasted, TextOption } from './type';
 
+export interface PreviewOption {
+  revert?: boolean;
+  repeat?: boolean;
+  interval?: number;
+}
+
+const DefaultPreviewOption: PreviewOption = {
+  repeat: true,
+  revert: false,
+}
 
 class GifPreview {
   private previewCanvas!: fabric.Canvas;
@@ -12,10 +22,12 @@ class GifPreview {
   private _curFramePointer: number = 0;
   private _frameArray: number[] = [];
 
-  private revert: boolean = false;
-  private repeat: boolean = true;
+  // private revert: boolean = false;
+  // private repeat: boolean = true;
   private interval: number = 60;
   private gifTimer: NodeJS.Timeout = null;
+
+  private options: PreviewOption = DefaultPreviewOption 
 
   private main!: Toasted;
 
@@ -26,6 +38,10 @@ class GifPreview {
     this.previewCanvas = new fabric.Canvas(canvasID);
 
     this.main = main;
+  }
+
+  public updateOptions(options: PreviewOption) {
+    this.options = options;
   }
 
   public async initPreviewCanvas(frameList: GifFrameList, width: number, height: number) {
@@ -90,19 +106,18 @@ class GifPreview {
   }
 
   // 重置预览GIF播放间隔
-  public renderPreview(frameArray: number[], interval: number = 60) {
+  public renderPreview(frameArray: number[], interval: number = 60, callback?: (curFrameIndex: number) => void) {
     const {
       previewCanvas: canvas,
       gifTimer,
-      // frameSplitRange,
-      // frameRemoveRange,
-      // enableFrameRangeRemove,
-      revert,
-      repeat,
+      options,
+      showWidth: frameWidth,
     } = this;
 
-    // todo 这里有可能会导致1px偏差 导致预览处的gif会向左偏移
-    const frameWidth = this.showWidth;
+    const {
+      repeat,
+      revert,
+    } = options;
 
     if (revert) {
       frameArray.sort((a, b) => b - a);
@@ -118,7 +133,7 @@ class GifPreview {
     // let framePointer = 0;
     let replay = false;
 
-    this._curFramePointer = 0;
+    // this._curFramePointer = 0;
     this.interval = interval;
 
     if (gifTimer) {
@@ -143,10 +158,8 @@ class GifPreview {
 
         left = startLeft;
         _curFramePointer = 0;
-        frameIndex = frameArray[_curFramePointer];
-
-        this._curFramePointer = _curFramePointer;
       }
+      frameIndex = frameArray[_curFramePointer++];
 
       canvas.getObjects().forEach((obj: RangedFrameObject) => {
         if (!obj.inFrame) {
@@ -161,12 +174,14 @@ class GifPreview {
       })
 
       left = -(frameWidth * frameIndex);
-      frameIndex = frameArray[++_curFramePointer];
-
       this.frameGroup.set({
         left,
       });
       this._curFramePointer = _curFramePointer;
+
+      if (typeof callback === 'function') {
+        callback(_curFramePointer);
+      }
 
       canvas.renderAll();
       if (_curFramePointer > frameArray.length - 1) {
@@ -181,14 +196,10 @@ class GifPreview {
       previewCanvas: canvas,
       frameGroup,
       frameArray,
+      showWidth: frameWidth,
     } = this;
 
     pointer = Math.min(Math.max(pointer, 0), frameArray.length - 1)
-
-    const firstFrame = frameGroup.getObjects()[0];
-
-    // todo 这里有可能会导致1px偏差 导致预览处的gif会向左偏移
-    const frameWidth = Math.round(firstFrame.width * firstFrame.scaleX);
 
     const frameIndex = frameArray[pointer];
 

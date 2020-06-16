@@ -46,34 +46,48 @@
           </div>
 
           <div class="mt-2 flex justify-between flex-wrap" v-show="!!oriImageSrc && oriGifLoadProgress === 1">
-            <div class="flex flex-wrap">
-              <sbtn title="删除当前选中元素" @click="preview.removeActiveObjects()" type="error" style="padding-left: 0.45rem; padding-right: 0.45rem;">
-                <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/trash.svg"/>
-              </sbtn>
+
+            <div class="flex justify-center items-center mb-2 w-full">
+              <slider class="flex-auto"
+                v-model="curFrameSlider"
+                :min="Math.max(1, getUsefulFrame()[0])"
+                :max="getUsefulFrame().length"
+                :disabled="!canEdit"
+                :drag-on-click="true"
+                :duration="0"
+                @change="onCurFrameChange"
+               ></slider>
             </div>
-            <div class="flex flex-no-wrap">
-              <sbtn class="rounded-tr-none rounded-br-none" title="第一帧" type="ghost" @click="preview.setPreviewFrame(0)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
-                <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-back.svg"/>
-              </sbtn>
-              <sbtn class="rounded-none border-l-0" title="上一帧" type="ghost" @click="preview.setPreviewFrame(preview.curFramePointer - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
-                <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-back.svg"/>
-              </sbtn>
-              <sbtn class="rounded-none border-l-0" title="播放/暂停" type="ghost" @click="togglePause()" style="padding-left: 0.25rem; padding-right: 0.25rem;">
-                <img v-show="isPause" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play.svg"/>
-                <img v-show="!isPause" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pause.svg"/>
-              </sbtn>
-              <sbtn class="rounded-none border-l-0" title="下一帧" type="ghost" @click="preview.setPreviewFrame(preview.curFramePointer + 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
-                <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-forward.svg"/>
-              </sbtn>
-              <sbtn class="rounded-tl-none rounded-bl-none" title="最后一帧" type="ghost" @click="preview.setPreviewFrame(preview.frameArray.length - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
-                <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-forward.svg"/>
-              </sbtn>
-            </div>
-            <div class="flex flex-wrap">
-              <sbtn class="ml-2" title="开启/关闭 固定" type="ghost" @click="stickyPreviewCanvas = !stickyPreviewCanvas" style="padding-left: 0.25rem; padding-right: 0.25rem;">
-                <img v-show="stickyPreviewCanvas" style="width: 1.7rem;" class="h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pin.png"/>
-                <img v-show="!stickyPreviewCanvas" style="width: 1.6rem; height: 1.6rem;" class="flex-shrink-0 cursor-pointer" src="/static/icons/pin-1.png"/>
-              </sbtn>
+            <div class="flex justify-between w-full">
+              <div class="flex flex-wrap">
+                <sbtn title="删除当前选中元素" @click="preview.removeActiveObjects()" type="error" style="padding-left: 0.45rem; padding-right: 0.45rem;">
+                  <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/trash.svg"/>
+                </sbtn>
+              </div>
+              <div class="flex flex-no-wrap">
+                <sbtn class="rounded-tr-none rounded-br-none" title="第一帧" type="ghost" @click="preview.setPreviewFrame(0)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                  <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-back.svg"/>
+                </sbtn>
+                <sbtn class="rounded-none border-l-0" title="上一帧" type="ghost" @click="preview.setPreviewFrame(preview.curFramePointer - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                  <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-back.svg"/>
+                </sbtn>
+                <sbtn class="rounded-none border-l-0" title="播放/暂停" type="ghost" @click="togglePause()" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                  <img v-show="isPause" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play.svg"/>
+                  <img v-show="!isPause" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pause.svg"/>
+                </sbtn>
+                <sbtn class="rounded-none border-l-0" title="下一帧" type="ghost" @click="preview.setPreviewFrame(preview.curFramePointer + 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                  <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-forward.svg"/>
+                </sbtn>
+                <sbtn class="rounded-tl-none rounded-bl-none" title="最后一帧" type="ghost" @click="preview.setPreviewFrame(preview.frameArray.length - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                  <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-forward.svg"/>
+                </sbtn>
+              </div>
+              <div class="flex flex-wrap">
+                <sbtn class="ml-2" title="开启/关闭 固定" type="ghost" @click="stickyPreviewCanvas = !stickyPreviewCanvas" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                  <img v-show="stickyPreviewCanvas" style="width: 1.7rem;" class="h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pin.png"/>
+                  <img v-show="!stickyPreviewCanvas" style="width: 1.6rem; height: 1.6rem;" class="flex-shrink-0 cursor-pointer" src="/static/icons/pin-1.png"/>
+                </sbtn>
+              </div>
             </div>
           </div>
         </div>
@@ -169,8 +183,8 @@
             </div>
 
             <div class="flex flex-col">
-              <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleRevert">倒放：{{ revert ? '开' : '关' }}</sbtn>
-              <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleRepeat">循环：{{ repeat ? '开' : '关' }}</sbtn>
+              <sbtn class="mr-0 w-full mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleRevert">倒放：{{ revert ? '开' : '关' }}</sbtn>
+              <sbtn class="mr-0 w-full mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleRepeat">循环：{{ repeat ? '开' : '关' }}</sbtn>
               <!-- <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后将会抽去原Gif中一般的帧数，可以减小文件大小，代价是Gif流畅程度将会下降" :disabled="!canEdit" @click="toggleRs">抽帧：{{ rs ? '开' : '关' }}</sbtn> -->
               <!-- <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="重置时间轴" :disabled="!canEdit" type="error" @click="makeTimeline">重置</sbtn> -->
             </div>
@@ -477,6 +491,8 @@ export default class extends Vue implements Toasted {
   public curPreviewImg: string = '';
   public pausePreview: boolean = false;
 
+  public curFrameSlider: number = 1;
+
   public previewFramePointer: number = 0;
 
   // 上传的Gif
@@ -663,7 +679,7 @@ export default class extends Vue implements Toasted {
     await this.makeTimeline(frameList);
     await this.preview.initPreviewCanvas(frameList, showWidth, showHeight);
 
-    await this.preview.renderPreview(Array.from(new Array(frameList.length).keys()))
+    await this.renderPreview();
   }
 
   public toggleRevert() {
@@ -1052,8 +1068,27 @@ export default class extends Vue implements Toasted {
   }
 
   public renderPreview() {
-    console.log(this.getUsefulFrame());
-    this.preview.renderPreview(this.getUsefulFrame(), this.interval);
+    const usefulFrame= this.getUsefulFrame();
+    const curFrame = this.curFrameSlider;
+
+    this.curFrameSlider = Math.min(usefulFrame[curFrame], usefulFrame[usefulFrame.length - 1]);
+
+    this.preview.updateOptions({
+      revert: this.revert,
+      repeat: this.repeat,
+    });
+    
+    this.preview.renderPreview(this.getUsefulFrame(), this.interval, index => {
+      this.curFrameSlider = index;
+    });
+  }
+
+  public onCurFrameChange(curFrame) {
+    if (isNaN(curFrame)) {
+      curFrame = 0;
+    }
+
+    this.preview.setPreviewFrame(curFrame);
   }
 
   public setPreviewFrame(pointer: number) {
@@ -1182,7 +1217,6 @@ export default class extends Vue implements Toasted {
   public renderPreviewImage(range: [number, number], index: number) {
     this.curPreviewImg = this.frameList[range[index] - 1].imgFileSrc;
   }
-
 
   get isPause(): boolean {
     if (!this.preview) {
