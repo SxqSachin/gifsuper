@@ -32,7 +32,7 @@
     header { height: 48px; }
     main { min-height: calc(100vh - 42px - 48px); }
     img.logo { width: 32px; height: 32px; }
-    footer { height: 42px; }
+    footer { min-height: 42px; }
     .comment-wrapper { color: var(--content-text-color); font-size: 16px; }
     .comment-wrapper a { color: var(--link-color); }
     .comment-wrapper .vwrap .vheader .vinput:focus { border-bottom-color: var(--color-info); }
@@ -65,25 +65,25 @@
 </head>
 
 <body class="flex flex-col min-h-screen theme">
-  <header class="text-center flex items-center justify-center md:justify-between shadow px-8 border-b border-gray-400">
+  <header class="text-center flex items-center justify-center lg:justify-between shadow px-8 border-b border-gray-400 bg-primary">
     <div class="flex items-center">
       <img class="logo" src="/static/imgs/logo.png" alt="Gif Super Logo"/>
       <a href="/" class="ml-2 cursor-pointer text-color-primary"> Gif Super </a>
       <sup class="text-red-300 ml-1"> Beta </sup>
-      <a href="/" class="hidden md:block ml-8 text-color-primary"> 帮助您在线操作GIF文件 </a>
+      <a href="/" class="hidden lg:block ml-8 text-color-primary"> 帮助您在线操作GIF文件 </a>
     </div>
 
     <div class="flex">
-      <a href="javascript:void(0);" class="hidden md:block ml-8 cursor-pointer text-red-400" onclick="add2Favorite()" rel="sidebar"> 收藏本站 </a>
-      <a href="/" class="hidden md:block ml-8 cursor-pointer text-color-primary"> 主页 </a>
-      <a href="/comment.html" class="hidden md:block ml-8 cursor-pointer text-color-primary"> Bug反馈&留言 </a>
-      <a href="/update.html" class="hidden md:block ml-8 cursor-pointer text-color-primary"> 更新日志 </a>
-      <a href="/about.html" class="hidden md:block ml-8 cursor-pointer text-color-primary"> 关于GifSuper </a>
+      <a href="javascript:void(0);" class="hidden lg:block ml-8 cursor-pointer text-red-400" onclick="add2Favorite()" rel="sidebar"> 收藏本站 </a>
+      <a href="/" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> 主页 </a>
+      <a href="/comment.html" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> Bug反馈&留言 </a>
+      <a href="/update.html" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> 更新日志 </a>
+      <a href="/about.html" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> 关于GifSuper </a>
     </div>
   </header>
 
-  <main class="w-full md:w-3/5 mx-auto p-4 md:p-8 text-color-primary">
-    <div class="comment-wrapper p-4 sm:p-4 md:pb-12 lg:pb-12 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
+  <main class="w-full lg:w-3/5 mx-auto p-4 lg:p-8 text-color-primary">
+    <div class="comment-wrapper p-4 sm:p-4 lg:pb-12 lg:pb-12 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
       <h1 id="pinglun" class="inline-block text-lg mb-4 w-full">给Gif Super留言</h1>
       <p>在这里您可以留下关于Gif Super的Bug反馈与建议等内容。</p>
       <p>请不要发布与本站无关的信息。</p>
@@ -91,9 +91,29 @@
     </div>
   </main>
 
-  <footer class="flex justify-center items-center border-t border-gray-400">
-    <div>2020</div>
-    <div class="ml-4">@GifSuper</div>
+  <footer class="pb-4 flex justify-center items-center border-t border-gray-400 flex-col bg-primary">
+    <div class="w-full mb-4 py-4 px-16 lg:px-32 flex justify-center flex-row items-center border-b border-gray-400">
+      <span>友情链接：</span>
+      <ul class="inline-block">
+        <li>
+          <a href="https://music.qugeek.com/?gifsuper" target="_blank">墨灵音乐</a>
+        </li>
+      </ul>
+    </div>
+    <div class="flex flex-col justify-center items-center mb-2 leading-6">
+      <p>如有Bug报告/建议，请联系站长</p>
+      <p>
+        <span>QQ：2512870210</span>
+        <span class="inline lg:hidden"> | </span>
+        <span class="inline lg:hidden"><a href="/comment.html">Bug反馈&留言</a></span>
+        <span class="inline lg:hidden"> | </span>
+        <span class="inline lg:hidden"><a href="/about.html">关于Gif Spuer</a></span>
+      </p>
+    </div>
+    <div class="flex justify-center items-center">
+      <div>2020</div>
+      <div class="ml-4">@GifSuper</div>
+    </div>
     <!-- <a class="ml-4" href="http://www.beian.miit.gov.cn/">苏ICP备17070289号</a> -->
   </footer>
 
