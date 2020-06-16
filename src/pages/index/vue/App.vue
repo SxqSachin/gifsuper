@@ -71,9 +71,9 @@
                 <sbtn class="rounded-none border-l-0" title="上一帧" type="ghost" @click="preview.setPreviewFrame(preview.curFramePointer - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
                   <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-back.svg"/>
                 </sbtn>
-                <sbtn class="rounded-none border-l-0" title="播放/暂停" type="ghost" @click="togglePause()" style="padding-left: 0.25rem; padding-right: 0.25rem;">
-                  <img v-show="isPause" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play.svg"/>
-                  <img v-show="!isPause" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pause.svg"/>
+                <sbtn class="rounded-none border-l-0" title="播放/暂停" type="ghost" @click="togglePause" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                  <img v-show="!!aaa" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play.svg"/>
+                  <img v-show="!aaa" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pause.svg"/>
                 </sbtn>
                 <sbtn class="rounded-none border-l-0" title="下一帧" type="ghost" @click="preview.setPreviewFrame(preview.curFramePointer + 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
                   <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-forward.svg"/>
@@ -1218,12 +1218,8 @@ export default class extends Vue implements Toasted {
     this.curPreviewImg = this.frameList[range[index] - 1].imgFileSrc;
   }
 
-  get isPause(): boolean {
-    if (!this.preview) {
-      return false;
-    }
-    return this.preview.isPause;
-  }
+  private aaa: boolean = false;
+
   public togglePause() {
     if (!this.preview) {
       return;
@@ -1233,6 +1229,8 @@ export default class extends Vue implements Toasted {
     } else {
       this.preview.pause();
     }
+
+    this.aaa = this.preview.isPause;
   }
 }
 </script>

@@ -34,6 +34,8 @@ class GifPreview {
   private showWidth: number = 0;
   private showHeight: number = 0;
 
+  private _replay: boolean = false;
+
   constructor(canvasID: string, main: Toasted) {
     this.previewCanvas = new fabric.Canvas(canvasID);
 
@@ -131,7 +133,6 @@ class GifPreview {
     let left = 0;
     let frameIndex = 0;
     // let framePointer = 0;
-    let replay = false;
 
     // this._curFramePointer = 0;
     this.interval = interval;
@@ -142,19 +143,20 @@ class GifPreview {
     this.gifTimer = setInterval(() => {
       let {
         _pause,
-        _curFramePointer
+        _curFramePointer,
+        _replay,
       } = this;
 
       if (_pause) {
         return;
       }
 
-      if (!repeat && replay) {
+      if (!repeat && _replay) {
         return;
       }
 
-      if (replay) {
-        replay = false;
+      if (_replay) {
+        _replay = false;
 
         left = startLeft;
         _curFramePointer = 0;
@@ -185,8 +187,10 @@ class GifPreview {
 
       canvas.renderAll();
       if (_curFramePointer > frameArray.length - 1) {
-        replay = true;
+        _replay = true;
       }
+
+      this._replay = _replay;
 
     }, interval);
   }
@@ -221,6 +225,8 @@ class GifPreview {
       left,
     });
     this._curFramePointer = pointer;
+
+    this._replay = false;
 
     canvas.renderAll();
   }
