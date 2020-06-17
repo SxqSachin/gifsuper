@@ -3,6 +3,7 @@
 */
 
 export interface GifFrame {
+  index: number;
   imgFileSrc: string;
   width: number;
   height: number;
@@ -84,6 +85,7 @@ async function parseSrcGif(gifFile: File, onLoad?: (cur?: number, total?: number
         promiseList.push(new Promise(resolve => {
           imgFile.onload = () => {
             const gifFrame: GifFrame = {
+              index: frame - 1,
               imgFileSrc: imgFile.src,
               width: imgFile.width,
               height: imgFile.height,

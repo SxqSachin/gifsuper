@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper p-4 sm:p-4 md:p-8 lg:p-8 max:w-screen w-full">
 
-    <div v-if="!getNotification(1)" data-n-ver="1" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
+    <div v-if="false && !getNotification(1)" data-n-ver="1" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
       <div> 新功能：现在可以实时预览各项编辑操作啦！ </div>
       <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(1);"> + </div>
     </div>
@@ -50,8 +50,8 @@
             <div class="flex justify-center items-center mb-2 w-full">
               <slider class="flex-auto"
                 v-model="curFrameSlider"
-                :min="Math.max(1, getUsefulFrame()[0])"
-                :max="getUsefulFrame().length"
+                :min="1"
+                :max="usefulFrame.length"
                 :disabled="!canEdit"
                 :drag-on-click="true"
                 :duration="0"
@@ -182,9 +182,13 @@
                ></slider>
             </div>
 
-            <div class="flex flex-col">
-              <sbtn class="mr-0 w-full mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleRevert">倒放：{{ revert ? '开' : '关' }}</sbtn>
-              <sbtn class="mr-0 w-full mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleRepeat">循环：{{ repeat ? '开' : '关' }}</sbtn>
+            <div class="flex flex-col md:flex-row">
+              <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleRevert">倒放：{{ revert ? '开' : '关' }}</sbtn>
+              <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleRepeat">循环：{{ repeat ? '开' : '关' }}</sbtn>
+              <!-- <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后可实现首尾相接重复的特效" :disabled="!canEdit" @click="toggleRLoop">
+                <span>反复</span>
+                <span>:{{ rloop ? '开' : '关' }} </span>
+              </sbtn> -->
               <!-- <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后将会抽去原Gif中一般的帧数，可以减小文件大小，代价是Gif流畅程度将会下降" :disabled="!canEdit" @click="toggleRs">抽帧：{{ rs ? '开' : '关' }}</sbtn> -->
               <!-- <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="重置时间轴" :disabled="!canEdit" type="error" @click="makeTimeline">重置</sbtn> -->
             </div>
@@ -568,6 +572,9 @@ export default class extends Vue implements Toasted {
   // 是否抽帧
   public rs: boolean = false;
 
+  // 是否反复
+  public rloop: boolean = false;
+
   // timeline偏移值
   public timelineLeft: number = 0;
 
@@ -620,6 +627,7 @@ export default class extends Vue implements Toasted {
       const img = new Image();
       img.onload = () => {
         const data = {
+          index: 0,
           imgFileSrc: img.src,
           width: img.width,
           height: img.height,
@@ -703,6 +711,31 @@ export default class extends Vue implements Toasted {
     this.renderPreview();
 
     this.toast(`已${this.rs? '开启' : '关闭'}抽帧${this.rs? '，将抽去原Gif一半的帧数' : ''}`, 'info')
+  }
+
+  public async toggleRLoop() {
+    this.rloop = !this.rloop;
+
+    const {
+      frameList,
+      oriFrameList,
+      rloop,
+    } = this;
+
+    let rloopFrameList = [];
+
+    if (rloop) {
+      rloopFrameList = frameList;
+      const rpart = [...rloopFrameList].sort((a, b) => b.index - a.index);
+      rloopFrameList.push(...rpart);
+    } else {
+      rloopFrameList = oriFrameList;
+    }
+
+    await this.makeTimeline(rloopFrameList);
+
+    this.renderPreview();
+    this.toast(`已${this.rloop? '开启' : '关闭'}反复`, 'info')
   }
 
   public resetStage() {
@@ -854,6 +887,7 @@ export default class extends Vue implements Toasted {
     this.isGenerating = true;
 
     const { width, height } = { width: this.oriWidth, height: this.oriHeight };
+
     const totalWidth = (width + 1) * this.totalFrameCount;
 
     const gif = new GifGenerator({
@@ -1068,7 +1102,7 @@ export default class extends Vue implements Toasted {
   }
 
   public renderPreview() {
-    const usefulFrame= this.getUsefulFrame();
+    const usefulFrame= this.usefulFrame;
     const curFrame = this.curFrameSlider;
 
     this.curFrameSlider = Math.min(usefulFrame[curFrame], usefulFrame[usefulFrame.length - 1]);
@@ -1078,7 +1112,7 @@ export default class extends Vue implements Toasted {
       repeat: this.repeat,
     });
     
-    this.preview.renderPreview(this.getUsefulFrame(), this.interval, index => {
+    this.preview.renderPreview(this.usefulFrame, this.interval, index => {
       this.curFrameSlider = index;
     });
   }
@@ -1095,12 +1129,13 @@ export default class extends Vue implements Toasted {
     this.preview.setPreviewFrame(pointer);
   }
 
-  public getUsefulFrame(): number[] {
+  get usefulFrame(): number[] {
     const {
       frameList,
       frameSplitRange,
       enableFrameRangeRemove,
       frameRemoveRange,
+      rloop,
     } = this;
 
     let usefulFrame: number[] = Array.from(new Array(this.frameList.length).keys());
@@ -1118,6 +1153,11 @@ export default class extends Vue implements Toasted {
       usefulFrame = usefulFrame.filter(index => {
         return !(index >= startRemoveFrameIndex && index <= endRemoveFrameIndex);
       });
+    }
+
+    if (rloop) {
+      const rpart = [...usefulFrame].sort((a, b) => b - a);
+      usefulFrame.push(...rpart);
     }
 
     return usefulFrame;

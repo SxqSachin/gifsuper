@@ -5,6 +5,7 @@ import { RangedFrameObject, Toasted, TextOption } from './type';
 export interface PreviewOption {
   revert?: boolean;
   repeat?: boolean;
+  rloop?: boolean;
   interval?: number;
 }
 
@@ -317,6 +318,7 @@ class GifPreview {
       const img = new Image();
       img.onload = () => {
         const data = {
+          index: 0,
           imgFileSrc: img.src,
           width: img.width,
           height: img.height,
