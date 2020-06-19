@@ -134,6 +134,15 @@
             <img class="w-4 h-4 flex-shrink-0" src="/static/icons/cut.svg"/>
             <span class="ml-2 md:inline" :class="{inline: curTab === 'cut', 'hidden': curTab !== 'cut'}">帧裁剪</span>
           </li>
+          <li
+            class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
+            :class="{'bg-assets shadow': curTab === 'resize'}"
+            @click="switchTab('resize')"
+          >
+            <img class="w-4 h-4 flex-shrink-0" src="/static/icons/contract.svg"/>
+            <sup class="text-red-400">new</sup>
+            <span class="ml-2 md:inline" :class="{inline: curTab === 'resize', 'hidden': curTab !== 'resize'}">裁剪</span>
+          </li>
         </ul>
       </div>
 
@@ -392,6 +401,21 @@
           </section>
         </fieldset>
 
+        <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+          v-show="curTab === 'resize'"
+          >
+          <section class="flex flex-col justify-center items-start mb-4 w-full">
+            <label for="" class="mb-4">
+              <span>图片裁剪：</span>
+              <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">裁剪出原图中你感兴趣的部分</span>
+            </label>
+
+            <div class="flex flex-row items-center">
+              <span>裁剪：</span><sbtn :disabled="!canEdit" @click="toggleResize">{{ !resize ? '开启' : '关闭' }}</sbtn>
+            </div>
+          </section>
+        </fieldset>
+
         <fieldset class="pt-8 ">
           <sbtn title="应用修改" @click="applyPreview2Timeline" type="success" :disabled="!canEdit">将修改应用到时间轴</sbtn>
           <span class="inline-block py-2 mb-4 text-color-neutral text-sm border-gray-400">若进行过“添加文字/图片”操作，则在生成最终结果前，需要先将修改应用到时间轴，等到提示“应用成功”后方可生成GIF。</span>
@@ -575,6 +599,9 @@ export default class extends Vue implements Toasted {
   // 是否反复
   public rloop: boolean = false;
 
+  // 是否反复
+  public resize: boolean = false;
+
   // timeline偏移值
   public timelineLeft: number = 0;
 
@@ -703,6 +730,16 @@ export default class extends Vue implements Toasted {
     this.renderPreview();
 
     this.toast(`已${this.repeat? '开启' : '关闭'}循环播放`, 'info')
+  }
+
+  public toggleResize() {
+    this.resize = !this.resize;
+
+    if (this.resize) {
+      this.preview.showResizeRect();
+    } else {
+      this.preview.hideResizeRect();
+    }
   }
 
   public toggleRs() {
@@ -890,12 +927,6 @@ export default class extends Vue implements Toasted {
 
     const totalWidth = (width + 1) * this.totalFrameCount;
 
-    const gif = new GifGenerator({
-      repeat: this.repeat ? 0 : -1,
-      width: this.oriWidth,
-      height: this.oriHeight,
-    });
-
     this.canvas.absolutePan(new fabric.Point(0, 0));
 
     const dataUrlArr: string[] = [];
@@ -907,16 +938,43 @@ export default class extends Vue implements Toasted {
     const removeRangeStartIndex = this.frameRemoveRange[0] - 1;
     const removeRangeEndIndex = this.frameRemoveRange[1] - 1;
 
+    const isResizeRect = this.resize;
+
+    const gScaleX = this.showWidth / this.frameWidth;
+    const gScaleY = this.showHeight / this.frameHeight;
+
+    const resizeRect = this.preview.resizeRect;
+    const resizeWidth = (resizeRect.width * resizeRect.scaleX) / gScaleX;
+    const resizeHeight = (resizeRect.height * resizeRect.scaleY) / gScaleY;
+
+    const gif = new GifGenerator({
+      repeat: this.repeat ? 0 : -1,
+      width: isResizeRect ? resizeWidth : this.oriWidth,
+      height: isResizeRect ? resizeHeight : this.oriHeight,
+    });
+
     for (let i = startFrameIndex; i < endFrameIndex; (this.rs ? i+=2 : i++))  {
       if (this.enableFrameRangeRemove && i >= removeRangeStartIndex && i <= removeRangeEndIndex) {
         continue;
       }
 
+      let _width = width;
+      let _height = height;
+      let left = !this.revert ? (width + 1) * i : totalWidth - (width + 1) * (i + 1);
+      let top = 0;
+
+      if (isResizeRect) {
+        _width = resizeWidth;
+        _height = resizeHeight;
+        left += resizeRect.left / gScaleX;
+        top += resizeRect.top / gScaleY;
+      }
+
       const durl = this.canvas.toDataURL({
-        width,
-        height,
-        left: !this.revert ? (width + 1) * i : totalWidth - (width + 1) * (i + 1),
-        top: 0,
+        width: _width,
+        height: _height,
+        left, 
+        top,
         format: 'png',
       });
 
@@ -1084,6 +1142,14 @@ export default class extends Vue implements Toasted {
   public curTab: string = 'base';
   public switchTab(tab: string) {
     this.curTab = tab;
+
+    if (tab === 'resize') {
+      if (this.resize) {
+        this.preview.showResizeRect();
+      }
+    } else {
+      this.preview.hideResizeRect();
+    }
   }
 
   public addImage(imgList: FileList) {
@@ -1110,6 +1176,7 @@ export default class extends Vue implements Toasted {
     this.preview.updateOptions({
       revert: this.revert,
       repeat: this.repeat,
+      showResize: this.resize,
     });
     
     this.preview.renderPreview(this.usefulFrame, this.interval, index => {

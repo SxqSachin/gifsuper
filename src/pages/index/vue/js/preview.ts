@@ -6,6 +6,8 @@ export interface PreviewOption {
   revert?: boolean;
   repeat?: boolean;
   rloop?: boolean;
+  showResize?: boolean;
+  resize?: boolean;
   interval?: number;
 }
 
@@ -37,6 +39,8 @@ class GifPreview {
 
   private _replay: boolean = false;
 
+  private _resizeRect!: fabric.Rect;
+
   constructor(canvasID: string, main: Toasted) {
     this.previewCanvas = new fabric.Canvas(canvasID);
 
@@ -55,6 +59,23 @@ class GifPreview {
     this.frameGroup = null;
     canvas.clear().setWidth(width).setHeight(height);
 
+    const resizeRect = new fabric.Rect({
+      type: 'assets',
+      width: width - 64,
+      height: height - 64,
+      top: 32,
+      left: 32,
+      stroke: '#666666',
+      strokeWidth: 4,
+      fill: '#00000000',
+      hasRotatingPoint: false,
+      cornerStyle: 'circle',
+      transparentCorners: false,
+      opacity: 0,
+      selectable: false,
+    });
+
+    this._resizeRect = resizeRect;
     this.showWidth = width;
     this.showHeight = height;
 
@@ -62,7 +83,7 @@ class GifPreview {
 
     this.frameGroup = frameGroup;
 
-    canvas.add(frameGroup).renderAll();
+    canvas.add(frameGroup).add(resizeRect).renderAll();
 
     this.renderPreview(Array.from(new Array(frameList.length).keys()));
   }
@@ -115,6 +136,7 @@ class GifPreview {
       gifTimer,
       options,
       showWidth: frameWidth,
+      _resizeRect: resizeRect,
     } = this;
 
     const {
@@ -125,7 +147,6 @@ class GifPreview {
     if (revert) {
       frameArray.sort((a, b) => b - a);
     }
-
     this._frameArray = frameArray;
 
     const startFrameIndex = frameArray[0];
@@ -147,6 +168,24 @@ class GifPreview {
         _curFramePointer,
         _replay,
       } = this;
+
+      let {
+        showResize,
+      } = this.options;
+
+      if (showResize) {
+        resizeRect.set({
+          opacity: 1,
+          stroke: '#ff9800',
+          selectable: true,
+        });
+      } else {
+        resizeRect.set({
+          opacity: 0,
+          stroke: '#777',
+          selectable: false,
+        });
+      }
 
       if (_pause) {
         return;
@@ -331,7 +370,7 @@ class GifPreview {
   }
 
   public getObjects(includeFrame: boolean = false) {
-    const allObject = this.previewCanvas.getObjects().filter(obj => includeFrame || !obj.isType('bg') && !obj.isType('bg-group'));
+    const allObject = this.previewCanvas.getObjects().filter(obj => includeFrame || !obj.isType('bg') && !obj.isType('bg-group') && !obj.isType('assets'));
 
     return allObject;
   }
@@ -358,6 +397,20 @@ class GifPreview {
   }
   public play() {
     this._pause = false;
+  }
+
+  public showResizeRect() {
+    this.options.showResize = true;
+    // this.previewCanvas.setActiveObject(this._resizeRect);
+  }
+
+  public hideResizeRect() {
+    this.options.showResize = false;
+    // this.previewCanvas.discardActiveObject();
+  }
+
+  get resizeRect(): fabric.Rect {
+    return this._resizeRect;
   }
 
   get curFramePointer(): number {
