@@ -944,8 +944,8 @@ export default class extends Vue implements Toasted {
     const gScaleY = this.showHeight / this.frameHeight;
 
     const resizeRect = this.preview.resizeRect;
-    const resizeWidth = (resizeRect.width * resizeRect.scaleX) / gScaleX;
-    const resizeHeight = (resizeRect.height * resizeRect.scaleY) / gScaleY;
+    const resizeWidth = Math.round((resizeRect.width * resizeRect.scaleX) / gScaleX);
+    const resizeHeight = Math.round((resizeRect.height * resizeRect.scaleY) / gScaleY);
 
     const gif = new GifGenerator({
       repeat: this.repeat ? 0 : -1,
