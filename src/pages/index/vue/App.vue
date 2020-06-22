@@ -1148,7 +1148,7 @@ export default class extends Vue implements Toasted {
         this.preview.showResizeRect();
       }
     } else {
-      this.preview.hideResizeRect();
+      // this.preview.hideResizeRect();
     }
   }
 
