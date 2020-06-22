@@ -40,6 +40,10 @@ class GifPreview {
   private _replay: boolean = false;
 
   private _resizeRect!: fabric.Rect;
+  private _resizeRectBorderT!: fabric.Rect;
+  private _resizeRectBorderB!: fabric.Rect;
+  private _resizeRectBorderL!: fabric.Rect;
+  private _resizeRectBorderR!: fabric.Rect;
 
   constructor(canvasID: string, main: Toasted) {
     this.previewCanvas = new fabric.Canvas(canvasID);
@@ -51,6 +55,36 @@ class GifPreview {
     this.options = options;
   }
 
+  public createResizeRect(width, height): fabric.Rect {
+    return new fabric.Rect({
+      type: 'assets',
+      width: width - 64,
+      height: height - 64,
+      top: 32,
+      left: 32,
+      stroke: '#666666',
+      strokeWidth: 1,
+      fill: '#00000000',
+      hasRotatingPoint: false,
+      cornerStyle: 'circle',
+      opacity: 0,
+      selectable: false,
+      cornerColor: '#fff',
+      cornerSize: 12,
+      transparentCorners: false
+    });
+  }
+
+  public createResizeRectBorder(): fabric.Rect {
+    return new fabric.Rect({
+      type: 'assets',
+      fill: '#000000c7',
+      opacity: 0,
+      selectable: false,
+      hasControls: false,
+    });
+  }
+
   public async initPreviewCanvas(frameList: GifFrameList, width: number, height: number) {
     const {
       previewCanvas: canvas,
@@ -59,23 +93,47 @@ class GifPreview {
     this.frameGroup = null;
     canvas.clear().setWidth(width).setHeight(height);
 
-    const resizeRect = new fabric.Rect({
-      type: 'assets',
-      width: width - 64,
-      height: height - 64,
-      top: 32,
-      left: 32,
-      stroke: '#666666',
-      strokeWidth: 4,
-      fill: '#00000000',
-      hasRotatingPoint: false,
-      cornerStyle: 'circle',
-      transparentCorners: false,
-      opacity: 0,
-      selectable: false,
-    });
+    const resizeRect = this.createResizeRect(width, height);
+    const rt = this.createResizeRectBorder();
+    const rb = this.createResizeRectBorder();
+    const rl = this.createResizeRectBorder();
+    const rr = this.createResizeRectBorder();
+
+    const resizeBorder = () => {
+      rt.set({
+        width: 2000,
+        height: 2000,
+        top: resizeRect.top - 2000,
+        left: 0,
+      });
+      rb.set({
+        width: 2000,
+        height: 2000,
+        top: resizeRect.top + resizeRect.height * resizeRect.scaleY + 1,
+        left: 0,
+      });
+      rl.set({
+        width: 2000,
+        height: resizeRect.height * resizeRect.scaleY + 1,
+        top: resizeRect.top,
+        left: resizeRect.left - 2000,
+      });
+      rr.set({
+        width: 2000,
+        height: resizeRect.height * resizeRect.scaleY + 1,
+        top: resizeRect.top,
+        left: resizeRect.left + resizeRect.width * resizeRect.scaleX + 1,
+      });
+    };
+
+    resizeBorder();
+    resizeRect.on('moving', resizeBorder).on('scaling', resizeBorder); 
 
     this._resizeRect = resizeRect;
+    this._resizeRectBorderT = rt;
+    this._resizeRectBorderB = rb;
+    this._resizeRectBorderL = rl;
+    this._resizeRectBorderR = rr;
     this.showWidth = width;
     this.showHeight = height;
 
@@ -83,7 +141,7 @@ class GifPreview {
 
     this.frameGroup = frameGroup;
 
-    canvas.add(frameGroup).add(resizeRect).renderAll();
+    canvas.add(frameGroup).add(resizeRect).add(rt, rb, rl ,rr).renderAll();
 
     this.renderPreview(Array.from(new Array(frameList.length).keys()));
   }
@@ -137,6 +195,10 @@ class GifPreview {
       options,
       showWidth: frameWidth,
       _resizeRect: resizeRect,
+      _resizeRectBorderT: resizeRectBorderT,
+      _resizeRectBorderB: resizeRectBorderB,
+      _resizeRectBorderL: resizeRectBorderL,
+      _resizeRectBorderR: resizeRectBorderR,
     } = this;
 
     const {
@@ -176,15 +238,23 @@ class GifPreview {
       if (showResize) {
         resizeRect.set({
           opacity: 1,
-          stroke: '#ff9800',
+          stroke: '#fff',
           selectable: true,
         });
+        resizeRectBorderT.set({ opacity: 1 });
+        resizeRectBorderB.set({ opacity: 1 });
+        resizeRectBorderL.set({ opacity: 1 });
+        resizeRectBorderR.set({ opacity: 1 });
       } else {
         resizeRect.set({
           opacity: 0,
           stroke: '#777',
           selectable: false,
         });
+        resizeRectBorderT.set({ opacity: 0 });
+        resizeRectBorderB.set({ opacity: 0 });
+        resizeRectBorderL.set({ opacity: 0 });
+        resizeRectBorderR.set({ opacity: 0 });
       }
 
       if (_pause) {
@@ -401,12 +471,12 @@ class GifPreview {
 
   public showResizeRect() {
     this.options.showResize = true;
-    // this.previewCanvas.setActiveObject(this._resizeRect);
+    this.previewCanvas.setActiveObject(this._resizeRect);
   }
 
   public hideResizeRect() {
     this.options.showResize = false;
-    // this.previewCanvas.discardActiveObject();
+    this.previewCanvas.discardActiveObject();
   }
 
   get resizeRect(): fabric.Rect {
