@@ -244,6 +244,7 @@ class GifGenerator {
     const promise: Promise<HTMLImageElement> = new Promise(resolve => {
       // 直到_df被挂载到页面上时，onload才会被触发
       imgElem.onload = () => {
+        console.log(imgElem.width, imgElem.height);
         this.gif.addFrame(imgElem, options);
 
         imgElem.remove();
