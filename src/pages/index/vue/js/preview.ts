@@ -62,9 +62,8 @@ class GifPreview {
       height: height - 64,
       top: 32,
       left: 32,
-      stroke: '#666666',
-      strokeWidth: 1,
       fill: '#00000000',
+      hasBorders: false,
       hasRotatingPoint: false,
       cornerStyle: 'circle',
       opacity: 0,
@@ -109,20 +108,20 @@ class GifPreview {
       rb.set({
         width: 2000,
         height: 2000,
-        top: resizeRect.top + resizeRect.height * resizeRect.scaleY + 1,
+        top: resizeRect.top + resizeRect.height * resizeRect.scaleY,
         left: 0,
       });
       rl.set({
         width: 2000,
-        height: resizeRect.height * resizeRect.scaleY + 1,
+        height: resizeRect.height * resizeRect.scaleY,
         top: resizeRect.top,
         left: resizeRect.left - 2000,
       });
       rr.set({
         width: 2000,
-        height: resizeRect.height * resizeRect.scaleY + 1,
+        height: resizeRect.height * resizeRect.scaleY,
         top: resizeRect.top,
-        left: resizeRect.left + resizeRect.width * resizeRect.scaleX + 1,
+        left: resizeRect.left + resizeRect.width * resizeRect.scaleX,
       });
     };
 
