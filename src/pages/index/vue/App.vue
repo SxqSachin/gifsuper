@@ -140,7 +140,6 @@
             @click="switchTab('resize')"
           >
             <img class="w-4 h-4 flex-shrink-0" src="/static/icons/contract.svg"/>
-            <sup class="text-red-400">new</sup>
             <span class="ml-2 md:inline" :class="{inline: curTab === 'resize', 'hidden': curTab !== 'resize'}">裁剪</span>
           </li>
         </ul>
