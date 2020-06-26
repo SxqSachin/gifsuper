@@ -244,6 +244,7 @@ class GifPreview {
         resizeRectBorderB.set({ opacity: 1 });
         resizeRectBorderL.set({ opacity: 1 });
         resizeRectBorderR.set({ opacity: 1 });
+        canvas.renderAll();
       } else {
         resizeRect.set({
           opacity: 0,
@@ -254,6 +255,7 @@ class GifPreview {
         resizeRectBorderB.set({ opacity: 0 });
         resizeRectBorderL.set({ opacity: 0 });
         resizeRectBorderR.set({ opacity: 0 });
+        canvas.renderAll();
       }
 
       if (_pause) {
