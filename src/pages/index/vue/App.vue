@@ -191,8 +191,10 @@
             </div>
 
             <div class="flex flex-col md:flex-row">
-              <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleRevert">倒放：{{ revert ? '开' : '关' }}</sbtn>
-              <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleRepeat">循环：{{ repeat ? '开' : '关' }}</sbtn>
+              <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleState('revert', '倒放')">倒放：{{ revert ? '开' : '关' }}</sbtn>
+              <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleState('repeat', '循环')">循环：{{ repeat ? '开' : '关' }}</sbtn>
+              <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会左右颠倒" :disabled="!canEdit" @click="toggleState('flipX', '左右翻转', true)">左右翻转：{{ flipX ? '开' : '关' }}</sbtn>
+              <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会上下颠倒" :disabled="!canEdit" @click="toggleState('flipY', '上下翻转', true)">上下翻转：{{ flipY ? '开' : '关' }}</sbtn>
               <!-- <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后可实现首尾相接重复的特效" :disabled="!canEdit" @click="toggleRLoop">
                 <span>反复</span>
                 <span>:{{ rloop ? '开' : '关' }} </span>
@@ -417,7 +419,10 @@
 
         <fieldset class="pt-8 ">
           <sbtn title="应用修改" @click="applyPreview2Timeline" type="success" :disabled="!canEdit">将修改应用到时间轴</sbtn>
-          <span class="inline-block py-2 mb-4 text-color-neutral text-sm border-gray-400">若进行过“添加文字/图片”操作，则在生成最终结果前，需要先将修改应用到时间轴，等到提示“应用成功”后方可生成GIF。</span>
+          <div class="py-2 mb-4 text-sm">
+            <span class="text-red-300"> 注意：</span>
+            <span class="text-color-neutral">若进行过“添加文字/图片”操作，则在生成最终结果前，需要先将修改应用到时间轴，等到提示“应用成功”后方可生成GIF。</span>
+          </div>
           <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
           <span class="inline-block py-2 text-color-neutral text-sm border-gray-400">tips: 受原Gif大小影响，点击“生成”按钮后可能会有短暂卡顿，此时耐心等候即可。</span>
         </fieldset>
@@ -598,8 +603,12 @@ export default class extends Vue implements Toasted {
   // 是否反复
   public rloop: boolean = false;
 
-  // 是否反复
+  // 是否开启裁剪
   public resize: boolean = false;
+
+  // 镜像
+  public flipX: boolean = false;
+  public flipY: boolean = false;
 
   // timeline偏移值
   public timelineLeft: number = 0;
@@ -741,6 +750,20 @@ export default class extends Vue implements Toasted {
     }
   }
 
+  public toggleState(key: keyof this, name?: string, resetTimeline: boolean = false) {
+    this[key] = !this[key] as any;
+
+    this.renderPreview();
+
+    if (name) {
+      this.toast(`已${this[key]? '开启' : '关闭'}${name}`, 'info')
+    }
+
+    if (resetTimeline) {
+      this.makeTimeline(this.frameList);
+    }
+  }
+
   public toggleRs() {
     this.rs = !this.rs;
 
@@ -839,6 +862,8 @@ export default class extends Vue implements Toasted {
           lockMovementY: true,
           hasControls: false,
           selectable: false,
+          flipX: this.flipX,
+          flipY: this.flipY,
         }).scale(scale);
 
         // @ts-ignore
@@ -1170,12 +1195,22 @@ export default class extends Vue implements Toasted {
     const usefulFrame= this.usefulFrame;
     const curFrame = this.curFrameSlider;
 
+    const {
+      revert,
+      repeat,
+      resize: showResize,
+      flipX,
+      flipY,
+    } = this;
+
     this.curFrameSlider = Math.min(usefulFrame[curFrame], usefulFrame[usefulFrame.length - 1]);
 
     this.preview.updateOptions({
-      revert: this.revert,
-      repeat: this.repeat,
-      showResize: this.resize,
+      revert,
+      repeat,
+      showResize,
+      flipX,
+      flipY,
     });
     
     this.preview.renderPreview(this.usefulFrame, this.interval, index => {

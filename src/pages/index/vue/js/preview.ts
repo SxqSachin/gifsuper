@@ -9,6 +9,8 @@ export interface PreviewOption {
   showResize?: boolean;
   resize?: boolean;
   interval?: number;
+  flipX?: boolean;
+  flipY?: boolean;
 }
 
 const DefaultPreviewOption: PreviewOption = {
@@ -19,6 +21,7 @@ const DefaultPreviewOption: PreviewOption = {
 class GifPreview {
   private previewCanvas!: fabric.Canvas;
   private frameGroup: fabric.Group = null;
+  private frameList: GifFrameList = null;
 
   private _pause: boolean = false;
 
@@ -51,8 +54,10 @@ class GifPreview {
     this.main = main;
   }
 
-  public updateOptions(options: PreviewOption) {
+  public async updateOptions(options: PreviewOption) {
     this.options = options;
+
+    await this.initPreviewCanvas(this.frameList, this.showWidth, this.showHeight);
   }
 
   public createResizeRect(width, height): fabric.Rect {
@@ -136,6 +141,7 @@ class GifPreview {
     this.showWidth = width;
     this.showHeight = height;
 
+    this.frameList = frameList;
     const frameGroup = await this.genSrcGIFFrameGroup(frameList, width, height);
 
     this.frameGroup = frameGroup;
@@ -152,6 +158,11 @@ class GifPreview {
 
     const promiseGroup: Promise<fabric.Object>[] = [];
 
+    const {
+      flipX,
+      flipY,
+    } = this.options;
+
     frameList.forEach((frame, index) => {
       promiseGroup.push(new Promise(resolve => {
         fabric.Image.fromURL(frame.imgFileSrc, img => {
@@ -166,6 +177,8 @@ class GifPreview {
             hasControls: false,
             selectable: false,
             type: 'bg',
+            flipX,
+            flipY,
           }).scaleToWidth(width).scaleToHeight(height);
 
           resolve(nimg);
@@ -203,6 +216,7 @@ class GifPreview {
     const {
       repeat,
       revert,
+      flipX,
     } = options;
 
     if (revert) {
@@ -228,6 +242,7 @@ class GifPreview {
         _pause,
         _curFramePointer,
         _replay,
+        
       } = this;
 
       let {
