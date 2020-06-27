@@ -9,6 +9,8 @@ export interface PreviewOption {
   showResize?: boolean;
   resize?: boolean;
   interval?: number;
+  flipX?: boolean;
+  flipY?: boolean;
 }
 
 const DefaultPreviewOption: PreviewOption = {
@@ -19,11 +21,14 @@ const DefaultPreviewOption: PreviewOption = {
 class GifPreview {
   private previewCanvas!: fabric.Canvas;
   private frameGroup: fabric.Group = null;
+  private frameList: GifFrameList = null;
 
   private _pause: boolean = false;
 
   private _curFramePointer: number = 0;
   private _frameArray: number[] = [];
+
+  private renderPreviewCallback = (i: number) => {};
 
   // private revert: boolean = false;
   // private repeat: boolean = true;
@@ -51,8 +56,10 @@ class GifPreview {
     this.main = main;
   }
 
-  public updateOptions(options: PreviewOption) {
+  public async updateOptions(options: PreviewOption) {
     this.options = options;
+
+    await this.initPreviewCanvas(this.frameList, this.showWidth, this.showHeight);
   }
 
   public createResizeRect(width, height): fabric.Rect {
@@ -136,13 +143,14 @@ class GifPreview {
     this.showWidth = width;
     this.showHeight = height;
 
+    this.frameList = frameList;
     const frameGroup = await this.genSrcGIFFrameGroup(frameList, width, height);
 
     this.frameGroup = frameGroup;
 
     canvas.add(frameGroup).add(resizeRect).add(rt, rb, rl ,rr).renderAll();
 
-    this.renderPreview(Array.from(new Array(frameList.length).keys()));
+    this.renderPreview(this._frameArray ?? Array.from(new Array(frameList.length).keys()), this.interval, this.renderPreviewCallback);
   }
 
    // 生成指定宽高的帧Group
@@ -151,6 +159,11 @@ class GifPreview {
     const height = frameHeight;
 
     const promiseGroup: Promise<fabric.Object>[] = [];
+
+    const {
+      flipX,
+      flipY,
+    } = this.options;
 
     frameList.forEach((frame, index) => {
       promiseGroup.push(new Promise(resolve => {
@@ -166,6 +179,8 @@ class GifPreview {
             hasControls: false,
             selectable: false,
             type: 'bg',
+            flipX,
+            flipY,
           }).scaleToWidth(width).scaleToHeight(height);
 
           resolve(nimg);
@@ -209,6 +224,8 @@ class GifPreview {
       frameArray.sort((a, b) => b - a);
     }
     this._frameArray = frameArray;
+    this.interval = interval;
+    this.renderPreviewCallback = callback;
 
     const startFrameIndex = frameArray[0];
     const startLeft = startFrameIndex * frameWidth;
@@ -218,7 +235,6 @@ class GifPreview {
     // let framePointer = 0;
 
     // this._curFramePointer = 0;
-    this.interval = interval;
 
     if (gifTimer) {
       clearInterval(gifTimer);
@@ -228,6 +244,7 @@ class GifPreview {
         _pause,
         _curFramePointer,
         _replay,
+        
       } = this;
 
       let {
@@ -244,6 +261,10 @@ class GifPreview {
         resizeRectBorderB.set({ opacity: 1 });
         resizeRectBorderL.set({ opacity: 1 });
         resizeRectBorderR.set({ opacity: 1 });
+        canvas.bringToFront(resizeRectBorderT);
+        canvas.bringToFront(resizeRectBorderB);
+        canvas.bringToFront(resizeRectBorderL);
+        canvas.bringToFront(resizeRectBorderR);
         canvas.renderAll();
       } else {
         resizeRect.set({
@@ -360,6 +381,9 @@ class GifPreview {
           top: 15,
           width: frameData.width,
           height: frameData.height,
+          cornerColor: '#66a6ff',
+          cornerSize: 8,
+          transparentCorners: false
         }) as RangedFrameObject;
 
         nimg.set({
@@ -401,6 +425,9 @@ class GifPreview {
       top: 15,
       fontWeight,
       fontSize: size,
+      cornerColor: '#66a6ff',
+      cornerSize: 8,
+      transparentCorners: false
     }) as fabric.IText & RangedFrameObject;
 
     if (enableStroke) {

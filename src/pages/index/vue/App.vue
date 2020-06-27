@@ -11,435 +11,446 @@
       <upload class="uploader mx-auto" :before-upload="upload" accept=".gif">上传GIF</upload>
     </div>
 
-    <div v-show="!!oriImageSrc" class="w-full flex items-center p-4 pb-0 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md rounded-bl-none rounded-br-none">
-      <div class="w-full">
-        <div class="flex">
-          <div class="flex-auto">
-            <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block block">预览：</label>
-            <label v-show="canEdit || isGenerating" for="srcgif" class="hidden md:block w-full">点击添加的文字/图片来进行缩放/旋转操作。可用鼠标框选元素。</label>
-            <label v-show="canEdit || isGenerating" for="srcgif" class="block md:hidden w-full">点击添加的文字/图片来进行缩放/旋转操作。（长按+拖动）可框选元素。</label>
-          </div>
-          <div class="flex-0 w-6">
-          </div>
-        </div>
-
-        <div id="srcgif" class="flex justify-center items-center hidden"> </div>
-
-        <div v-show="!!oriImageSrc && oriGifLoadProgress < 1" class="flex flex-col justify-center items-center">
-          <img ref="oriImageDom" :src="oriImageSrc" alt="" srcset=""/>
-          <div v-show="!!oriImageSrc && oriGifLoadProgress < 1" class="mask w-full h-full float-left absolute flex justify-center items-center bg-opacity-75 bg-gray-800 text-white text-lg text-center" :style="{width: `${showWidth}px`, height: `${showHeight}px`}"> 
-            读取数据中： {{ Math.max(0, (oriGifLoadProgress * 100 - 1).toFixed(0)) }} %
-          </div>
-        </div>
-      </div>
-
-    </div>
-    <div v-show="!!oriImageSrc" :class="{'sticky top-0': stickyPreviewCanvas}" class="z-50 w-full flex mb-4 items-center p-4 pt-0 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md rounded-tl-none rounded-tr-none">
-      <div class="src w-full">
-        <div ref="edit-canvas" v-show="!!oriImageSrc && oriGifLoadProgress === 1" class="mt-4">
-          <div class="flex justify-center items-center w-full">
-            <canvas id="edit-canvas"> </canvas>
-          </div>
-
-          <div class="w-full h-full flex justify-center items-center text-white text-lg text-center pointer-events-none">
-            <img class="float-left absolute transform -translate-y-1/2" :style="{width: `${showWidth}px`, height: `${showHeight}px`}" v-show="!!curPreviewImg" :src="curPreviewImg" alt="当前预览帧"/>
-          </div>
-
-          <div class="mt-2 flex justify-between flex-wrap" v-show="!!oriImageSrc && oriGifLoadProgress === 1">
-
-            <div class="flex justify-center items-center mb-2 w-full">
-              <slider class="flex-auto"
-                v-model="curFrameSlider"
-                :min="1"
-                :max="usefulFrame.length"
-                :disabled="!canEdit"
-                :drag-on-click="true"
-                :duration="0"
-                @change="onCurFrameChange"
-               ></slider>
-            </div>
-            <div class="flex justify-between w-full">
-              <div class="flex flex-wrap">
-                <sbtn title="删除当前选中元素" @click="preview.removeActiveObjects()" type="error" style="padding-left: 0.45rem; padding-right: 0.45rem;">
-                  <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/trash.svg"/>
-                </sbtn>
-              </div>
-              <div class="flex flex-no-wrap">
-                <sbtn class="rounded-tr-none rounded-br-none" title="第一帧" type="ghost" @click="preview.setPreviewFrame(0)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
-                  <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-back.svg"/>
-                </sbtn>
-                <sbtn class="rounded-none border-l-0" title="上一帧" type="ghost" @click="preview.setPreviewFrame(preview.curFramePointer - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
-                  <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-back.svg"/>
-                </sbtn>
-                <sbtn class="rounded-none border-l-0" title="播放/暂停" type="ghost" @click="togglePause" style="padding-left: 0.25rem; padding-right: 0.25rem;">
-                  <img v-show="!!aaa" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play.svg"/>
-                  <img v-show="!aaa" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pause.svg"/>
-                </sbtn>
-                <sbtn class="rounded-none border-l-0" title="下一帧" type="ghost" @click="preview.setPreviewFrame(preview.curFramePointer + 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
-                  <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-forward.svg"/>
-                </sbtn>
-                <sbtn class="rounded-tl-none rounded-bl-none" title="最后一帧" type="ghost" @click="preview.setPreviewFrame(preview.frameArray.length - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
-                  <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-forward.svg"/>
-                </sbtn>
-              </div>
-              <div class="flex flex-wrap">
-                <sbtn class="ml-2" title="开启/关闭 固定" type="ghost" @click="stickyPreviewCanvas = !stickyPreviewCanvas" style="padding-left: 0.25rem; padding-right: 0.25rem;">
-                  <img v-show="stickyPreviewCanvas" style="width: 1.7rem;" class="h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pin.png"/>
-                  <img v-show="!stickyPreviewCanvas" style="width: 1.6rem; height: 1.6rem;" class="flex-shrink-0 cursor-pointer" src="/static/icons/pin-1.png"/>
-                </sbtn>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <fieldset v-if="!canEdit && !oriImageSrc" class="pb-4">
       <h2 class="font-normal text-lg color-info"> 提示： 上传Gif后可在下方进行编辑 </h2>
     </fieldset>
 
-    <div class="edit-panel w-full px-1 py-1 md:px-6 md:py-3 rounded-md border-color-2 flex flex-col">
+    <div class="flex flex-col md:flex-row-reverse" :class="{'md:flex-col': !isPreviewUseable}">
 
-      <div class="flex flex-row">
-        <ul class="flex flex-row">
-          <li
-            class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-            :class="{'bg-assets shadow': curTab === 'base'}"
-            @click="switchTab('base')"
-          >
-            <img class="w-4 h-4 flex-shrink-0" src="/static/icons/hammer.svg"/>
-            <span class="ml-2 md:inline" :class="{inline: curTab === 'base', 'hidden': curTab !== 'base'}">基础设置</span>
-          </li>
-          <li
-            class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-            :class="{'bg-assets shadow': curTab === 'addText'}"
-            @click="switchTab('addText')"
-          >
-            <img class="w-4 h-4 flex-shrink-0" src="/static/icons/text.svg"/>
-            <span class="ml-2 md:inline" :class="{inline: curTab === 'addText', 'hidden': curTab !== 'addText'}">添加文字</span>
-          </li>
-          <li
-            class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-            :class="{'bg-assets shadow': curTab === 'addPic'}"
-            @click="switchTab('addPic')"
-          >
-            <img class="w-4 h-4 flex-shrink-0" src="/static/icons/image.svg"/>
-            <span class="ml-2 md:inline" :class="{inline: curTab === 'addPic', 'hidden': curTab !== 'addPic'}">添加图片</span>
-          </li>
-          <li
-            class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-            :class="{'bg-assets shadow': curTab === 'cut'}"
-            @click="switchTab('cut')"
-          >
-            <img class="w-4 h-4 flex-shrink-0" src="/static/icons/cut.svg"/>
-            <span class="ml-2 md:inline" :class="{inline: curTab === 'cut', 'hidden': curTab !== 'cut'}">帧裁剪</span>
-          </li>
-          <li
-            class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-            :class="{'bg-assets shadow': curTab === 'resize'}"
-            @click="switchTab('resize')"
-          >
-            <img class="w-4 h-4 flex-shrink-0" src="/static/icons/contract.svg"/>
-            <span class="ml-2 md:inline" :class="{inline: curTab === 'resize', 'hidden': curTab !== 'resize'}">裁剪</span>
-          </li>
-        </ul>
-      </div>
-
-      <div class="flex-auto flex flex-col mr-0 mb-4 w-full">
-
-        <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md rounded-tl-none"
-          v-show="curTab === 'base'"
-          >
-          <section class="flex flex-col flex-auto w-full">
-            <h2 class="mb-4 text-lg"> 图片信息 </h2>
-
-            <div class="flex w-full">
-              <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
-                <label for="interval" class="whitespace-no-wrap flex-0 inline-block">总帧数：</label>
-                <div>{{ this.frameList.length }}</div>
-              </div>
-              <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
-                <label for="interval" class="whitespace-no-wrap flex-0 inline-block">大小：</label>
-                <div>{{ this.rawFile ? +(this.rawFile.size / (1024 * 1024)).toFixed(2) : 0 }}MB</div>
+      <div class="flex flex-col w-full md:w-2/5" :class="{'md:w-full': !isPreviewUseable, 'md-preview-sticky z-50': stickyPreviewCanvas}" >
+        <div v-show="!!oriImageSrc" class="w-full flex items-center p-4 pb-0 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md rounded-bl-none rounded-br-none">
+          <div class="w-full">
+            <div class="flex">
+              <div class="flex-auto">
+                <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block block">预览：</label>
+                <label v-show="canEdit || isGenerating" for="srcgif" class="hidden md:block w-full whitespace-no-wrap truncate">点击添加的文字/图片来进行缩放/旋转操作。</label>
+                <label v-show="canEdit || isGenerating" for="srcgif" class="hidden md:block w-full">可用鼠标框选元素。</label>
+                <label v-show="canEdit || isGenerating" for="srcgif" class="block md:hidden w-full whitespace-no-wrap truncate">点击添加的文字/图片来进行缩放/旋转操作。</label>
+                <label v-show="canEdit || isGenerating" for="srcgif" class="block md:hidden w-full">（长按+拖动）可框选元素。</label>
               </div>
             </div>
-          </section>
 
-          <section class="flex flex-col flex-auto mt-4 w-full">
-            <h2 class="mb-4 text-lg"> 基础调整 </h2>
+            <div id="srcgif" class="flex justify-center items-center hidden"> </div>
 
-            <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
-              <label for="">
-                <span>帧间隔：</span>
-                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">毫秒单位，帧间隔越小，生成后的Gif就越流畅，同时总时长变短</span>
-              </label>
-
-              <slider class="flex-auto"
-                v-model="interval"
-                :min="15"
-                :max="300"
-                :marks="[15, 300]"
-                :lazy="true"
-                :disabled="!canEdit"
-                :drag-on-click="true"
-                :contained="true"
-                @change="renderPreview"
-                tooltip="always"
-                tooltip-placement="bottom"
-                style="width: calc(100% - 14px);"
-               ></slider>
+            <div v-show="!!oriImageSrc && oriGifLoadProgress < 1" class="flex flex-col justify-center items-center">
+              <img ref="oriImageDom" :src="oriImageSrc" alt="" srcset=""/>
+              <div v-show="!!oriImageSrc && oriGifLoadProgress < 1" class="mask w-full h-full float-left absolute flex justify-center items-center bg-opacity-75 bg-gray-800 text-white text-lg text-center" :style="{width: `${showWidth}px`, height: `${showHeight}px`}"> 
+                读取数据中： {{ Math.max(0, (oriGifLoadProgress * 100 - 1).toFixed(0)) }} %
+              </div>
             </div>
+          </div>
 
-            <div class="flex flex-col md:flex-row">
-              <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleRevert">倒放：{{ revert ? '开' : '关' }}</sbtn>
-              <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleRepeat">循环：{{ repeat ? '开' : '关' }}</sbtn>
-              <!-- <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后可实现首尾相接重复的特效" :disabled="!canEdit" @click="toggleRLoop">
-                <span>反复</span>
-                <span>:{{ rloop ? '开' : '关' }} </span>
-              </sbtn> -->
-              <!-- <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后将会抽去原Gif中一般的帧数，可以减小文件大小，代价是Gif流畅程度将会下降" :disabled="!canEdit" @click="toggleRs">抽帧：{{ rs ? '开' : '关' }}</sbtn> -->
-              <!-- <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="重置时间轴" :disabled="!canEdit" type="error" @click="makeTimeline">重置</sbtn> -->
-            </div>
-          </section>
-
-        </fieldset>
-
-        <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
-          v-show="curTab === 'addText'"
-          >
-
-          <section class="flex flex-col w-full">
-            <div class="flex justify-center items-center mb-4 w-full">
-              <label for="" class="whitespace-no-wrap">文字内容：</label>
-              <s-input class="w-full" v-model="textContent" placeholder="请输入内容，支持Emoji等表情符号"></s-input>
-            </div>
-
-            <div class="flex items-center mb-4">
-              <label for="" class="whitespace-no-wrap">文字颜色：</label>
-              <color-picker class="z-40 ml-0 border border-gray-500" v-model="textColorObj"></color-picker>
-            </div>
-
-            <div class="flex justify-center items-center mb-4 pb-8 w-full">
-              <label for="" class="whitespace-no-wrap">文字大小：</label>
-              <slider class="flex-auto"
-                v-model="textSize"
-                :marks="[10, 128]"
-                :min="10"
-                :max="128"
-                :lazy="true"
-                :disabled="!canEdit"
-                :drag-on-click="true"
-                tooltip="always"
-                tooltip-placement="bottom"
-               ></slider>
-            </div>
-
-            <section class="flex flex-col w-full mb-4">
-              <div class="flex flex-row items-center mb-4">
-                <span>文字边线：</span><sbtn :disabled="!canEdit" @click="enableTextStroke = !enableTextStroke">{{ !enableTextStroke ? '开启' : '关闭' }}</sbtn>
+        </div>
+        <div v-show="!!oriImageSrc" :class="{'sticky top-0': stickyPreviewCanvas}" class="z-50 w-full flex mb-4 items-center p-4 pt-0 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md rounded-tl-none rounded-tr-none">
+          <div class="src w-full">
+            <div ref="edit-canvas" v-show="!!oriImageSrc && oriGifLoadProgress === 1" class="mt-4">
+              <div class="flex justify-center items-center w-full">
+                <canvas id="edit-canvas"> </canvas>
               </div>
 
-              <div class="flex flex-col justify-start w-full" v-show="enableTextStroke">
-                <div class="flex items-center mb-4">
-                  <label for="" class="whitespace-no-wrap">字边线色：</label>
-                  <color-picker class="z-40 ml-0 border border-gray-500" v-model="textStrokeObj"></color-picker>
-                </div>
+              <div class="w-full h-full flex justify-center items-center text-white text-lg text-center pointer-events-none">
+                <img class="float-left absolute transform -translate-y-1/2" :style="{width: `${showWidth}px`, height: `${showHeight}px`}" v-show="!!curPreviewImg" :src="curPreviewImg" alt="当前预览帧"/>
+              </div>
 
-                <div class="flex justify-center items-center pb-8 w-full">
-                  <label for="" class="whitespace-no-wrap">边线粗细：</label>
+              <div class="mt-2 flex justify-between flex-wrap" v-show="!!oriImageSrc && oriGifLoadProgress === 1">
+
+                <div class="flex justify-center items-center mb-2 w-full">
                   <slider class="flex-auto"
-                    v-model="textStrokeWidth"
-                    :marks="[1, 12]"
+                    v-model="curFrameSlider"
                     :min="1"
-                    :max="12"
-                    :lazy="true"
+                    :max="usefulFrame.length"
                     :disabled="!canEdit"
                     :drag-on-click="true"
-                    tooltip="always"
-                    tooltip-placement="bottom"
+                    :duration="0"
+                    @change="onCurFrameChange"
                    ></slider>
                 </div>
-
+                <div class="flex justify-between w-full">
+                  <div class="flex flex-wrap">
+                    <sbtn title="删除当前选中元素" @click="preview.removeActiveObjects()" type="error" style="padding-left: 0.45rem; padding-right: 0.45rem;">
+                      <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/trash.svg"/>
+                    </sbtn>
+                  </div>
+                  <div class="flex flex-no-wrap">
+                    <sbtn class="rounded-tr-none rounded-br-none" title="第一帧" type="ghost" @click="preview.setPreviewFrame(0)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                      <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-back.svg"/>
+                    </sbtn>
+                    <sbtn class="rounded-none border-l-0" title="上一帧" type="ghost" @click="preview.setPreviewFrame(preview.curFramePointer - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                      <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-back.svg"/>
+                    </sbtn>
+                    <sbtn class="rounded-none border-l-0" title="播放/暂停" type="ghost" @click="togglePause" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                      <img v-show="!!aaa" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play.svg"/>
+                      <img v-show="!aaa" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pause.svg"/>
+                    </sbtn>
+                    <sbtn class="rounded-none border-l-0" title="下一帧" type="ghost" @click="preview.setPreviewFrame(preview.curFramePointer + 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                      <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-forward.svg"/>
+                    </sbtn>
+                    <sbtn class="rounded-tl-none rounded-bl-none" title="最后一帧" type="ghost" @click="preview.setPreviewFrame(preview.frameArray.length - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                      <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-forward.svg"/>
+                    </sbtn>
+                  </div>
+                  <div class="flex flex-wrap">
+                    <sbtn class="ml-2 visible md:invisible" title="开启/关闭 固定" type="ghost" @click="stickyPreviewCanvas = !stickyPreviewCanvas" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                      <img v-show="stickyPreviewCanvas" style="width: 1.7rem;" class="h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pin.png"/>
+                      <img v-show="!stickyPreviewCanvas" style="width: 1.6rem; height: 1.6rem;" class="flex-shrink-0 cursor-pointer" src="/static/icons/pin-1.png"/>
+                    </sbtn>
+                  </div>
+                </div>
               </div>
-            </section>
-
-            <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
-              <label for="">
-                <span>范围添加文字</span>
-                <sup class="text-red-400"> new </sup>
-                <span>：</span>
-                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">只在指定范围内添加文字</span>
-              </label>
-
-              <slider class="flex-auto pt-0"
-                v-model="addTextRange"
-                :disabled="!canEdit"
-                :min="1"
-                :max="!!this.frameList.length ? this.frameList.length : 10"
-                :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
-                :contained="true"
-                tooltip="always"
-                tooltip-placement="bottom"
-                style="width: calc(100% - 14px);"
-                @dragging="renderPreviewImage"
-                @drag-end="curPreviewImg = ''"
-               ></slider>
             </div>
-
-            <div class="flex w-full justify-around items-center mb-4">
-              <sbtn class="w-full" @click="addText" :disabled="!canEdit">添加文字</sbtn>
-            </div>
-
-            <p class="flex flex-col text-lg">
-              <span class="inline-block pb-2 text-color-neutral text-sm font-normal border-gray-400">添加文字后，可于上方“预览”处，对文字进行位置、缩放、旋转等调整。</span>
-              <span class="inline-block pb-2 text-color-neutral text-sm font-normal border-gray-400">也可于下方“时间轴”处进行更细粒度的调整。</span>
-            </p>
-
-          </section>
-
-        </fieldset>
-
-        <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
-          v-show="curTab === 'addPic'"
-          >
-          <div class="flex flex-col justify-center items-start w-full">
-            <label for="" class="whitespace-no-wrap mb-1">
-              <span> 添加图片 </span>
-              <sup class="text-red-300"> Beta! </sup>
-              <span>：</span>
-            </label>
-            <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">若上传的图片尺寸过大，请至“预览”处拖动并调整大小。</span>
-          </div>
-
-          <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
-            <label for="">
-              <span>范围添加图片</span>
-              <sup class="text-red-400"> new </sup>
-              <span>：</span>
-              <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">只在指定范围内添加图片</span>
-            </label>
-
-            <slider class="flex-auto pt-0"
-              v-model="addImgRange"
-              :disabled="!canEdit"
-              :min="1"
-              :max="!!this.frameList.length ? this.frameList.length : 10"
-              :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
-              :contained="true"
-              tooltip="always"
-              tooltip-placement="bottom"
-              @dragging="renderPreviewImage"
-              @drag-end="curPreviewImg = ''"
-              style="width: calc(100% - 14px);"
-             ></slider>
-          </div>
-
-          <upload class="mt-4 uploader w-full" :before-upload="addImage" :disabled="!canEdit">添加图片</upload>
-
-        </fieldset>
-
-        <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
-          v-show="curTab === 'cut'"
-          >
-          <section class="flex flex-col justify-center items-start mb-4 w-full">
-            <label for="">
-              <span>区间裁剪：</span>
-              <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">保留你感兴趣的片段</span>
-            </label>
-
-            <div class="pb-8 w-full">
-              <slider class="flex-auto py-0"
-                v-model="frameSplitRange"
-                :disabled="!canEdit"
-                :min="1"
-                :max="!!this.frameList.length ? this.frameList.length : 10"
-                :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
-                :contained="true"
-                tooltip="always"
-                tooltip-placement="bottom"
-                :lazy="true"
-                @change="renderPreview"
-                @dragging="renderPreviewImage"
-                @drag-end="curPreviewImg = ''"
-                style="width: calc(100% - 14px);"
-               ></slider>
-            </div>
-          </section>
-
-          <section class="flex flex-col justify-center items-start w-full">
-            <label for="">
-              <span>区间去除：</span>
-              <!-- <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">删除指定区间内的帧，受制于区间裁剪数值</span> -->
-              <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">删除你不感兴趣的片段</span>
-            </label>
-
-            <div class="flex flex-row items-center">
-              <sbtn :disabled="!canEdit" @click="enableFrameRangeRemove = !enableFrameRangeRemove; renderPreview()">{{ !enableFrameRangeRemove ? '开启' : '关闭' }}</sbtn>
-            </div>
-
-            <div class="pb-8 w-full mt-4"
-              v-show="enableFrameRangeRemove"
-            >
-              <slider class="flex-auto w-full"
-                :disabled="!canEdit"
-                ref="frameRemoveRange"
-                v-model="frameRemoveRange"
-                :min="frameSplitRange[0]"
-                :max="frameSplitRange[1]"
-                :marks="[frameSplitRange[0], frameSplitRange[1]]"
-                :contained="true"
-                tooltip="always"
-                tooltip-placement="bottom"
-                :lazy="true"
-                @change="renderPreview"
-                @dragging="renderPreviewImage"
-                @drag-end="curPreviewImg = ''"
-                style="width: calc(100% - 14px);"
-               ></slider>
-            </div>
-          </section>
-        </fieldset>
-
-        <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
-          v-show="curTab === 'resize'"
-          >
-          <section class="flex flex-col justify-center items-start mb-4 w-full">
-            <label for="" class="mb-4">
-              <span>图片裁剪：</span>
-              <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">裁剪出原图中你感兴趣的部分</span>
-            </label>
-
-            <div class="flex flex-row items-center">
-              <span>裁剪：</span><sbtn :disabled="!canEdit" @click="toggleResize">{{ !resize ? '开启' : '关闭' }}</sbtn>
-            </div>
-          </section>
-        </fieldset>
-
-        <fieldset class="pt-8 ">
-          <sbtn title="应用修改" @click="applyPreview2Timeline" type="success" :disabled="!canEdit">将修改应用到时间轴</sbtn>
-          <span class="inline-block py-2 mb-4 text-color-neutral text-sm border-gray-400">若进行过“添加文字/图片”操作，则在生成最终结果前，需要先将修改应用到时间轴，等到提示“应用成功”后方可生成GIF。</span>
-          <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
-          <span class="inline-block py-2 text-color-neutral text-sm border-gray-400">tips: 受原Gif大小影响，点击“生成”按钮后可能会有短暂卡顿，此时耐心等候即可。</span>
-        </fieldset>
-      </div>
-
-      <div v-show="isGenerating || generateDone" class="flex-0 w-full p-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
-        <label for="" class="hidden md:inline" v-show="generateDone">新图像：（保存图片：右击图片->图片另存为）</label>
-        <label for="" class="inline md:hidden" v-show="generateDone">新图像：（长按图片->保存图片）</label>
-
-        <div class="flex justify-center h-full items-center mt-4">
-          <div class="my-12 md:my-0" v-show="isGenerating">
-            <div class="mb-12 text-center">生成中： {{progress}}%</div>
-
-            <div class="loading-calm-cat"></div>
-          </div>
-
-          <div v-show="!isGenerating">
-            <div id="dtsgif" class="mt-4 md:mt-0 flex justify-center items-center"> </div>
           </div>
         </div>
       </div>
 
+      <div class="w-full md:w-3/5 p-1 md:pb-3 md:pr-3 rounded-md border-color-2 flex flex-col" :class="{'md:w-full': !isPreviewUseable}">
+
+        <div class="flex flex-row">
+          <ul class="flex flex-row">
+            <li
+              class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
+              :class="{'bg-assets shadow': curTab === 'base'}"
+              @click="switchTab('base')"
+            >
+              <img class="w-4 h-4 flex-shrink-0" src="/static/icons/hammer.svg"/>
+              <span class="ml-2 md:inline" :class="{inline: curTab === 'base', 'hidden': curTab !== 'base'}">基础设置</span>
+            </li>
+            <li
+              class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
+              :class="{'bg-assets shadow': curTab === 'addText'}"
+              @click="switchTab('addText')"
+            >
+              <img class="w-4 h-4 flex-shrink-0" src="/static/icons/text.svg"/>
+              <span class="ml-2 md:inline" :class="{inline: curTab === 'addText', 'hidden': curTab !== 'addText'}">添加文字</span>
+            </li>
+            <li
+              class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
+              :class="{'bg-assets shadow': curTab === 'addPic'}"
+              @click="switchTab('addPic')"
+            >
+              <img class="w-4 h-4 flex-shrink-0" src="/static/icons/image.svg"/>
+              <span class="ml-2 md:inline" :class="{inline: curTab === 'addPic', 'hidden': curTab !== 'addPic'}">添加图片</span>
+            </li>
+            <li
+              class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
+              :class="{'bg-assets shadow': curTab === 'cut'}"
+              @click="switchTab('cut')"
+            >
+              <img class="w-4 h-4 flex-shrink-0" src="/static/icons/cut.svg"/>
+              <span class="ml-2 md:inline" :class="{inline: curTab === 'cut', 'hidden': curTab !== 'cut'}">帧裁剪</span>
+            </li>
+            <li
+              class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
+              :class="{'bg-assets shadow': curTab === 'resize'}"
+              @click="switchTab('resize')"
+            >
+              <img class="w-4 h-4 flex-shrink-0" src="/static/icons/contract.svg"/>
+              <span class="ml-2 md:inline" :class="{inline: curTab === 'resize', 'hidden': curTab !== 'resize'}">裁剪</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="flex-auto flex flex-col mr-0 mb-4 w-full">
+
+          <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md rounded-tl-none"
+            v-show="curTab === 'base'"
+            >
+            <section class="flex flex-col flex-auto w-full">
+              <h2 class="mb-4 text-lg"> 图片信息 </h2>
+
+              <div class="flex w-full">
+                <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
+                  <label for="interval" class="whitespace-no-wrap flex-0 inline-block">总帧数：</label>
+                  <div>{{ this.frameList.length }}</div>
+                </div>
+                <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
+                  <label for="interval" class="whitespace-no-wrap flex-0 inline-block">大小：</label>
+                  <div>{{ this.rawFile ? +(this.rawFile.size / (1024 * 1024)).toFixed(2) : 0 }}MB</div>
+                </div>
+              </div>
+            </section>
+
+            <section class="flex flex-col flex-auto mt-4 w-full">
+              <h2 class="mb-4 text-lg"> 基础调整 </h2>
+
+              <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
+                <label for="">
+                  <span>帧间隔：</span>
+                  <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">毫秒单位，帧间隔越小，生成后的Gif就越流畅，同时总时长变短</span>
+                </label>
+
+                <slider class="flex-auto"
+                  v-model="interval"
+                  :min="15"
+                  :max="300"
+                  :marks="[15, 300]"
+                  :lazy="true"
+                  :disabled="!canEdit"
+                  :drag-on-click="true"
+                  :contained="true"
+                  @change="renderPreview"
+                  tooltip="always"
+                  tooltip-placement="bottom"
+                  style="width: calc(100% - 14px);"
+                 ></slider>
+              </div>
+
+              <div class="flex flex-col md:flex-row flex-wrap">
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleState('revert', '倒放')">倒放：{{ revert ? '开' : '关' }}</sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleState('repeat', '循环')">循环：{{ repeat ? '开' : '关' }}</sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会左右颠倒" :disabled="!canEdit" @click="toggleState('flipX', '左右翻转', true)">左右翻转：{{ flipX ? '开' : '关' }}</sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会上下颠倒" :disabled="!canEdit" @click="toggleState('flipY', '上下翻转', true)">上下翻转：{{ flipY ? '开' : '关' }}</sbtn>
+                <!-- <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后可实现首尾相接重复的特效" :disabled="!canEdit" @click="toggleRLoop">
+                  <span>反复</span>
+                  <span>:{{ rloop ? '开' : '关' }} </span>
+                </sbtn> -->
+                <!-- <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后将会抽去原Gif中一般的帧数，可以减小文件大小，代价是Gif流畅程度将会下降" :disabled="!canEdit" @click="toggleRs">抽帧：{{ rs ? '开' : '关' }}</sbtn> -->
+                <!-- <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="重置时间轴" :disabled="!canEdit" type="error" @click="makeTimeline">重置</sbtn> -->
+              </div>
+            </section>
+
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+            v-show="curTab === 'addText'"
+            >
+
+            <section class="flex flex-col w-full">
+              <div class="flex justify-center items-center mb-4 w-full">
+                <label for="" class="whitespace-no-wrap">文字内容：</label>
+                <s-input class="w-full" v-model="textContent" placeholder="请输入内容，支持Emoji等表情符号"></s-input>
+              </div>
+
+              <div class="flex items-center mb-4">
+                <label for="" class="whitespace-no-wrap">文字颜色：</label>
+                <color-picker class="z-40 ml-0 border border-gray-500" v-model="textColorObj"></color-picker>
+              </div>
+
+              <div class="flex justify-center items-center mb-4 pb-8 w-full">
+                <label for="" class="whitespace-no-wrap">文字大小：</label>
+                <slider class="flex-auto"
+                  v-model="textSize"
+                  :marks="[10, 128]"
+                  :min="10"
+                  :max="128"
+                  :lazy="true"
+                  :disabled="!canEdit"
+                  :drag-on-click="true"
+                  tooltip="always"
+                  tooltip-placement="bottom"
+                 ></slider>
+              </div>
+
+              <section class="flex flex-col w-full mb-4">
+                <div class="flex flex-row items-center mb-4">
+                  <span>文字边线：</span><sbtn :disabled="!canEdit" @click="enableTextStroke = !enableTextStroke">{{ !enableTextStroke ? '开启' : '关闭' }}</sbtn>
+                </div>
+
+                <div class="flex flex-col justify-start w-full" v-show="enableTextStroke">
+                  <div class="flex items-center mb-4">
+                    <label for="" class="whitespace-no-wrap">字边线色：</label>
+                    <color-picker class="z-40 ml-0 border border-gray-500" v-model="textStrokeObj"></color-picker>
+                  </div>
+
+                  <div class="flex justify-center items-center pb-8 w-full">
+                    <label for="" class="whitespace-no-wrap">边线粗细：</label>
+                    <slider class="flex-auto"
+                      v-model="textStrokeWidth"
+                      :marks="[1, 12]"
+                      :min="1"
+                      :max="12"
+                      :lazy="true"
+                      :disabled="!canEdit"
+                      :drag-on-click="true"
+                      tooltip="always"
+                      tooltip-placement="bottom"
+                     ></slider>
+                  </div>
+
+                </div>
+              </section>
+
+              <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
+                <label for="">
+                  <span>范围添加文字</span>
+                  <sup class="text-red-400"> new </sup>
+                  <span>：</span>
+                  <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">只在指定范围内添加文字</span>
+                </label>
+
+                <slider class="flex-auto pt-0"
+                  v-model="addTextRange"
+                  :disabled="!canEdit"
+                  :min="1"
+                  :max="!!this.frameList.length ? this.frameList.length : 10"
+                  :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
+                  :contained="true"
+                  tooltip="always"
+                  tooltip-placement="bottom"
+                  style="width: calc(100% - 14px);"
+                  @dragging="renderPreviewImage"
+                  @drag-end="curPreviewImg = ''"
+                 ></slider>
+              </div>
+
+              <div class="flex w-full justify-around items-center mb-4">
+                <sbtn class="w-full" @click="addText" :disabled="!canEdit">添加文字</sbtn>
+              </div>
+
+              <p class="flex flex-col text-lg">
+                <span class="inline-block pb-2 text-color-neutral text-sm font-normal border-gray-400">添加文字后，可于上方“预览”处，对文字进行位置、缩放、旋转等调整。</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm font-normal border-gray-400">也可于下方“时间轴”处进行更细粒度的调整。</span>
+              </p>
+
+            </section>
+
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+            v-show="curTab === 'addPic'"
+            >
+            <div class="flex flex-col justify-center items-start w-full">
+              <label for="" class="whitespace-no-wrap mb-1">
+                <span> 添加图片 </span>
+                <sup class="text-red-300"> Beta! </sup>
+                <span>：</span>
+              </label>
+              <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">若上传的图片尺寸过大，请至“预览”处拖动并调整大小。</span>
+            </div>
+
+            <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
+              <label for="">
+                <span>范围添加图片</span>
+                <sup class="text-red-400"> new </sup>
+                <span>：</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">只在指定范围内添加图片</span>
+              </label>
+
+              <slider class="flex-auto pt-0"
+                v-model="addImgRange"
+                :disabled="!canEdit"
+                :min="1"
+                :max="!!this.frameList.length ? this.frameList.length : 10"
+                :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
+                :contained="true"
+                tooltip="always"
+                tooltip-placement="bottom"
+                @dragging="renderPreviewImage"
+                @drag-end="curPreviewImg = ''"
+                style="width: calc(100% - 14px);"
+               ></slider>
+            </div>
+
+            <upload class="mt-4 uploader w-full" :before-upload="addImage" :disabled="!canEdit">添加图片</upload>
+
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+            v-show="curTab === 'cut'"
+            >
+            <section class="flex flex-col justify-center items-start mb-4 w-full">
+              <label for="">
+                <span>区间裁剪：</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">保留你感兴趣的片段</span>
+              </label>
+
+              <div class="pb-8 w-full">
+                <slider class="flex-auto py-0"
+                  v-model="frameSplitRange"
+                  :disabled="!canEdit"
+                  :min="1"
+                  :max="!!this.frameList.length ? this.frameList.length : 10"
+                  :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
+                  :contained="true"
+                  tooltip="always"
+                  tooltip-placement="bottom"
+                  :lazy="true"
+                  @change="renderPreview"
+                  @dragging="renderPreviewImage"
+                  @drag-end="curPreviewImg = ''"
+                  style="width: calc(100% - 14px);"
+                 ></slider>
+              </div>
+            </section>
+
+            <section class="flex flex-col justify-center items-start w-full">
+              <label for="">
+                <span>区间去除：</span>
+                <!-- <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">删除指定区间内的帧，受制于区间裁剪数值</span> -->
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">删除你不感兴趣的片段</span>
+              </label>
+
+              <div class="flex flex-row items-center">
+                <sbtn :disabled="!canEdit" @click="enableFrameRangeRemove = !enableFrameRangeRemove; renderPreview()">{{ !enableFrameRangeRemove ? '开启' : '关闭' }}</sbtn>
+              </div>
+
+              <div class="pb-8 w-full mt-4"
+                v-show="enableFrameRangeRemove"
+              >
+                <slider class="flex-auto w-full"
+                  :disabled="!canEdit"
+                  ref="frameRemoveRange"
+                  v-model="frameRemoveRange"
+                  :min="frameSplitRange[0]"
+                  :max="frameSplitRange[1]"
+                  :marks="[frameSplitRange[0], frameSplitRange[1]]"
+                  :contained="true"
+                  tooltip="always"
+                  tooltip-placement="bottom"
+                  :lazy="true"
+                  @change="renderPreview"
+                  @dragging="renderPreviewImage"
+                  @drag-end="curPreviewImg = ''"
+                  style="width: calc(100% - 14px);"
+                 ></slider>
+              </div>
+            </section>
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+            v-show="curTab === 'resize'"
+            >
+            <section class="flex flex-col justify-center items-start mb-4 w-full">
+              <label for="" class="mb-4">
+                <span>图片裁剪：</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">裁剪出原图中你感兴趣的部分</span>
+              </label>
+
+              <div class="flex flex-row items-center">
+                <span>裁剪：</span><sbtn :disabled="!canEdit" @click="toggleResize">{{ !resize ? '开启' : '关闭' }}</sbtn>
+              </div>
+            </section>
+          </fieldset>
+
+          <fieldset class="pt-8 ">
+            <sbtn title="应用修改" @click="applyPreview2Timeline" type="success" :disabled="!canEdit">将修改应用到时间轴</sbtn>
+            <div class="py-2 mb-4 text-sm">
+              <span class="text-red-300"> 注意：</span>
+              <span class="text-color-neutral">若进行过“添加文字/图片”操作，则在生成最终结果前，需要先将修改应用到时间轴，等到提示“应用成功”后方可生成GIF。</span>
+            </div>
+            <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
+            <span class="inline-block py-2 text-color-neutral text-sm border-gray-400">tips: 受原Gif大小影响，点击“生成”按钮后可能会有短暂卡顿，此时耐心等候即可。</span>
+          </fieldset>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div v-show="isGenerating || generateDone" class="flex flex-col justify-center w-full p-4 mb-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
+      <label for="" class="hidden md:inline" v-show="generateDone">新图像：（保存图片：右击图片->图片另存为）</label>
+      <label for="" class="inline md:hidden" v-show="generateDone">新图像：（长按图片->保存图片）</label>
+
+      <div class="flex justify-center h-full items-center mt-4">
+        <div class="my-12 md:my-0" v-show="isGenerating">
+          <div class="mb-12 text-center">生成中： {{progress}}%</div>
+
+          <div class="loading-calm-cat"></div>
+        </div>
+
+        <div v-show="!isGenerating">
+          <div id="dtsgif" class="mt-4 md:mt-0 flex justify-center items-center"> </div>
+        </div>
+      </div>
     </div>
 
     <div class="timeline p-2 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
@@ -598,8 +609,12 @@ export default class extends Vue implements Toasted {
   // 是否反复
   public rloop: boolean = false;
 
-  // 是否反复
+  // 是否开启裁剪
   public resize: boolean = false;
+
+  // 镜像
+  public flipX: boolean = false;
+  public flipY: boolean = false;
 
   // timeline偏移值
   public timelineLeft: number = 0;
@@ -627,6 +642,10 @@ export default class extends Vue implements Toasted {
 
   get enabledFrame(): number[] {
     return Array.from(new Array(this.frameList.length).keys());
+  }
+
+  get isPreviewUseable(): boolean {
+    return this.canEdit || this.isGenerating || !!this.rawFile;
   }
 
   public mounted() {
@@ -708,7 +727,7 @@ export default class extends Vue implements Toasted {
     this.frameList = frameList;
     this.oriFrameList = frameList;
 
-    this.updateEditData();
+    await this.updateEditData();
 
     await this.makeTimeline(frameList);
     await this.preview.initPreviewCanvas(frameList, showWidth, showHeight);
@@ -738,6 +757,20 @@ export default class extends Vue implements Toasted {
       this.preview.showResizeRect();
     } else {
       this.preview.hideResizeRect();
+    }
+  }
+
+  public toggleState(key: keyof this, name?: string, resetTimeline: boolean = false) {
+    this[key] = !this[key] as any;
+
+    this.renderPreview();
+
+    if (name) {
+      this.toast(`已${this[key]? '开启' : '关闭'}${name}`, 'info')
+    }
+
+    if (resetTimeline) {
+      this.makeTimeline(this.frameList);
     }
   }
 
@@ -839,6 +872,8 @@ export default class extends Vue implements Toasted {
           lockMovementY: true,
           hasControls: false,
           selectable: false,
+          flipX: this.flipX,
+          flipY: this.flipY,
         }).scale(scale);
 
         // @ts-ignore
@@ -1170,13 +1205,25 @@ export default class extends Vue implements Toasted {
     const usefulFrame= this.usefulFrame;
     const curFrame = this.curFrameSlider;
 
+    const {
+      revert,
+      repeat,
+      resize: showResize,
+      flipX,
+      flipY,
+    } = this;
+
     this.curFrameSlider = Math.min(usefulFrame[curFrame], usefulFrame[usefulFrame.length - 1]);
 
     this.preview.updateOptions({
-      revert: this.revert,
-      repeat: this.repeat,
-      showResize: this.resize,
+      revert,
+      repeat,
+      showResize,
+      flipX,
+      flipY,
     });
+
+    console.log(this.usefulFrame);
     
     this.preview.renderPreview(this.usefulFrame, this.interval, index => {
       this.curFrameSlider = index;
@@ -1356,6 +1403,13 @@ export default class extends Vue implements Toasted {
     box-shadow: none;
     & /deep/ .vc-chrome-fields-wrap {
       display: none;
+    }
+  }
+
+  @media screen and (max-width: 767px) {
+    .md-preview-sticky {
+      position: sticky;
+      top: -90px;
     }
   }
 </style>
