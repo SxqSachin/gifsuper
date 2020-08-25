@@ -45,7 +45,8 @@
           <div class="src w-full">
             <div ref="edit-canvas" v-show="!!oriImageSrc && oriGifLoadProgress === 1" class="mt-4">
               <div class="flex justify-center items-center w-full">
-                <canvas id="edit-canvas"> </canvas>
+                <!-- <canvas id="edit-canvas"> </canvas> -->
+                <previewer ref="previewer"></previewer>
               </div>
 
               <div class="w-full h-full flex justify-center items-center text-white text-lg text-center pointer-events-none">
@@ -485,7 +486,7 @@ import Upload from '@/components/widget/s-upload.vue';
 import sbtn from '@/components/widget/s-btn.vue';
 import sInput from '@/components/widget/s-input.vue';
 
-import previewer from './components/previewer.vue';
+import Previewer from './components/previewer.vue';
 
 import VueSlider from 'vue-slider-component';
 import 'vue-slider-component/theme/default.css';
@@ -507,7 +508,7 @@ interface GenerateOption {
 }
 
 import { RangedFrameObject } from './js/type';
-import { GifPreview } from './js/preview';
+// import { GifPreview } from './js/preview';
 import { Toasted } from './js/type';
 
 @Component({
@@ -517,6 +518,7 @@ import { Toasted } from './js/type';
     's-input': sInput,
     slider: VueSlider,
     'color-picker': ColorPicker,
+    previewer: Previewer,
   },
 })
 export default class extends Vue implements Toasted {
@@ -623,8 +625,9 @@ export default class extends Vue implements Toasted {
 
   public clipboard: any[] = [];
 
+  public previewer!: Previewer;
 
-  public preview!: GifPreview;
+  // public preview!: GifPreview;
 
   get canEdit(): boolean {
     return !!this.frameList?.length;
@@ -660,7 +663,8 @@ export default class extends Vue implements Toasted {
     this.dragBarCanvas = new fabric.Canvas('dragbar');
 
     // this.previewCanvas = new fabric.Canvas();
-    this.preview = new GifPreview('edit-canvas', this);
+    // this.preview = new GifPreview('edit-canvas', this);
+    this.previewer = this.$refs['previewer'] as Previewer;
 
     this.initKeyPressEvent();
   }
@@ -732,7 +736,7 @@ export default class extends Vue implements Toasted {
     await this.updateEditData();
 
     await this.makeTimeline(frameList);
-    await this.preview.initPreviewCanvas(frameList, showWidth, showHeight);
+    await this.previewer.initGIF(frameList, showWidth, showHeight);
 
     await this.renderPreview();
   }
@@ -756,9 +760,9 @@ export default class extends Vue implements Toasted {
     this.resize = !this.resize;
 
     if (this.resize) {
-      this.preview.showResizeRect();
+      this.previewer.showResizeRect();
     } else {
-      this.preview.hideResizeRect();
+      this.previewer.hideResizeRect();
     }
   }
 
@@ -979,7 +983,7 @@ export default class extends Vue implements Toasted {
     const gScaleX = this.showWidth / this.frameWidth;
     const gScaleY = this.showHeight / this.frameHeight;
 
-    const resizeRect = this.preview.resizeRect;
+    const resizeRect = this.previewer.resizeRect;
     const resizeWidth = Math.round((resizeRect.width * resizeRect.scaleX) / gScaleX);
     const resizeHeight = Math.round((resizeRect.height * resizeRect.scaleY) / gScaleY);
 
@@ -1181,7 +1185,7 @@ export default class extends Vue implements Toasted {
 
     if (tab === 'resize') {
       if (this.resize) {
-        this.preview.showResizeRect();
+        this.previewer.preview.showResizeRect();
       }
     } else {
       // this.preview.hideResizeRect();
@@ -1189,12 +1193,12 @@ export default class extends Vue implements Toasted {
   }
 
   public addImage(imgList: FileList) {
-    this.preview.addImage(imgList, this.expandRange2Array(this.addImgRange))
+    this.previewer.preview.addImage(imgList, this.expandRange2Array(this.addImgRange))
   }
   public addText() {
     const { textContent, textSize, textColor, textStrokeColor, textStrokeWidth, addTextRange } = this;
 
-    this.preview.addText(textContent, {
+    this.previewer.preview.addText(textContent, {
       size: parseInt(textSize),
       color: textColor,
       enableStroke: this.enableTextStroke,
@@ -1217,7 +1221,7 @@ export default class extends Vue implements Toasted {
 
     this.curFrameSlider = Math.min(usefulFrame[curFrame], usefulFrame[usefulFrame.length - 1]);
 
-    this.preview.updateOptions({
+    this.previewer.preview.updateOptions({
       revert,
       repeat,
       showResize,
@@ -1227,7 +1231,7 @@ export default class extends Vue implements Toasted {
 
     console.log(this.usefulFrame);
     
-    this.preview.renderPreview(this.usefulFrame, this.interval, index => {
+    this.previewer.preview.renderPreview(this.usefulFrame, this.interval, index => {
       this.curFrameSlider = index;
     });
   }
@@ -1237,11 +1241,11 @@ export default class extends Vue implements Toasted {
       curFrame = 0;
     }
 
-    this.preview.setPreviewFrame(curFrame);
+    this.previewer.preview.setPreviewFrame(curFrame);
   }
 
   public setPreviewFrame(pointer: number) {
-    this.preview.setPreviewFrame(pointer);
+    this.previewer.preview.setPreviewFrame(pointer);
   }
 
   get usefulFrame(): number[] {
@@ -1281,8 +1285,10 @@ export default class extends Vue implements Toasted {
   public async applyPreview2Timeline() {
     const {
       canvas: timelineCanvas,
-      preview,
+      previewer,
     } = this;
+
+    const preview = previewer.preview;
 
     timelineCanvas.getObjects().filter(obj => !obj.isType('timeline-frame')).forEach(obj => {
       timelineCanvas.remove(obj);
@@ -1376,16 +1382,16 @@ export default class extends Vue implements Toasted {
   private aaa: boolean = false;
 
   public togglePause() {
-    if (!this.preview) {
+    if (!this.previewer.preview) {
       return;
     }
-    if (this.preview.isPause) {
-      this.preview.play();
+    if (this.previewer.preview.isPause) {
+      this.previewer.preview.play();
     } else {
-      this.preview.pause();
+      this.previewer.preview.pause();
     }
 
-    this.aaa = this.preview.isPause;
+    this.aaa = this.previewer.preview.isPause;
   }
 }
 </script>
