@@ -479,11 +479,13 @@
 
 <script lang="ts">
 
-import { Vue, Component, Prop } from 'vue-property-decorator';
+import { Vue, Component, Prop, } from 'vue-property-decorator';
 
 import Upload from '@/components/widget/s-upload.vue';
 import sbtn from '@/components/widget/s-btn.vue';
 import sInput from '@/components/widget/s-input.vue';
+
+import previewer from './components/previewer.vue';
 
 import VueSlider from 'vue-slider-component';
 import 'vue-slider-component/theme/default.css';

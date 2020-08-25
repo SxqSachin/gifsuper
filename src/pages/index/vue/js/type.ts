@@ -12,3 +12,7 @@ export type TextOption = {
   strokeColor?: string,
   fontWeight?: 400 | 600,
 }
+
+export type GIFInfo = {
+  
+}
