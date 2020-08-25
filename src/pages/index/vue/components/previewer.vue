@@ -11,7 +11,7 @@ import { Vue, Component, Prop, } from 'vue-property-decorator';
 
 import { GifPreview, PreviewOption } from '../js/preview';
 import { Toasted } from '../js/type';
-import { GifFrameList } from '../../../../js/gif';
+import { GifFrameList } from '@/js/gif';
 
 @Component({ })
 export default class Previewer extends Vue implements Toasted {

@@ -73,20 +73,20 @@
                     </sbtn>
                   </div>
                   <div class="flex flex-no-wrap">
-                    <sbtn class="rounded-tr-none rounded-br-none" title="第一帧" type="ghost" @click="preview.setPreviewFrame(0)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                    <sbtn class="rounded-tr-none rounded-br-none" title="第一帧" type="ghost" @click="previewer.preview.setPreviewFrame(0)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
                       <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-back.svg"/>
                     </sbtn>
-                    <sbtn class="rounded-none border-l-0" title="上一帧" type="ghost" @click="preview.setPreviewFrame(preview.curFramePointer - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                    <sbtn class="rounded-none border-l-0" title="上一帧" type="ghost" @click="previewer.preview.setPreviewFrame(previewer.preview.curFramePointer - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
                       <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-back.svg"/>
                     </sbtn>
                     <sbtn class="rounded-none border-l-0" title="播放/暂停" type="ghost" @click="togglePause" style="padding-left: 0.25rem; padding-right: 0.25rem;">
                       <img v-show="!!aaa" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play.svg"/>
                       <img v-show="!aaa" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pause.svg"/>
                     </sbtn>
-                    <sbtn class="rounded-none border-l-0" title="下一帧" type="ghost" @click="preview.setPreviewFrame(preview.curFramePointer + 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                    <sbtn class="rounded-none border-l-0" title="下一帧" type="ghost" @click="previewer.preview.setPreviewFrame(previewer.preview.curFramePointer + 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
                       <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-forward.svg"/>
                     </sbtn>
-                    <sbtn class="rounded-tl-none rounded-bl-none" title="最后一帧" type="ghost" @click="preview.setPreviewFrame(preview.frameArray.length - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                    <sbtn class="rounded-tl-none rounded-bl-none" title="最后一帧" type="ghost" @click="previewer.preview.setPreviewFrame(previewer.preview.frameArray.length - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
                       <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-forward.svg"/>
                     </sbtn>
                   </div>
