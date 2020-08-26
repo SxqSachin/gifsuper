@@ -2,27 +2,48 @@ import { GifModule } from "./module";
 import { fabric } from "fabric";
 import { RangedFrameObject } from "../js/type";
 
-export class GifText implements GifModule {
+export type TextOption = {
+  fontSize?: number,
+  color?: string,
+
+  fontWeight?: 400 | 600,
+
+  enableStroke?: boolean,
+  strokeWidth?: number,
+  strokeColor?: string,
+
+  frameRange: [number, number],
+}
+
+export class Text implements GifModule {
   // 文字操作 start
-  public content: string = '';
-  public colorObj: {[key: string]: string} = { hex: '#fff' };
-  public strokeObj: {[key: string]: string} = { hex: '#000' };
-  public size: string | number = '42';
-  public strokeWidth: number = 1;
 
-  public addRange: [number, number] = [1, 1]; // 添加文字起始值
+  private content: string = '';
+  private color: string = '#fff';
+  private fontSize: number = 42;
 
-  public enableStroke: boolean = false;
+  private fontWeight: number = 600;
 
-  public fontWeight: number = 600;
+  private enableStroke: boolean = false;
+  private strokeColor: string = '#000';
+  private strokeWidth: number = 1;
+
+  private frameRange: [number, number] = [1, 1]; // 添加文字起始值
   // 文字操作 end
 
-  get color(): string {
-    return this.colorObj?.hex8 ?? '#fff';
-  }
+  public constructor(content: string, option: TextOption) {
+    this.content = content;
 
-  get strokeColor(): string {
-    return this.strokeObj?.hex8 ?? '#000';
+    this.color = option.color;
+    this.fontSize = option.fontSize;
+
+    this.fontWeight = option.fontWeight;
+
+    this.enableStroke = option.enableStroke;
+    this.strokeColor = option.strokeColor;
+    this.strokeWidth = option.strokeWidth;
+
+    this.frameRange = option.frameRange;
   }
 
   public expandRange2Array(rangeArr: [number, number]): number[] {
@@ -42,26 +63,23 @@ export class GifText implements GifModule {
     const canvas = stage;
     let {
       content,
-      size,
+
+      fontSize,
       color,
+      fontWeight, 
+
       enableStroke,
+
       strokeWidth,
       strokeColor,
-      fontWeight, } = this;
-
-    size = size ?? 14;
-    color = color ?? '#ffffffff';
-    enableStroke = enableStroke ?? false;
-    strokeWidth = strokeWidth ?? 0;
-    strokeColor = strokeColor ?? '#000000ff';
-    fontWeight = fontWeight ?? 600;
+    } = this;
 
     const itext = new fabric.IText(content, {
       fill: color,
       left: 15,
       top: 15,
       fontWeight,
-      fontSize: +size,
+      fontSize: fontSize,
       cornerColor: '#66a6ff',
       cornerSize: 8,
       transparentCorners: false
@@ -77,7 +95,7 @@ export class GifText implements GifModule {
     itext.set({
       type: 'text',
 
-      inFrame: this.expandRange2Array(this.addRange),
+      inFrame: this.expandRange2Array(this.frameRange),
     });
 
     canvas.add(itext).renderAll();

@@ -260,7 +260,7 @@ class GifGenerator {
 /**
  * 返回一个图片文件的blob url路径，以及它的宽高
  */
-function getGIFFileInfo(file: File): Promise<GifFrame> {
+function getFileInfo(file: File): Promise<GifFrame> {
   return new Promise(resolve => {
     const url = URL.createObjectURL(file);
     const img = new Image();
@@ -278,4 +278,4 @@ function getGIFFileInfo(file: File): Promise<GifFrame> {
   });
 }
 
-export { dataUrlToFile, parseSrcGif, GifGenerator, getGIFFileInfo }
+export { dataUrlToFile, parseSrcGif, GifGenerator, getFileInfo }

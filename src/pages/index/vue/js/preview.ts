@@ -181,7 +181,10 @@ class GifPreview {
             type: 'bg',
             flipX,
             flipY,
-          }).scaleToWidth(width).scaleToHeight(height);
+          }).scaleToWidth(width).scaleToHeight(height) as fabric.Image;
+
+          // nimg.filters.push(new fabric.Image.filters.Grayscale());
+          // nimg.applyFilters()
 
           resolve(nimg);
         });
@@ -361,110 +364,6 @@ class GifPreview {
     this._replay = false;
 
     canvas.renderAll();
-  }
-
-  public async addImage(imgList: FileList, frame?: number[]) {
-    const img = imgList[0];
-
-    if (!img.type.includes('image')) {
-      this.main.toast('只支持上传图片', 'error');
-      return;
-    }
-
-    const { previewCanvas: canvas, showWidth, showHeight, } = this;
-    const frameData = await this.getImageData(img);
-
-    const initImageData: Promise<fabric.Object> = new Promise(resolve => {
-      fabric.Image.fromURL(frameData.imgFileSrc, img => {
-        const nimg = img.set({
-          left: 15,
-          top: 15,
-          width: frameData.width,
-          height: frameData.height,
-          cornerColor: '#66a6ff',
-          cornerSize: 8,
-          transparentCorners: false
-        }) as RangedFrameObject;
-
-        nimg.set({
-          type: 'nimg',
-
-          inFrame: frame,
-        });
-
-        resolve(nimg);
-      });
-    });
-
-    const imgObj = await initImageData;
-
-    canvas.add(imgObj).renderAll();
-    canvas.setActiveObject(imgObj);
-
-    this.main.toast('添加成功', 'success', 800);
-  }
-
-  public async addText(text: string, option?: TextOption, frame?: number[]) {
-    const { previewCanvas: canvas, } = this;
-    let { size, color, enableStroke, strokeWidth, strokeColor, fontWeight } = option;
-
-    if (!text) {
-      return this.main.toast('请输入文字后再进行“添加文字”操作', 'warn');
-    }
-
-    size = size ?? 14;
-    color = color ?? '#ffffffff';
-    enableStroke = enableStroke ?? false;
-    strokeWidth = strokeWidth ?? 0;
-    strokeColor = strokeColor ?? '#000000ff';
-    fontWeight = fontWeight ?? 600;
-
-    const itext = new fabric.IText(text, {
-      fill: color,
-      left: 15,
-      top: 15,
-      fontWeight,
-      fontSize: size,
-      cornerColor: '#66a6ff',
-      cornerSize: 8,
-      transparentCorners: false
-    }) as fabric.IText & RangedFrameObject;
-
-    if (enableStroke) {
-      itext.set({
-        stroke: strokeColor,
-        strokeWidth: strokeWidth,
-      });
-    }
-
-    itext.set({
-      type: 'text',
-
-      inFrame: frame,
-    });
-
-    canvas.add(itext).renderAll();
-    canvas.setActiveObject(itext);
-
-    this.main.toast('添加成功', 'success', 800);
-  }
-
-  public async getImageData(file: File): Promise<GifFrame> {
-    return new Promise(resolve => {
-      const url = URL.createObjectURL(file);
-      const img = new Image();
-      img.onload = () => {
-        const data = {
-          index: 0,
-          imgFileSrc: img.src,
-          width: img.width,
-          height: img.height,
-        };
-        img.remove();
-        resolve(data);
-      }
-      img.src = url;
-    });
   }
 
   public getObjects(includeFrame: boolean = false) {

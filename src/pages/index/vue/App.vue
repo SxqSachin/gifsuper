@@ -68,7 +68,7 @@
                 </div>
                 <div class="flex justify-between w-full">
                   <div class="flex flex-wrap">
-                    <sbtn title="删除当前选中元素" @click="preview.removeActiveObjects()" type="error" style="padding-left: 0.45rem; padding-right: 0.45rem;">
+                    <sbtn title="删除当前选中元素" @click="previewer.preview.removeActiveObjects()" type="error" style="padding-left: 0.45rem; padding-right: 0.45rem;">
                       <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/trash.svg"/>
                     </sbtn>
                   </div>
@@ -493,7 +493,7 @@ import 'vue-slider-component/theme/default.css';
 
 import { Chrome as ColorPicker } from 'vue-color';
 
-import { parseSrcGif, dataUrlToFile, GifGenerator, GifFrameList, GifFrame, getGIFFileInfo } from '@/js/gif';
+import { parseSrcGif, dataUrlToFile, GifGenerator, GifFrameList, GifFrame, getFileInfo } from '@/js/gif';
 
 import { fabric } from 'fabric';
 
@@ -512,7 +512,8 @@ import { RangedFrameObject } from './js/type';
 import { Toasted } from './js/type';
 import { GifState } from './js/GifState';
 
-import { GifText } from './modules/GifText';
+import { Text } from './modules/Text';
+import { Image } from './modules/Image';
 
 @Component({
   components: {
@@ -596,32 +597,12 @@ export default class extends Vue implements Toasted {
   public frameRemoveRange: [number, number] = [1, 1]; // 区间去除起始值
   // 帧区间去除 end
 
-
-  // 倒放
-  public revert: boolean = false;
-
   // 单帧宽/高度
-  public frameWidth: number = 0;
-  public frameHeight: number = 0;
+  // public frameWidth: number = 0;
+  // public frameHeight: number = 0;
 
   // 生成进度
   public progress: number = 0;
-
-  // // 是否循环
-  // public repeat: boolean = true;
-
-  // // 是否抽帧
-  // public rs: boolean = false;
-
-  // // 是否反复
-  // public rloop: boolean = false;
-
-  // 是否开启裁剪
-  // public resize: boolean = false;
-
-  // 镜像
-  // public flipX: boolean = false;
-  // public flipY: boolean = false;
 
   // timeline偏移值
   public timelineLeft: number = 0;
@@ -688,7 +669,7 @@ export default class extends Vue implements Toasted {
 
     this.rawFile = gifFile;
 
-    const { width, height, imgFileSrc } = await getGIFFileInfo(gifFile);
+    const { width, height, imgFileSrc } = await getFileInfo(gifFile);
     const imgDOM = this.$refs.oriImageDom as HTMLImageElement;
 
     this.oriWidth = width;
@@ -780,8 +761,8 @@ export default class extends Vue implements Toasted {
 
     const firstImg = frameList[0];
 
-    const frameWidth = this.frameWidth = this.oriWidth; // firstImg.width as number;
-    const frameHeight = this.frameHeight = this.oriHeight; // firstImg.height as number;
+    const frameWidth = this.oriWidth; // firstImg.width as number;
+    const frameHeight = this.oriHeight; // firstImg.height as number;
 
     const canvasTotalWidth = (frameWidth + 1) * this.totalFrameCount;
     const canvasHeight = frameHeight as number;
@@ -916,8 +897,8 @@ export default class extends Vue implements Toasted {
 
     const isResizeRect = this.gifState.resize;
 
-    const gScaleX = this.showWidth / this.frameWidth;
-    const gScaleY = this.showHeight / this.frameHeight;
+    const gScaleX = this.showWidth / width;
+    const gScaleY = this.showHeight / height;
 
     const resizeRect = this.previewer.resizeRect;
     const resizeWidth = Math.round((resizeRect.width * resizeRect.scaleX) / gScaleX);
@@ -936,7 +917,7 @@ export default class extends Vue implements Toasted {
 
       let _width = width;
       let _height = height;
-      let left = !this.revert ? (width + 1) * i : totalWidth - (width + 1) * (i + 1);
+      let left = !this.gifState.revert ? (width + 1) * i : totalWidth - (width + 1) * (i + 1);
       let top = 0;
 
       if (isResizeRect) {
@@ -1129,31 +1110,26 @@ export default class extends Vue implements Toasted {
   }
 
   public addImage(imgList: FileList) {
-    this.previewer.preview.addImage(imgList, this.expandRange2Array(this.addImgRange))
+    const image = new Image(imgList, this.addImgRange);
+    image.addToStage(this.previewer.preview.previewCanvas);
   }
+
   public addText() {
-    const text = new GifText();
+    const { textContent, textSize, textColor, enableTextStroke, textStrokeColor, textStrokeWidth, addTextRange } = this;
 
-    const { textContent, textSize, textColor, textStrokeColor, textStrokeWidth, addTextRange } = this;
+    const text = new Text(textContent, {
+      color: textColor,
+      fontSize: +textSize,
 
-    text.content = this.textContent;
-    text.size = parseInt(textSize),
-    // text.textColor = textColor,
-    text.enableStroke= this.enableTextStroke,
-    text.strokeWidth= textStrokeWidth,
-    // text.strokeColor= textStrokeColor,
-    text.addRange = this.addTextRange;
+      fontWeight: 600,
+
+      enableStroke: enableTextStroke,
+      strokeWidth: textStrokeWidth,
+      strokeColor: textStrokeColor,
+      frameRange: addTextRange,
+    });
 
     text.addToStage(this.previewer.preview.previewCanvas);
-
-
-    // this.previewer.preview.addText(textContent, {
-    //   size: parseInt(textSize),
-    //   color: textColor,
-    //   enableStroke: this.enableTextStroke,
-    //   strokeWidth: textStrokeWidth,
-    //   strokeColor: textStrokeColor,
-    // }, )
   }
 
   public renderPreview() {
@@ -1238,12 +1214,14 @@ export default class extends Vue implements Toasted {
     const {
       showWidth: width,
       showHeight: height,
+      oriWidth,
+      oriHeight,
       canvas: timelineCanvas,
       oriImageSrc,
     } = this;
 
-    const scaleX = width / this.frameWidth;
-    const scaleY = height / this.frameHeight;
+    const scaleX = width / oriWidth;
+    const scaleY = height / oriHeight;
 
     const allDonePromise: Promise<void>[] = [];
 
@@ -1255,7 +1233,7 @@ export default class extends Vue implements Toasted {
 
           if (inFrame.includes(index)) {
             const newObj = cloneObj.set({
-              left: oriLeft / scaleX + ((this.frameWidth + 1) * index),
+              left: oriLeft / scaleX + ((this.oriWidth + 1) * index),
               top: oriTop / scaleY,
               scaleX: oriScaleX / scaleX,
               scaleY: oriScaleY / scaleY,
