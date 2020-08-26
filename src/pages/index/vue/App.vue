@@ -196,10 +196,10 @@
               </div>
 
               <div class="flex flex-col md:flex-row flex-wrap">
-                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleState('revert', '倒放')">倒放：{{ revert ? '开' : '关' }}</sbtn>
-                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleState('repeat', '循环')">循环：{{ repeat ? '开' : '关' }}</sbtn>
-                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会左右颠倒" :disabled="!canEdit" @click="toggleState('flipX', '左右翻转', true)">左右翻转：{{ flipX ? '开' : '关' }}</sbtn>
-                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会上下颠倒" :disabled="!canEdit" @click="toggleState('flipY', '上下翻转', true)">上下翻转：{{ flipY ? '开' : '关' }}</sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleState('revert', '倒放')">倒放：{{ gifState.revert ? '开' : '关' }}</sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleState('repeat', '循环')">循环：{{ gifState.repeat ? '开' : '关' }}</sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会左右颠倒" :disabled="!canEdit" @click="toggleState('flipX', '左右翻转', true)">左右翻转：{{ gifState.flipX ? '开' : '关' }}</sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会上下颠倒" :disabled="!canEdit" @click="toggleState('flipY', '上下翻转', true)">上下翻转：{{ gifState.flipY ? '开' : '关' }}</sbtn>
                 <!-- <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后可实现首尾相接重复的特效" :disabled="!canEdit" @click="toggleRLoop">
                   <span>反复</span>
                   <span>:{{ rloop ? '开' : '关' }} </span>
@@ -417,7 +417,7 @@
               </label>
 
               <div class="flex flex-row items-center">
-                <span>裁剪：</span><sbtn :disabled="!canEdit" @click="toggleResize">{{ !resize ? '开启' : '关闭' }}</sbtn>
+                <span>裁剪：</span><sbtn :disabled="!canEdit" @click="toggleResize">{{ !gifState.resize ? '开启' : '关闭' }}</sbtn>
               </div>
             </section>
           </fieldset>
@@ -493,7 +493,7 @@ import 'vue-slider-component/theme/default.css';
 
 import { Chrome as ColorPicker } from 'vue-color';
 
-import { parseSrcGif, dataUrlToFile, GifGenerator, GifFrameList, GifFrame } from '@/js/gif';
+import { parseSrcGif, dataUrlToFile, GifGenerator, GifFrameList, GifFrame, getGIFFileInfo } from '@/js/gif';
 
 import { fabric } from 'fabric';
 
@@ -510,6 +510,9 @@ interface GenerateOption {
 import { RangedFrameObject } from './js/type';
 // import { GifPreview } from './js/preview';
 import { Toasted } from './js/type';
+import { GifState } from './js/GifState';
+
+import { GifText } from './modules/GifText';
 
 @Component({
   components: {
@@ -604,21 +607,21 @@ export default class extends Vue implements Toasted {
   // 生成进度
   public progress: number = 0;
 
-  // 是否循环
-  public repeat: boolean = true;
+  // // 是否循环
+  // public repeat: boolean = true;
 
-  // 是否抽帧
-  public rs: boolean = false;
+  // // 是否抽帧
+  // public rs: boolean = false;
 
-  // 是否反复
-  public rloop: boolean = false;
+  // // 是否反复
+  // public rloop: boolean = false;
 
   // 是否开启裁剪
-  public resize: boolean = false;
+  // public resize: boolean = false;
 
   // 镜像
-  public flipX: boolean = false;
-  public flipY: boolean = false;
+  // public flipX: boolean = false;
+  // public flipY: boolean = false;
 
   // timeline偏移值
   public timelineLeft: number = 0;
@@ -627,7 +630,7 @@ export default class extends Vue implements Toasted {
 
   public previewer!: Previewer;
 
-  // public preview!: GifPreview;
+  public gifState!: GifState;
 
   get canEdit(): boolean {
     return !!this.frameList?.length;
@@ -653,6 +656,10 @@ export default class extends Vue implements Toasted {
     return this.canEdit || this.isGenerating || !!this.rawFile;
   }
 
+  public created() {
+    this.gifState = new GifState();
+  }
+
   public mounted() {
     document.getElementById('loading-ph')?.remove();
 
@@ -662,32 +669,9 @@ export default class extends Vue implements Toasted {
 
     this.dragBarCanvas = new fabric.Canvas('dragbar');
 
-    // this.previewCanvas = new fabric.Canvas();
-    // this.preview = new GifPreview('edit-canvas', this);
     this.previewer = this.$refs['previewer'] as Previewer;
 
     this.initKeyPressEvent();
-  }
-
-  /**
-   * 返回一个图片文件的blob url路径，以及它的宽高
-   */
-  public async getImageData(file: File): Promise<GifFrame> {
-    return new Promise(resolve => {
-      const url = URL.createObjectURL(file);
-      const img = new Image();
-      img.onload = () => {
-        const data = {
-          index: 0,
-          imgFileSrc: img.src,
-          width: img.width,
-          height: img.height,
-        };
-        img.remove();
-        resolve(data);
-      }
-      img.src = url;
-    });
   }
 
   public async upload(e: FileList) {
@@ -704,7 +688,7 @@ export default class extends Vue implements Toasted {
 
     this.rawFile = gifFile;
 
-    const { width, height, imgFileSrc } = await this.getImageData(gifFile);
+    const { width, height, imgFileSrc } = await getGIFFileInfo(gifFile);
     const imgDOM = this.$refs.oriImageDom as HTMLImageElement;
 
     this.oriWidth = width;
@@ -741,33 +725,18 @@ export default class extends Vue implements Toasted {
     await this.renderPreview();
   }
 
-  public toggleRevert() {
-    this.revert = !this.revert;
-
-    this.renderPreview();
-    this.toast(`已${this.revert ? '开启' : '关闭'}倒放`, 'info')
-  }
-
-  public toggleRepeat() {
-    this.repeat = !this.repeat;
-
-    this.renderPreview();
-
-    this.toast(`已${this.repeat? '开启' : '关闭'}循环播放`, 'info')
-  }
-
   public toggleResize() {
-    this.resize = !this.resize;
+    const resize = this.gifState.toggleState('resize');
 
-    if (this.resize) {
+    if (resize) {
       this.previewer.showResizeRect();
     } else {
       this.previewer.hideResizeRect();
     }
   }
 
-  public toggleState(key: keyof this, name?: string, resetTimeline: boolean = false) {
-    this[key] = !this[key] as any;
+  public toggleState(key: keyof GifState, name?: string, resetTimeline: boolean = false) {
+    this.gifState.toggleState(key, name, resetTimeline);
 
     this.renderPreview();
 
@@ -778,39 +747,6 @@ export default class extends Vue implements Toasted {
     if (resetTimeline) {
       this.makeTimeline(this.frameList);
     }
-  }
-
-  public toggleRs() {
-    this.rs = !this.rs;
-
-    this.renderPreview();
-
-    this.toast(`已${this.rs? '开启' : '关闭'}抽帧${this.rs? '，将抽去原Gif一半的帧数' : ''}`, 'info')
-  }
-
-  public async toggleRLoop() {
-    this.rloop = !this.rloop;
-
-    const {
-      frameList,
-      oriFrameList,
-      rloop,
-    } = this;
-
-    let rloopFrameList = [];
-
-    if (rloop) {
-      rloopFrameList = frameList;
-      const rpart = [...rloopFrameList].sort((a, b) => b.index - a.index);
-      rloopFrameList.push(...rpart);
-    } else {
-      rloopFrameList = oriFrameList;
-    }
-
-    await this.makeTimeline(rloopFrameList);
-
-    this.renderPreview();
-    this.toast(`已${this.rloop? '开启' : '关闭'}反复`, 'info')
   }
 
   public resetStage() {
@@ -878,8 +814,8 @@ export default class extends Vue implements Toasted {
           lockMovementY: true,
           hasControls: false,
           selectable: false,
-          flipX: this.flipX,
-          flipY: this.flipY,
+          flipX: this.gifState.flipX,
+          flipY: this.gifState.flipY,
         }).scale(scale);
 
         // @ts-ignore
@@ -978,7 +914,7 @@ export default class extends Vue implements Toasted {
     const removeRangeStartIndex = this.frameRemoveRange[0] - 1;
     const removeRangeEndIndex = this.frameRemoveRange[1] - 1;
 
-    const isResizeRect = this.resize;
+    const isResizeRect = this.gifState.resize;
 
     const gScaleX = this.showWidth / this.frameWidth;
     const gScaleY = this.showHeight / this.frameHeight;
@@ -988,12 +924,12 @@ export default class extends Vue implements Toasted {
     const resizeHeight = Math.round((resizeRect.height * resizeRect.scaleY) / gScaleY);
 
     const gif = new GifGenerator({
-      repeat: this.repeat ? 0 : -1,
+      repeat: this.gifState.repeat ? 0 : -1,
       width: isResizeRect ? resizeWidth : this.oriWidth,
       height: isResizeRect ? resizeHeight : this.oriHeight,
     });
 
-    for (let i = startFrameIndex; i < endFrameIndex; (this.rs ? i+=2 : i++))  {
+    for (let i = startFrameIndex; i < endFrameIndex; i++)  {
       if (this.enableFrameRangeRemove && i >= removeRangeStartIndex && i <= removeRangeEndIndex) {
         continue;
       }
@@ -1184,7 +1120,7 @@ export default class extends Vue implements Toasted {
     this.curTab = tab;
 
     if (tab === 'resize') {
-      if (this.resize) {
+      if (this.gifState.resize) {
         this.previewer.preview.showResizeRect();
       }
     } else {
@@ -1196,40 +1132,37 @@ export default class extends Vue implements Toasted {
     this.previewer.preview.addImage(imgList, this.expandRange2Array(this.addImgRange))
   }
   public addText() {
+    const text = new GifText();
+
     const { textContent, textSize, textColor, textStrokeColor, textStrokeWidth, addTextRange } = this;
 
-    this.previewer.preview.addText(textContent, {
-      size: parseInt(textSize),
-      color: textColor,
-      enableStroke: this.enableTextStroke,
-      strokeWidth: textStrokeWidth,
-      strokeColor: textStrokeColor,
-    }, this.expandRange2Array(this.addTextRange))
+    text.content = this.textContent;
+    text.size = parseInt(textSize),
+    // text.textColor = textColor,
+    text.enableStroke= this.enableTextStroke,
+    text.strokeWidth= textStrokeWidth,
+    // text.strokeColor= textStrokeColor,
+    text.addRange = this.addTextRange;
+
+    text.addToStage(this.previewer.preview.previewCanvas);
+
+
+    // this.previewer.preview.addText(textContent, {
+    //   size: parseInt(textSize),
+    //   color: textColor,
+    //   enableStroke: this.enableTextStroke,
+    //   strokeWidth: textStrokeWidth,
+    //   strokeColor: textStrokeColor,
+    // }, )
   }
 
   public renderPreview() {
     const usefulFrame= this.usefulFrame;
     const curFrame = this.curFrameSlider;
 
-    const {
-      revert,
-      repeat,
-      resize: showResize,
-      flipX,
-      flipY,
-    } = this;
-
     this.curFrameSlider = Math.min(usefulFrame[curFrame], usefulFrame[usefulFrame.length - 1]);
 
-    this.previewer.preview.updateOptions({
-      revert,
-      repeat,
-      showResize,
-      flipX,
-      flipY,
-    });
-
-    console.log(this.usefulFrame);
+    this.previewer.preview.updateOptions(this.gifState);
     
     this.previewer.preview.renderPreview(this.usefulFrame, this.interval, index => {
       this.curFrameSlider = index;
@@ -1254,7 +1187,6 @@ export default class extends Vue implements Toasted {
       frameSplitRange,
       enableFrameRangeRemove,
       frameRemoveRange,
-      rloop,
     } = this;
 
     let usefulFrame: number[] = Array.from(new Array(this.frameList.length).keys());
@@ -1272,11 +1204,6 @@ export default class extends Vue implements Toasted {
       usefulFrame = usefulFrame.filter(index => {
         return !(index >= startRemoveFrameIndex && index <= endRemoveFrameIndex);
       });
-    }
-
-    if (rloop) {
-      const rpart = [...usefulFrame].sort((a, b) => b - a);
-      usefulFrame.push(...rpart);
     }
 
     return usefulFrame;

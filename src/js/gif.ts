@@ -257,4 +257,25 @@ class GifGenerator {
   }
 }
 
-export { dataUrlToFile, parseSrcGif, GifGenerator, }
+/**
+ * 返回一个图片文件的blob url路径，以及它的宽高
+ */
+function getGIFFileInfo(file: File): Promise<GifFrame> {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const data = {
+        index: 0,
+        imgFileSrc: img.src,
+        width: img.width,
+        height: img.height,
+      };
+      img.remove();
+      resolve(data);
+    }
+    img.src = url;
+  });
+}
+
+export { dataUrlToFile, parseSrcGif, GifGenerator, getGIFFileInfo }

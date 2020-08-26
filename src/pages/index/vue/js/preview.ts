@@ -19,7 +19,7 @@ const DefaultPreviewOption: PreviewOption = {
 }
 
 class GifPreview {
-  private previewCanvas!: fabric.Canvas;
+  public previewCanvas!: fabric.Canvas;
   private frameGroup: fabric.Group = null;
   private frameList: GifFrameList = null;
 

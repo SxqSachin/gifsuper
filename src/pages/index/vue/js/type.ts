@@ -1,3 +1,7 @@
+export interface Stage {
+
+}
+
 export type RangedFrameObject = fabric.Object & { inFrame: number[] };
 
 export interface Toasted {
