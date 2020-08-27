@@ -1,6 +1,6 @@
-import { GifModule } from "./module";
+import { GifModule, Stage } from "./module";
 import { fabric } from "fabric";
-import { RangedFrameObject } from "../js/type";
+import { RangedFrameObject} from "../js/type";
 
 export type TextOption = {
   fontSize?: number,
@@ -59,8 +59,8 @@ export class Text implements GifModule {
     return res;
   }
 
-  public async addToStage(stage: fabric.Canvas) {
-    const canvas = stage;
+  public async apply(stage: Stage) {
+    const canvas = stage.canvas;
     let {
       content,
 

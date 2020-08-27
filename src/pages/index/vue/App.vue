@@ -200,6 +200,7 @@
                 <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleState('repeat', '循环')">循环：{{ gifState.repeat ? '开' : '关' }}</sbtn>
                 <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会左右颠倒" :disabled="!canEdit" @click="toggleState('flipX', '左右翻转', true)">左右翻转：{{ gifState.flipX ? '开' : '关' }}</sbtn>
                 <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会上下颠倒" :disabled="!canEdit" @click="toggleState('flipY', '上下翻转', true)">上下翻转：{{ gifState.flipY ? '开' : '关' }}</sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会上下颠倒" :disabled="!canEdit" @click="addTestFilter">测试滤镜</sbtn>
                 <!-- <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后可实现首尾相接重复的特效" :disabled="!canEdit" @click="toggleRLoop">
                   <span>反复</span>
                   <span>:{{ rloop ? '开' : '关' }} </span>
@@ -514,6 +515,7 @@ import { GifState } from './js/GifState';
 
 import { Text } from './modules/Text';
 import { Image } from './modules/Image';
+import { Filter } from './modules/Filter';
 
 @Component({
   components: {
@@ -1111,7 +1113,7 @@ export default class extends Vue implements Toasted {
 
   public addImage(imgList: FileList) {
     const image = new Image(imgList, this.addImgRange);
-    image.addToStage(this.previewer.preview.previewCanvas);
+    this.previewer.addModule(image);
   }
 
   public addText() {
@@ -1129,7 +1131,7 @@ export default class extends Vue implements Toasted {
       frameRange: addTextRange,
     });
 
-    text.addToStage(this.previewer.preview.previewCanvas);
+    this.previewer.addModule(text);
   }
 
   public renderPreview() {
@@ -1297,6 +1299,11 @@ export default class extends Vue implements Toasted {
     }
 
     this.aaa = this.previewer.preview.isPause;
+  }
+
+  filters: any[];
+  addTestFilter() {
+    this.previewer.preview.addModule(new Filter());
   }
 }
 </script>

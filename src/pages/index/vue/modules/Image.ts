@@ -1,4 +1,4 @@
-import { GifModule } from "./module";
+import { GifModule, Stage } from "./module";
 import { fabric } from "fabric";
 import { RangedFrameObject } from "../js/type";
 import { getFileInfo } from "@/js/gif";
@@ -12,7 +12,7 @@ export class Image implements GifModule {
     this.frameRange = frameRange;
   }
 
-  public async addToStage(stage: fabric.Canvas) {
+  public async apply(stage: Stage) {
     const img = this.imgList[0];
 
     if (!img.type.includes('image')) {
@@ -45,8 +45,8 @@ export class Image implements GifModule {
 
     const imgObj = await initImageData;
 
-    stage.add(imgObj).renderAll();
-    stage.setActiveObject(imgObj);
+    stage.canvas.add(imgObj).renderAll();
+    stage.canvas.setActiveObject(imgObj);
   }
 
   public expandRange2Array(rangeArr: [number, number]): number[] {

@@ -1,6 +1,7 @@
 import { fabric } from 'fabric';
 import { GifFrameList, GifFrame, } from '@/js/gif';
 import { RangedFrameObject, Toasted, TextOption } from './type';
+import { Stage, GifModule } from '../modules/module';
 
 export interface PreviewOption {
   revert?: boolean;
@@ -18,7 +19,7 @@ const DefaultPreviewOption: PreviewOption = {
   revert: false,
 }
 
-class GifPreview {
+class GifPreview implements Stage {
   public previewCanvas!: fabric.Canvas;
   private frameGroup: fabric.Group = null;
   private frameList: GifFrameList = null;
@@ -49,6 +50,12 @@ class GifPreview {
   private _resizeRectBorderB!: fabric.Rect;
   private _resizeRectBorderL!: fabric.Rect;
   private _resizeRectBorderR!: fabric.Rect;
+
+  frames: fabric.Image[] = [];
+
+  get imgs() {
+    return this.frames;
+  }
 
   constructor(canvasID: string, main: Toasted) {
     this.previewCanvas = new fabric.Canvas(canvasID);
@@ -165,6 +172,8 @@ class GifPreview {
       flipY,
     } = this.options;
 
+    this.frames.length = 0;
+
     frameList.forEach((frame, index) => {
       promiseGroup.push(new Promise(resolve => {
         fabric.Image.fromURL(frame.imgFileSrc, img => {
@@ -183,8 +192,7 @@ class GifPreview {
             flipY,
           }).scaleToWidth(width).scaleToHeight(height) as fabric.Image;
 
-          // nimg.filters.push(new fabric.Image.filters.Grayscale());
-          // nimg.applyFilters()
+          this.frames.push(nimg);
 
           resolve(nimg);
         });
@@ -420,6 +428,14 @@ class GifPreview {
 
   get isPause(): boolean {
     return this._pause;
+  }
+
+  get canvas() {
+    return this.previewCanvas;
+  }
+
+  public addModule(module: GifModule) {
+    module.apply(this);
   }
 }
 

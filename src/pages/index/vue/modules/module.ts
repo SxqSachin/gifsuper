@@ -1,6 +1,11 @@
-import { Stage } from "../js/type";
+export interface Stage {
+  addModule(module: GifModule);
+
+  canvas: fabric.Canvas;
+
+  imgs?: fabric.Image[];
+}
 
 export interface GifModule {
-
-  addToStage(stage: fabric.Canvas);
+  apply(stage: Stage);
 }

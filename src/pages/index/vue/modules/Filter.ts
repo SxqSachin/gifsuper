@@ -1,7 +1,11 @@
-import { GifModule } from "./module";
+import { GifModule, Stage } from "./module";
+import { fabric } from 'fabric';
 
 export class Filter implements GifModule {
-  public addToStage(stage: fabric.Canvas) {
-
+  public apply(stage: Stage) {
+    stage.imgs.forEach(img => {
+      img.filters.push(new fabric.Image.filters.Noise({noise: 128}));
+      img.applyFilters();
+    });
   }
 }
