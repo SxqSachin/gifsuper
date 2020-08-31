@@ -470,10 +470,11 @@
       <div class="md:hidden my-2 flex justify-start flex-wrap">
         <sbtn class="mb-1" title="删除当前选中元素" @click="deleteActivedObject" type="error">删除当前选中文字/图片</sbtn>
       </div>
-      <div ref="timeline-wrapper" class="canvas-wrapper border rounded-sm border-gray-300">
+      <timeline ref="timeline" :frame-list="frameList" :gif-state="gifState"></timeline>
+      <!-- <div ref="timeline-wrapper" class="canvas-wrapper border rounded-sm border-gray-300">
         <canvas id="stage"></canvas>
         <canvas id="dragbar"></canvas>
-      </div>
+      </div> -->
     </div>
 
   </div>
@@ -488,6 +489,8 @@ import sbtn from '@/components/widget/s-btn.vue';
 import sInput from '@/components/widget/s-input.vue';
 
 import Previewer from './components/previewer.vue';
+
+import Timeline from './components/timeline.vue';
 
 import VueSlider from 'vue-slider-component';
 import 'vue-slider-component/theme/default.css';
@@ -516,6 +519,8 @@ import { GifState } from './js/GifState';
 import { Text } from './modules/Text';
 import { Image } from './modules/Image';
 import { Filter } from './modules/Filter';
+import { Stage, GifModule } from './modules/module';
+// import { Timeline } from './js/timeline';
 
 @Component({
   components: {
@@ -525,13 +530,12 @@ import { Filter } from './modules/Filter';
     slider: VueSlider,
     'color-picker': ColorPicker,
     previewer: Previewer,
+    timeline: Timeline,
   },
 })
 export default class extends Vue implements Toasted {
   // fabric canvas对象
-  public canvas!: fabric.Canvas;
-  public dragBarCanvas!: fabric.Canvas;
-  public dragBar!: fabric.Object;
+  // public canvas!: fabric.Canvas;
 
   // 添加图片裁剪用canvas
   // public previewCanvas!: fabric.Canvas;
@@ -615,6 +619,8 @@ export default class extends Vue implements Toasted {
 
   public gifState!: GifState;
 
+  public timeline!: Timeline;
+
   get canEdit(): boolean {
     return !!this.frameList?.length;
   }
@@ -648,11 +654,9 @@ export default class extends Vue implements Toasted {
 
     fabric.Object.prototype.objectCaching = false;
 
-    this.canvas = new fabric.Canvas('stage');
-
-    this.dragBarCanvas = new fabric.Canvas('dragbar');
-
     this.previewer = this.$refs['previewer'] as Previewer;
+
+    this.timeline = this.$refs['timeline'] as Timeline;
 
     this.initKeyPressEvent();
   }
@@ -662,10 +666,6 @@ export default class extends Vue implements Toasted {
 
     if (gifFile.type !== 'image/gif') {
       this.toast('只支持上传Gif文件', 'error');
-      return;
-    }
-
-    if (!gifFile || !this.canvas) {
       return;
     }
 
@@ -702,7 +702,9 @@ export default class extends Vue implements Toasted {
 
     await this.updateEditData();
 
-    await this.makeTimeline(frameList);
+    // await this.makeTimeline(frameList);
+    await this.timeline.refreshFrameImg();
+    this.timeline.refresh();
     await this.previewer.initGIF(frameList, showWidth, showHeight);
 
     await this.renderPreview();
@@ -718,7 +720,7 @@ export default class extends Vue implements Toasted {
     }
   }
 
-  public toggleState(key: keyof GifState, name?: string, resetTimeline: boolean = false) {
+  public async toggleState(key: keyof GifState, name?: string, resetTimeline: boolean = false) {
     this.gifState.toggleState(key, name, resetTimeline);
 
     this.renderPreview();
@@ -728,7 +730,9 @@ export default class extends Vue implements Toasted {
     }
 
     if (resetTimeline) {
-      this.makeTimeline(this.frameList);
+
+      await this.timeline.refreshFrameImg();
+      this.timeline.refresh();
     }
   }
 
@@ -739,144 +743,13 @@ export default class extends Vue implements Toasted {
       srcgifDOM.innerHTML = '';
     }
 
-    if (!!this.canvas) {
-      this.canvas.clear();
+    if (!!this.timeline.canvas) {
+      this.timeline.canvas.clear();
     }
-  }
-
-  public async makeTimeline(frameList: GifFrameList) {
-    if (!this.canvas) {
-      console.error('makrTimeline: canvas not ready');
-      return;
-    }
-
-    if (!frameList) {
-      frameList = this.oriFrameList;
-    }
-
-    this.canvas.getObjects().forEach(obj => {
-      // @ts-ignore
-      if (obj.frameData) {
-        this.canvas.remove(obj);
-      }
-    })
-
-    const firstImg = frameList[0];
-
-    const frameWidth = this.oriWidth; // firstImg.width as number;
-    const frameHeight = this.oriHeight; // firstImg.height as number;
-
-    const canvasTotalWidth = (frameWidth + 1) * this.totalFrameCount;
-    const canvasHeight = frameHeight as number;
-
-    const timelineWrapperWidth = (this.$refs['timeline-wrapper'] as HTMLElement).offsetWidth - 2;
-
-    const scale = 1;
-    const divideWidth = 1;
-
-    this.canvas.setWidth(timelineWrapperWidth);
-    this.canvas.setHeight(canvasHeight);
-
-    this.frameList = frameList.map((frame, index) => {
-      const percent = (index + 1) / frameList.length;
-      fabric.Image.fromURL(frame.imgFileSrc, img => {
-        if (!img.width || !img.height) {
-          return;
-        }
-
-        const curWidth = img.width * scale;
-        const curHeight = img.height * scale;
-
-        const nimg = img.set({
-          left: index * (curWidth + divideWidth),
-          top: 0,
-          width: img.width,
-          name: 'frame' + index,
-          type: 'timeline-frame',
-          lockMovementX: true,
-          lockMovementY: true,
-          hasControls: false,
-          selectable: false,
-          flipX: this.gifState.flipX,
-          flipY: this.gifState.flipY,
-        }).scale(scale);
-
-        // @ts-ignore
-        nimg.frameIndex = index;
-        // @ts-ignore
-        nimg.frameData = frame;
-
-        this.canvas.add(nimg);
-      });
-
-      return frame;
-    });
-
-    this.resetDragBar(timelineWrapperWidth, canvasTotalWidth);
-  }
-
-  public resetDragBar(containerWidth: number, totalFrameWidth: number) {
-    this.dragBarCanvas.clear();
-
-    if (containerWidth >= totalFrameWidth) {
-      return;
-    }
-
-    this.dragBarCanvas.setWidth(containerWidth);
-    this.dragBarCanvas.setHeight(30);
-
-    const percent = (containerWidth / totalFrameWidth);
-
-    const dragBarWidth =  percent * containerWidth;
-    const dragBar = new fabric.Rect({
-      name: 'dragbar',
-      width: Math.max(dragBarWidth, 25),
-      height: 25,
-
-      top: 0,
-      left: 0,
-
-      fill: '#777777',
-      lockMovementY: true,
-      hasControls: false,
-    }).on('moving', ({target}) => {
-      let left = target.left as number;
-
-      if (left + dragBarWidth >= containerWidth) {
-        left = containerWidth - dragBarWidth;
-      }
-      if (left < 0) {
-        left = 0;
-      }
-
-      this.timelineLeft = left;
-
-      dragBar.set({
-        left,
-      });
-
-      this.canvas.absolutePan(new fabric.Point(left / percent, 0));
-    });
-
-
-    this.dragBarCanvas.add(dragBar);
-
-    this.dragBar = dragBar;
-
-    dragBar.set({
-      left: this.timelineLeft,
-    });
-    dragBar.fire('move');
-    // this.dragBarCanvas.renderAll();
   }
 
   // 将#时间轴#中的每一帧合并为GIF
   public async generate() {
-    if (!this.canvas) {
-      console.error('generate: canvas not ready');
-      return;
-    }
-
     this.generateDone = false;
 
     this.progress = 0;
@@ -886,7 +759,7 @@ export default class extends Vue implements Toasted {
 
     const totalWidth = (width + 1) * this.totalFrameCount;
 
-    this.canvas.absolutePan(new fabric.Point(0, 0));
+    this.timeline.canvas.absolutePan(new fabric.Point(0, 0));
 
     const dataUrlArr: string[] = [];
 
@@ -929,7 +802,7 @@ export default class extends Vue implements Toasted {
         top += resizeRect.top / gScaleY;
       }
 
-      const durl = this.canvas.toDataURL({
+      const durl = this.timeline.canvas.toDataURL({
         width: _width,
         height: _height,
         left, 
@@ -969,7 +842,7 @@ export default class extends Vue implements Toasted {
     };
 
     window.onkeydown = (e: KeyboardEvent) => {
-      const activedObjects = this.canvas.getActiveObjects();
+      const activedObjects = this.timeline.canvas.getActiveObjects();
 
       // @ts-ignore
       const allFrames = activedObjects.every(item => !!item.frameData);
@@ -992,7 +865,7 @@ export default class extends Vue implements Toasted {
   }
 
   public onCopy() {
-    let activedObjects = this.canvas.getActiveObjects();
+    let activedObjects = this.timeline.canvas.getActiveObjects();
 
     const frameList = this.frameList;
 
@@ -1019,7 +892,7 @@ export default class extends Vue implements Toasted {
   }
 
   public onPaste() {
-    const activedObjects = this.canvas.getActiveObjects();
+    const activedObjects = this.timeline.canvas.getActiveObjects();
 
     const frameList = this.frameList;
 
@@ -1048,7 +921,7 @@ export default class extends Vue implements Toasted {
 
       this.toast(`已粘贴${copiedFrame.length}帧`, 'success');
 
-      this.makeTimeline(frameList);
+      // this.makeTimeline(frameList);
     }
 
     if (copiedObj.length) {
@@ -1059,12 +932,12 @@ export default class extends Vue implements Toasted {
             left: ((obj.left || 0) + 16),
             top: ((obj.top || 0) + 16),
           })
-          this.canvas.add(cloneObj);
-          this.canvas.setActiveObject(cloneObj);
+          this.timeline.canvas.add(cloneObj);
+          this.timeline.canvas.setActiveObject(cloneObj);
         })
       });
 
-      this.canvas.renderAll();
+      this.timeline.canvas.renderAll();
 
       // @ts-ignore
       this.toast(`已粘贴${this.copiedObj.length}个对象`, 'success');
@@ -1073,14 +946,14 @@ export default class extends Vue implements Toasted {
   }
 
   public deleteActivedObject() {
-    const activedObjects = this.canvas.getActiveObjects();
+    const activedObjects = this.timeline.canvas.getActiveObjects();
 
     if (!activedObjects.length) {
       this.toast('当前没有选中元素', 'error');
       return;
     }
 
-    this.canvas.remove(...activedObjects);
+    this.timeline.canvas.remove(...activedObjects);
 
     this.toast('删除成功', 'success');
   }
@@ -1189,9 +1062,10 @@ export default class extends Vue implements Toasted {
 
   public async applyPreview2Timeline() {
     const {
-      canvas: timelineCanvas,
       previewer,
     } = this;
+
+    const timelineCanvas = this.timeline.canvas;
 
     const preview = previewer.preview;
 
@@ -1218,9 +1092,10 @@ export default class extends Vue implements Toasted {
       showHeight: height,
       oriWidth,
       oriHeight,
-      canvas: timelineCanvas,
+      // canvas: timelineCanvas,
       oriImageSrc,
     } = this;
+    const timelineCanvas = this.timeline.canvas;
 
     const scaleX = width / oriWidth;
     const scaleY = height / oriHeight;
@@ -1301,9 +1176,16 @@ export default class extends Vue implements Toasted {
     this.aaa = this.previewer.preview.isPause;
   }
 
-  filters: any[];
-  addTestFilter() {
-    this.previewer.preview.addModule(new Filter());
+  async addTestFilter() {
+    const filter = new Filter();
+    this.previewer.preview.addModule(filter);
+    this.timeline.addModule(filter);
+    this.timeline.refresh();
+  }
+
+  addModule(module: GifModule) {
+    // this.filters.push(module);
+    // module.apply(this);
   }
 }
 </script>
