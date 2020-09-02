@@ -1,6 +1,7 @@
-import { GifModule, Stage } from "./module";
+import { StageModule } from "../module";
+import { Stage } from "../stage";
 import { fabric } from "fabric";
-import { RangedFrameObject} from "../js/type";
+import { RangedFrameObject } from "../type";
 
 export type TextOption = {
   fontSize?: number,
@@ -15,7 +16,7 @@ export type TextOption = {
   frameRange: [number, number],
 }
 
-export class Text implements GifModule {
+export class Text implements StageModule {
   // 文字操作 start
 
   private content: string = '';
@@ -59,7 +60,7 @@ export class Text implements GifModule {
     return res;
   }
 
-  public async apply(stage: Stage) {
+  public async addTo(stage: Stage) {
     const canvas = stage.canvas;
     let {
       content,

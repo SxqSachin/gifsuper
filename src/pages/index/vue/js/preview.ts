@@ -1,7 +1,7 @@
 import { fabric } from 'fabric';
 import { GifFrameList, GifFrame, } from '@/js/gif';
-import { RangedFrameObject, Toasted, TextOption } from './type';
-import { Stage, GifModule } from '../modules/module';
+import { RangedFrameObject, Toasted, TextOption } from '../../js/type';
+import { Stage } from '../../js/stage';
 
 export interface PreviewOption {
   revert?: boolean;
@@ -432,10 +432,6 @@ class GifPreview implements Stage {
 
   get canvas() {
     return this.previewCanvas;
-  }
-
-  public addModule(module: GifModule) {
-    module.apply(this);
   }
 }
 

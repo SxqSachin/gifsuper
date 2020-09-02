@@ -10,9 +10,9 @@
 import { Vue, Component, Prop, } from 'vue-property-decorator';
 
 import { GifPreview, PreviewOption } from '../js/preview';
-import { Toasted, } from '../js/type';
+import { Toasted, } from '../../js/type';
 import { GifFrameList } from '@/js/gif';
-import { Stage, GifModule } from '../modules/module';
+import { Stage } from '../../js/stage';
 
 @Component({ })
 export default class Previewer extends Vue implements Toasted, Stage {
@@ -74,8 +74,8 @@ export default class Previewer extends Vue implements Toasted, Stage {
     return this._preview.previewCanvas;
   }
 
-  addModule(module: GifModule) {
-    module.apply(this);
+  get imgs(): fabric.Image[] {
+    return this._preview.frames;
   }
 }
 </script>

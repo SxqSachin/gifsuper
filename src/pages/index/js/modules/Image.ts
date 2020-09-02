@@ -1,9 +1,10 @@
-import { GifModule, Stage } from "./module";
+import { StageModule } from "../module";
+import { Stage } from "../stage";
 import { fabric } from "fabric";
-import { RangedFrameObject } from "../js/type";
+import { RangedFrameObject } from "../type";
 import { getFileInfo } from "@/js/gif";
 
-export class Image implements GifModule {
+export class Image implements StageModule {
   private imgList: FileList;
   private frameRange: [number, number];
 
@@ -12,7 +13,7 @@ export class Image implements GifModule {
     this.frameRange = frameRange;
   }
 
-  public async apply(stage: Stage) {
+  public async addTo(stage: Stage) {
     const img = this.imgList[0];
 
     if (!img.type.includes('image')) {

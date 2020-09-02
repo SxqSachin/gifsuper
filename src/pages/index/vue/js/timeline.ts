@@ -1,4 +1,4 @@
-import { Stage, GifModule } from '../modules/module';
+import { Stage } from '../../js/stage';
 import { GifFrameList } from '@/js/gif';
 import { fabric } from 'fabric';
 import { GifState } from './GifState';
@@ -12,10 +12,6 @@ export class Timeline implements Stage {
     this._canvas = new fabric.Canvas(canvasID);
 
     this._wrapper = wrapper;
-  }
-
-  addModule(module: GifModule) {
-
   }
 
   async make(frameList: GifFrameList, oriWidth: number, oriHeight: number, gifState: GifState) {
@@ -89,5 +85,9 @@ export class Timeline implements Stage {
 
   get canvas() {
     return this._canvas;
+  }
+
+  get imgs(): fabric.Image[] {
+    throw new DOMException('123')
   }
 }

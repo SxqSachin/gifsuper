@@ -13,9 +13,9 @@ import { Vue, Component, Prop, } from 'vue-property-decorator';
 import { fabric } from 'fabric';
 
 import { GifPreview, PreviewOption } from '../js/preview';
-import { Toasted, } from '../js/type';
+import { Toasted, } from '../../js/type';
 import { GifFrameList, GifFrame } from '@/js/gif';
-import { Stage, GifModule } from '../modules/module';
+import { Stage } from '../../js/stage';
 import { GifState } from '../js/GifState';
 
 @Component({ })
@@ -184,10 +184,6 @@ export default class extends Vue implements Stage {
     dragBar.fire('move');
   }
 
-  async addModule(module: GifModule) {
-    module.apply(this);
-  }
-
   get canvas() {
     return this._canvas;
   }
@@ -196,7 +192,7 @@ export default class extends Vue implements Stage {
     return this._dragbar;
   }
 
-  get imgs() {
+  get imgs(): fabric.Image[] {
     return this.frames;
   }
 

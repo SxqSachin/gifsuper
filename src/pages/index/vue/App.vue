@@ -511,15 +511,15 @@ interface GenerateOption {
   removeRange?: [number, number];
 }
 
-import { RangedFrameObject } from './js/type';
+import { RangedFrameObject } from '../js/type';
 // import { GifPreview } from './js/preview';
-import { Toasted } from './js/type';
+import { Toasted } from '../js/type';
 import { GifState } from './js/GifState';
 
-import { Text } from './modules/Text';
-import { Image } from './modules/Image';
-import { Filter } from './modules/Filter';
-import { Stage, GifModule } from './modules/module';
+import { Text } from '../js/modules/Text';
+import { Image } from '../js/modules/Image';
+import { Filters } from '../js/modules/Filter';
+import { Stage } from '../js/stage';
 // import { Timeline } from './js/timeline';
 
 @Component({
@@ -986,7 +986,7 @@ export default class extends Vue implements Toasted {
 
   public addImage(imgList: FileList) {
     const image = new Image(imgList, this.addImgRange);
-    this.previewer.addModule(image);
+    image.addTo(this.previewer);
   }
 
   public addText() {
@@ -1003,8 +1003,7 @@ export default class extends Vue implements Toasted {
       strokeColor: textStrokeColor,
       frameRange: addTextRange,
     });
-
-    this.previewer.addModule(text);
+    text.addTo(this.previewer);
   }
 
   public renderPreview() {
@@ -1177,16 +1176,14 @@ export default class extends Vue implements Toasted {
   }
 
   async addTestFilter() {
-    const filter = new Filter();
-    this.previewer.preview.addModule(filter);
-    this.timeline.addModule(filter);
+    const filter = Filters.Noise();
+    filter.addTo(this.previewer);
+    filter.addTo(this.timeline);
+    // this.previewer.preview.addModule(filter);
+    // this.timeline.addModule(filter);
     this.timeline.refresh();
   }
 
-  addModule(module: GifModule) {
-    // this.filters.push(module);
-    // module.apply(this);
-  }
 }
 </script>
 
