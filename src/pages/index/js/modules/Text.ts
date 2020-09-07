@@ -102,4 +102,7 @@ export class Text implements StageModule {
     canvas.add(itext).renderAll();
     canvas.setActiveObject(itext);
   }
+
+  public removeFrom(stage: Stage) {
+  }
 }

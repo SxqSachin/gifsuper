@@ -62,4 +62,7 @@ export class Image implements StageModule {
 
     return res;
   }
+
+  public removeFrom(stage: Stage) {
+  }
 }

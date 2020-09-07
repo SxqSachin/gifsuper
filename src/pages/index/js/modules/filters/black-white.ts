@@ -2,10 +2,11 @@ import { Stage } from '../../stage';
 import { Filter } from '../Filter';
 import { fabric } from 'fabric';
 
-export class Noise implements Filter {
+export class BlackWhite implements Filter {
   addTo(stage: Stage) {
     stage.imgs.forEach(img => {
-      img.filters.push(new fabric.Image.filters.Noise({noise: 128}));
+      // @ts-ignore
+      img.filters.push(new fabric.Image.filters.BlackWhite());
       img.applyFilters();
     });
   }

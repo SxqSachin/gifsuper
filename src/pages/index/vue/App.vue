@@ -168,7 +168,6 @@
                 <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleState('repeat', '循环')">循环：{{ gifState.repeat ? '开' : '关' }}</sbtn>
                 <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会左右颠倒" :disabled="!canEdit" @click="toggleState('flipX', '左右翻转', true)">左右翻转：{{ gifState.flipX ? '开' : '关' }}</sbtn>
                 <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会上下颠倒" :disabled="!canEdit" @click="toggleState('flipY', '上下翻转', true)">上下翻转：{{ gifState.flipY ? '开' : '关' }}</sbtn>
-                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会上下颠倒" :disabled="!canEdit" @click="addTestFilter">测试滤镜</sbtn>
                 <!-- <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后可实现首尾相接重复的特效" :disabled="!canEdit" @click="toggleRLoop">
                   <span>反复</span>
                   <span>:{{ rloop ? '开' : '关' }} </span>
@@ -391,6 +390,14 @@
             </section>
           </fieldset>
 
+          <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+            v-show="curTab === 'filter'"
+            >
+
+            <filter-panel @filter="onFilterChange" @clear="clearFilter"></filter-panel>
+
+          </fieldset>
+
           <fieldset class="pt-8 ">
             <sbtn title="应用修改" @click="applyPreview2Timeline" type="success" :disabled="!canEdit">将修改应用到时间轴</sbtn>
             <div class="py-2 mb-4 text-sm">
@@ -486,9 +493,11 @@ import { GifState } from './js/GifState';
 
 import { Text } from '../js/modules/Text';
 import { Image } from '../js/modules/Image';
-import { Filters } from '../js/modules/Filter';
+import { Filter, Filters } from '../js/modules/Filter';
 import { Stage } from '../js/stage';
 // import { Timeline } from './js/timeline';
+
+import FilterPanel from './components/panels/filter.vue';
 
 @Component({
   components: {
@@ -499,14 +508,10 @@ import { Stage } from '../js/stage';
     'color-picker': ColorPicker,
     previewer: Previewer,
     timeline: Timeline,
+    'filter-panel': FilterPanel,
   },
 })
 export default class extends Vue implements Toasted {
-  // fabric canvas对象
-  // public canvas!: fabric.Canvas;
-
-  // 添加图片裁剪用canvas
-  // public previewCanvas!: fabric.Canvas;
   public stickyPreviewCanvas: boolean = false;
   public curPreviewImg: string = '';
   public pausePreview: boolean = false;
@@ -627,6 +632,10 @@ export default class extends Vue implements Toasted {
     this.timeline = this.$refs['timeline'] as Timeline;
 
     this.initKeyPressEvent();
+
+// console.log(fabric.filterBackend);
+    // fabric.filterBackend = new fabric.WebglFilterBackend();
+    window.fabric = fabric;
   }
 
   public async upload(e: FileList) {
@@ -1143,13 +1152,18 @@ export default class extends Vue implements Toasted {
     this.aaa = this.previewer.preview.isPause;
   }
 
-  async addTestFilter() {
-    const filter = Filters.Noise();
+  onFilterChange(filter: Filter) {
+    if (!filter) {
+      this.toast('滤镜不可用');
+      return;
+    }
+
     filter.addTo(this.previewer);
     filter.addTo(this.timeline);
-    // this.previewer.preview.addModule(filter);
-    // this.timeline.addModule(filter);
     this.timeline.refresh();
+  }
+
+  clearFilter() {
   }
 
   get tabs() {
