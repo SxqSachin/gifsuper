@@ -107,45 +107,13 @@
 
         <div class="flex flex-row">
           <ul class="flex flex-row">
-            <li
+            <li v-for="tab in tabs" :key="tab.name"
               class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-              :class="{'bg-assets shadow': curTab === 'base'}"
-              @click="switchTab('base')"
+              :class="{'bg-assets shadow': curTab === tab.name}"
+              @click="switchTab(tab.name)"
             >
-              <img class="w-4 h-4 flex-shrink-0" src="/static/icons/hammer.svg"/>
-              <span class="ml-2 md:inline" :class="{inline: curTab === 'base', 'hidden': curTab !== 'base'}">基础设置</span>
-            </li>
-            <li
-              class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-              :class="{'bg-assets shadow': curTab === 'addText'}"
-              @click="switchTab('addText')"
-            >
-              <img class="w-4 h-4 flex-shrink-0" src="/static/icons/text.svg"/>
-              <span class="ml-2 md:inline" :class="{inline: curTab === 'addText', 'hidden': curTab !== 'addText'}">添加文字</span>
-            </li>
-            <li
-              class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-              :class="{'bg-assets shadow': curTab === 'addPic'}"
-              @click="switchTab('addPic')"
-            >
-              <img class="w-4 h-4 flex-shrink-0" src="/static/icons/image.svg"/>
-              <span class="ml-2 md:inline" :class="{inline: curTab === 'addPic', 'hidden': curTab !== 'addPic'}">添加图片</span>
-            </li>
-            <li
-              class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-              :class="{'bg-assets shadow': curTab === 'cut'}"
-              @click="switchTab('cut')"
-            >
-              <img class="w-4 h-4 flex-shrink-0" src="/static/icons/cut.svg"/>
-              <span class="ml-2 md:inline" :class="{inline: curTab === 'cut', 'hidden': curTab !== 'cut'}">帧裁剪</span>
-            </li>
-            <li
-              class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-              :class="{'bg-assets shadow': curTab === 'resize'}"
-              @click="switchTab('resize')"
-            >
-              <img class="w-4 h-4 flex-shrink-0" src="/static/icons/contract.svg"/>
-              <span class="ml-2 md:inline" :class="{inline: curTab === 'resize', 'hidden': curTab !== 'resize'}">裁剪</span>
+              <img class="w-4 h-4 flex-shrink-0" :src="tab.icon"/>
+              <span class="ml-2 md:inline" :class="{inline: curTab === tab.name, 'hidden': curTab !== tab.name}">{{tab.title}}</span>
             </li>
           </ul>
         </div>
@@ -1184,6 +1152,16 @@ export default class extends Vue implements Toasted {
     this.timeline.refresh();
   }
 
+  get tabs() {
+    return [
+      { name: 'base', title: '基础设置', icon: '/static/icons/hammer.svg', },
+      { name: 'addText', title: '添加文字', icon: '/static/icons/text.svg', },
+      { name: 'addPic', title: '添加图片', icon: '/static/icons/image.svg', },
+      { name: 'cut', title: '帧裁剪', icon: '/static/icons/cut.svg', },
+      { name: 'resize', title: '裁剪', icon: '/static/icons/contract.svg', },
+      { name: 'filter', title: '滤镜', icon: '/static/icons/hammer.svg', },
+    ];
+  }
 }
 </script>
 
