@@ -6,6 +6,11 @@
       <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(1);"> + </div>
     </div>
 
+    <div v-if="!getNotification(2)" data-n-ver="2" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
+      <div> 新功能：更新了滤镜功能，会定期更新滤镜种类！ </div>
+      <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(2);"> + </div>
+    </div>
+
     <!-- todo 严重bug 长度过大的gif上传后存在内存爆栈 导致标签页假死 -->
     <div class="top mb-6">
       <upload class="uploader mx-auto" :before-upload="upload" accept=".gif">上传GIF</upload>
@@ -394,7 +399,7 @@
             v-show="curTab === 'filter'"
             >
 
-            <filter-panel @filter="onFilterChange" @clear="clearFilter"></filter-panel>
+            <filter-panel ref="filter-panel" @filter="onFilterChange"></filter-panel>
 
           </fieldset>
 
@@ -594,6 +599,8 @@ export default class extends Vue implements Toasted {
 
   public timeline!: Timeline;
 
+  public filterPanel!: FilterPanel;
+
   get canEdit(): boolean {
     return !!this.frameList?.length;
   }
@@ -631,11 +638,15 @@ export default class extends Vue implements Toasted {
 
     this.timeline = this.$refs['timeline'] as Timeline;
 
+    this.filterPanel = this.$refs['filter-panel'] as FilterPanel;
+
     this.initKeyPressEvent();
 
 // console.log(fabric.filterBackend);
     // fabric.filterBackend = new fabric.WebglFilterBackend();
     window.fabric = fabric;
+
+    window['app'] = this;
   }
 
   public async upload(e: FileList) {
@@ -676,6 +687,8 @@ export default class extends Vue implements Toasted {
 
     this.frameList = frameList;
     this.oriFrameList = frameList;
+
+    this.filterPanel.setPreviewFrame(this.frameList[0]);
 
     await this.updateEditData();
 
@@ -1163,9 +1176,6 @@ export default class extends Vue implements Toasted {
     this.timeline.refresh();
   }
 
-  clearFilter() {
-  }
-
   get tabs() {
     return [
       { name: 'base', title: '基础设置', icon: '/static/icons/hammer.svg', },
@@ -1173,7 +1183,7 @@ export default class extends Vue implements Toasted {
       { name: 'addPic', title: '添加图片', icon: '/static/icons/image.svg', },
       { name: 'cut', title: '帧裁剪', icon: '/static/icons/cut.svg', },
       { name: 'resize', title: '裁剪', icon: '/static/icons/contract.svg', },
-      { name: 'filter', title: '滤镜', icon: '/static/icons/hammer.svg', },
+      { name: 'filter', title: '滤镜', icon: '/static/icons/wand.svg', },
     ];
   }
 }
