@@ -20,7 +20,8 @@
 import { Vue, Component, Prop, } from 'vue-property-decorator';
 
 import sBtn from '@/components/widget/s-btn.vue';
-import { Filter, Filters, FilterType } from '@/pages/index/js/modules/Filter';
+import { Filter } from '@/pages/index/js/modules/filter';
+import { Filters, FilterType } from '@/pages/index/js/modules/filters';
 
 import { fabric } from 'fabric';
 import { GifFrame, GifFrameList } from '@/js/gif';

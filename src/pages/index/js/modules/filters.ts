@@ -1,12 +1,10 @@
 import { Noise } from "./filters/noise";
-import { StageModule } from "../module";
 import { Grayscale } from "./filters/gray-scale";
-import { Invert } from "./filters/Invert";
-import { Sepia } from "./filters/Sepia";
+import { Invert } from "./filters/invert";
+import { Sepia } from "./filters/sepia";
 import { Pixelate } from "./filters/pixelate";
 import { BlackWhite } from "./filters/black-white";
-
-export type FilterType = 'Noise' | 'Grayscale' | 'BlackWhite' | 'Invert' | 'Sepia' | 'Pixelate';
+import { Filter } from "./filter";
 
 const FilterMap = {
   Noise,
@@ -17,15 +15,14 @@ const FilterMap = {
   BlackWhite
 };
 
-export interface Filter extends StageModule {
-}
+export type FilterType = 'Noise' | 'Grayscale' | 'BlackWhite' | 'Invert' | 'Sepia' | 'Pixelate';
 
 export class Filters {
   public static get(type: FilterType): Filter | null {
     if (!FilterMap[type]) {
       return null;
     }
-    
+
     return new FilterMap[type]();
   }
 }

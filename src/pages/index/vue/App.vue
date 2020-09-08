@@ -498,7 +498,8 @@ import { GifState } from './js/GifState';
 
 import { Text } from '../js/modules/Text';
 import { Image } from '../js/modules/Image';
-import { Filter, Filters } from '../js/modules/Filter';
+import { Filter } from '../js/modules/filter';
+import { Filters } from '../js/modules/filters';
 import { Stage } from '../js/stage';
 // import { Timeline } from './js/timeline';
 

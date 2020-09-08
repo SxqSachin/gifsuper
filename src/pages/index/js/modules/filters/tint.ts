@@ -1,5 +1,5 @@
 import { Stage } from '../../stage';
-import { Filter } from '../Filter';
+import { Filter } from '../filter';
 import { fabric } from 'fabric';
 
 export class Tint implements Filter {
