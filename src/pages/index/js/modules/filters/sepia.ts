@@ -1,12 +1,9 @@
-import { Stage } from '../../stage';
-import { Filter } from '../filter';
+import { AbstractFilter } from '../filter';
 import { fabric } from 'fabric';
 
-export class Sepia implements Filter {
-  addTo(stage: Stage) {
-    stage.imgs.forEach(img => {
-      img.filters.push(new fabric.Image.filters.Sepia());
-      img.applyFilters();
-    });
+export class Sepia extends AbstractFilter {
+  applyFilter(img: fabric.Image): fabric.Image {
+    img.filters.push(new fabric.Image.filters.Sepia());
+    return img;
   }
 }

@@ -1,12 +1,9 @@
-import { Stage } from '../../stage';
-import { Filter } from '../filter';
+import { AbstractFilter } from '../filter';
 import { fabric } from 'fabric';
 
-export class Pixelate implements Filter {
-  addTo(stage: Stage) {
-    stage.imgs.forEach(img => {
-      img.filters.push(new fabric.Image.filters.Pixelate({blocksize: 10}));
-      img.applyFilters();
-    });
+export class Pixelate extends AbstractFilter {
+  applyFilter(img: fabric.Image): fabric.Image {
+    img.filters.push(new fabric.Image.filters.Pixelate({blocksize: 8}));
+    return img;
   }
 }

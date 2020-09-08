@@ -2,7 +2,7 @@
   <div class="flex flex-col justify-center items-start mb-4 w-full">
     <div class="img-container flex flex-wrap w-full">
       <div class="img-wrapper relative p-4 mb-4 flex-0 bg-assets shadow hover:shadow-xl transition-shadow transition-time-func rounded-md cursor-pointer" 
-        v-for="(previewImg, key) in previewImgs" 
+        v-for="(previewImg, key) in previewImgs"
         :key="key"
         @click="applyFilter(key)"
         >
@@ -12,7 +12,6 @@
         </div>
       </div>
     </div>
-    <!-- <s-btn :full="true" @click="clearFilter"> 重置所有滤镜 </s-btn> -->
   </div>
 </template>
 
@@ -26,7 +25,7 @@ import { Filters, FilterType } from '@/pages/index/js/modules/filters';
 import { fabric } from 'fabric';
 import { GifFrame, GifFrameList } from '@/js/gif';
 
-@Component({ 
+@Component({
   components: {
     's-btn': sBtn,
   }
