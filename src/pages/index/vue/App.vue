@@ -499,7 +499,7 @@ import { GifState } from './js/GifState';
 import { Text } from '../js/modules/Text';
 import { Image } from '../js/modules/Image';
 import { Filter } from '../js/modules/filter';
-import { Filters } from '../js/modules/filters';
+import { Filters, FilterType } from '../js/modules/filters';
 import { Stage } from '../js/stage';
 // import { Timeline } from './js/timeline';
 
@@ -1166,14 +1166,21 @@ export default class extends Vue implements Toasted {
     this.aaa = this.previewer.preview.isPause;
   }
 
-  onFilterChange(filter: Filter) {
+  async onFilterChange({ filter, type }:{filter: Filter, type: FilterType}) {
     if (!filter) {
       this.toast('滤镜不可用');
       return;
     }
 
-    filter.addTo(this.previewer);
-    filter.addTo(this.timeline);
+    await filter.addTo(this.previewer, process => {
+      this.filterPanel.setFilterState(type, '渲染预览...', `${(process * 100).toFixed(2)}%`);
+    });
+
+    await filter.addTo(this.timeline, process => {
+      this.filterPanel.setFilterState(type, '渲染时间轴...', `${(process * 100).toFixed(2)}%`);
+    });
+    this.filterPanel.clearFilterState(type);
+
     this.timeline.refresh();
   }
 

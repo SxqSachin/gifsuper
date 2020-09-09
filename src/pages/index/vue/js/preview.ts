@@ -21,8 +21,8 @@ const DefaultPreviewOption: PreviewOption = {
 
 class GifPreview implements Stage {
   public previewCanvas!: fabric.Canvas;
-  private frameGroup: fabric.Group = null;
-  private frameList: GifFrameList = null;
+  public frameGroup: fabric.Group = null;
+  public frameList: GifFrameList = null;
 
   private _pause: boolean = false;
 
@@ -172,34 +172,45 @@ class GifPreview implements Stage {
       flipY,
     } = this.options;
 
-    this.frames.length = 0;
+    let res = [];
 
-    frameList.forEach((frame, index) => {
-      promiseGroup.push(new Promise(resolve => {
-        fabric.Image.fromURL(frame.imgFileSrc, img => {
-          if (!img.width || !img.height) {
-            return;
-          }
+    if (!this.frames.length) {
+      frameList.forEach((frame, index) => {
+        promiseGroup.push(new Promise(resolve => {
+          fabric.Image.fromURL(frame.imgFileSrc, img => {
+            if (!img.width || !img.height) {
+              return;
+            }
 
-          const nimg = img.set({
-            left: index * width,
-            top: 0,
-            name: `frame-${index}`,
-            hasControls: false,
-            selectable: false,
-            type: 'bg',
-            flipX,
-            flipY,
-          }).scaleToWidth(width).scaleToHeight(height) as fabric.Image;
+            const nimg = img.set({
+              left: index * width,
+              top: 500,
+              name: `frame-${index}`,
+              hasControls: false,
+              selectable: false,
+              type: 'bg',
+              flipX,
+              flipY,
+            }).scaleToWidth(width).scaleToHeight(height) as fabric.Image;
 
-          this.frames.push(nimg);
+            this.frames.push(nimg);
 
-          resolve(nimg);
-        });
-      }))
-    });
+            resolve(nimg);
+          });
+        }))
+      });
 
-    const res = await Promise.all(promiseGroup);
+      res = await Promise.all(promiseGroup);
+    } else {
+      this.frames = this.frames.map(img => {
+        img.set({
+          flipX,
+          flipY,
+        }).scaleToWidth(width).scaleToHeight(height) as fabric.Image;
+        return img;
+      });
+      res = this.frames;
+    }
 
     const fgroup = new fabric.Group(res);
     fgroup.set({
@@ -207,6 +218,7 @@ class GifPreview implements Stage {
       hasControls: false,
       name: 'bg-group',
       type: 'bg',
+      top: 0,
     })
 
     return fgroup;

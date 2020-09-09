@@ -10,6 +10,11 @@
         <div class="filter-info absolute flex justify-center items-center opacity-0 hover:opacity-100 transition-opacity duration-300">
           <span class="text-gray-400"> {{ previewImg.title }} </span>
         </div>
+
+        <div v-show="filterState[key] && filterState[key].show" class="filter-state absolute flex flex-col justify-center items-center">
+          <p v-show="filterState[key] && filterState[key].title" class="text-gray-400 mb-2"> {{ filterState[key] ? filterState[key].title : '' }} </p>
+          <p v-show="filterState[key] && filterState[key].subtitle" class="text-gray-400"> {{ filterState[key] ? filterState[key].subtitle : '' }} </p>
+        </div>
       </div>
     </div>
   </div>
@@ -24,16 +29,19 @@ import { Filters, FilterType } from '@/pages/index/js/modules/filters';
 
 import { fabric } from 'fabric';
 import { GifFrame, GifFrameList } from '@/js/gif';
+import { Toasted } from '../../../js/type';
 
 @Component({
   components: {
     's-btn': sBtn,
   }
 })
-export default class extends Vue {
+export default class extends Vue implements Toasted {
   public previewFrame!: GifFrame;
 
   public previewImgs: {[type: string]: string} = {};
+
+  public filterState: {[type: string]: { show: boolean, title: string, subtitle: string }} = {};
 
   get filters() {
     const filterList = [
@@ -53,9 +61,21 @@ export default class extends Vue {
   }
 
   public applyFilter(type: FilterType) {
+    if (this.filterState[type] && this.filterState[type].show) {
+      this.toast('滤镜应用中，请稍候');
+      return;
+    }
+
     let filter: Filter = Filters.get(type);
 
-    this.$emit('filter', filter);
+    this.$emit('filter', { filter, type });
+  }
+
+  public setFilterState(type: FilterType, title: string, subtitle?: string) {
+    this.$set(this.filterState, type, { show: true, title, subtitle, });
+  }
+  public clearFilterState(type: FilterType) {
+    this.$set(this.filterState, type, { show: false, title: '', subtitle: '', });
   }
 
   public clearFilter() {
@@ -83,6 +103,11 @@ export default class extends Vue {
       this.$set(this.previewImgs, name, {url: img.toDataURL({format: 'png'}), title, })
     });
   }
+
+  public toast(msg: string, type: string = 'info', duration: number = 3000) {
+    // @ts-ignore
+    this.$message(msg, { type, duration });
+  }
 }
 </script>
 
@@ -95,7 +120,8 @@ export default class extends Vue {
   margin-left: 1rem;
 }
 
-.img-wrapper .filter-info {
+.img-wrapper .filter-info,
+.img-wrapper .filter-state {
   top: 1rem;
   left: 1rem;
   width: calc(100% - 2rem);

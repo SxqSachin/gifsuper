@@ -14,11 +14,10 @@ export abstract class AbstractFilter implements Filter {
       img = this.applyFilter(img);
       img.applyFilters();
 
-      await delay(20);
+      // 插入一个延时 避免阻塞用户操作
+      await delay(28);
 
       processCallback((index + 1) / imgs.length);
-
-      console.log((index + 1) / imgs.length);
     }
   }
 
