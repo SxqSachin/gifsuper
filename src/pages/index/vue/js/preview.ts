@@ -1,6 +1,7 @@
 import { fabric } from 'fabric';
 import { GifFrameList, GifFrame, } from '@/js/gif';
-import { RangedFrameObject, Toasted, TextOption } from './type';
+import { RangedFrameObject, Toasted, TextOption } from '../../js/type';
+import { Stage } from '../../js/stage';
 
 export interface PreviewOption {
   revert?: boolean;
@@ -18,10 +19,10 @@ const DefaultPreviewOption: PreviewOption = {
   revert: false,
 }
 
-class GifPreview {
-  private previewCanvas!: fabric.Canvas;
-  private frameGroup: fabric.Group = null;
-  private frameList: GifFrameList = null;
+class GifPreview implements Stage {
+  public previewCanvas!: fabric.Canvas;
+  public frameGroup: fabric.Group = null;
+  public frameList: GifFrameList = null;
 
   private _pause: boolean = false;
 
@@ -49,6 +50,12 @@ class GifPreview {
   private _resizeRectBorderB!: fabric.Rect;
   private _resizeRectBorderL!: fabric.Rect;
   private _resizeRectBorderR!: fabric.Rect;
+
+  frames: fabric.Image[] = [];
+
+  get imgs() {
+    return this.frames;
+  }
 
   constructor(canvasID: string, main: Toasted) {
     this.previewCanvas = new fabric.Canvas(canvasID);
@@ -165,30 +172,45 @@ class GifPreview {
       flipY,
     } = this.options;
 
-    frameList.forEach((frame, index) => {
-      promiseGroup.push(new Promise(resolve => {
-        fabric.Image.fromURL(frame.imgFileSrc, img => {
-          if (!img.width || !img.height) {
-            return;
-          }
+    let res = [];
 
-          const nimg = img.set({
-            left: index * width,
-            top: 0,
-            name: `frame-${index}`,
-            hasControls: false,
-            selectable: false,
-            type: 'bg',
-            flipX,
-            flipY,
-          }).scaleToWidth(width).scaleToHeight(height);
+    if (!this.frames.length) {
+      frameList.forEach((frame, index) => {
+        promiseGroup.push(new Promise(resolve => {
+          fabric.Image.fromURL(frame.imgFileSrc, img => {
+            if (!img.width || !img.height) {
+              return;
+            }
 
-          resolve(nimg);
-        });
-      }))
-    });
+            const nimg = img.set({
+              left: index * width,
+              top: 500,
+              name: `frame-${index}`,
+              hasControls: false,
+              selectable: false,
+              type: 'bg',
+              flipX,
+              flipY,
+            }).scaleToWidth(width).scaleToHeight(height) as fabric.Image;
 
-    const res = await Promise.all(promiseGroup);
+            this.frames.push(nimg);
+
+            resolve(nimg);
+          });
+        }))
+      });
+
+      res = await Promise.all(promiseGroup);
+    } else {
+      this.frames = this.frames.map(img => {
+        img.set({
+          flipX,
+          flipY,
+        }).scaleToWidth(width).scaleToHeight(height) as fabric.Image;
+        return img;
+      });
+      res = this.frames;
+    }
 
     const fgroup = new fabric.Group(res);
     fgroup.set({
@@ -196,6 +218,7 @@ class GifPreview {
       hasControls: false,
       name: 'bg-group',
       type: 'bg',
+      top: 0,
     })
 
     return fgroup;
@@ -363,110 +386,6 @@ class GifPreview {
     canvas.renderAll();
   }
 
-  public async addImage(imgList: FileList, frame?: number[]) {
-    const img = imgList[0];
-
-    if (!img.type.includes('image')) {
-      this.main.toast('只支持上传图片', 'error');
-      return;
-    }
-
-    const { previewCanvas: canvas, showWidth, showHeight, } = this;
-    const frameData = await this.getImageData(img);
-
-    const initImageData: Promise<fabric.Object> = new Promise(resolve => {
-      fabric.Image.fromURL(frameData.imgFileSrc, img => {
-        const nimg = img.set({
-          left: 15,
-          top: 15,
-          width: frameData.width,
-          height: frameData.height,
-          cornerColor: '#66a6ff',
-          cornerSize: 8,
-          transparentCorners: false
-        }) as RangedFrameObject;
-
-        nimg.set({
-          type: 'nimg',
-
-          inFrame: frame,
-        });
-
-        resolve(nimg);
-      });
-    });
-
-    const imgObj = await initImageData;
-
-    canvas.add(imgObj).renderAll();
-    canvas.setActiveObject(imgObj);
-
-    this.main.toast('添加成功', 'success', 800);
-  }
-
-  public async addText(text: string, option?: TextOption, frame?: number[]) {
-    const { previewCanvas: canvas, } = this;
-    let { size, color, enableStroke, strokeWidth, strokeColor, fontWeight } = option;
-
-    if (!text) {
-      return this.main.toast('请输入文字后再进行“添加文字”操作', 'warn');
-    }
-
-    size = size ?? 14;
-    color = color ?? '#ffffffff';
-    enableStroke = enableStroke ?? false;
-    strokeWidth = strokeWidth ?? 0;
-    strokeColor = strokeColor ?? '#000000ff';
-    fontWeight = fontWeight ?? 600;
-
-    const itext = new fabric.IText(text, {
-      fill: color,
-      left: 15,
-      top: 15,
-      fontWeight,
-      fontSize: size,
-      cornerColor: '#66a6ff',
-      cornerSize: 8,
-      transparentCorners: false
-    }) as fabric.IText & RangedFrameObject;
-
-    if (enableStroke) {
-      itext.set({
-        stroke: strokeColor,
-        strokeWidth: strokeWidth,
-      });
-    }
-
-    itext.set({
-      type: 'text',
-
-      inFrame: frame,
-    });
-
-    canvas.add(itext).renderAll();
-    canvas.setActiveObject(itext);
-
-    this.main.toast('添加成功', 'success', 800);
-  }
-
-  public async getImageData(file: File): Promise<GifFrame> {
-    return new Promise(resolve => {
-      const url = URL.createObjectURL(file);
-      const img = new Image();
-      img.onload = () => {
-        const data = {
-          index: 0,
-          imgFileSrc: img.src,
-          width: img.width,
-          height: img.height,
-        };
-        img.remove();
-        resolve(data);
-      }
-      img.src = url;
-    });
-  }
-
   public getObjects(includeFrame: boolean = false) {
     const allObject = this.previewCanvas.getObjects().filter(obj => includeFrame || !obj.isType('bg') && !obj.isType('bg-group') && !obj.isType('assets'));
 
@@ -521,6 +440,10 @@ class GifPreview {
 
   get isPause(): boolean {
     return this._pause;
+  }
+
+  get canvas() {
+    return this.previewCanvas;
   }
 }
 

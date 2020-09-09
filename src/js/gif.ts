@@ -244,7 +244,6 @@ class GifGenerator {
     const promise: Promise<HTMLImageElement> = new Promise(resolve => {
       // 直到_df被挂载到页面上时，onload才会被触发
       imgElem.onload = () => {
-        console.log(imgElem.width, imgElem.height);
         this.gif.addFrame(imgElem, options);
 
         imgElem.remove();
@@ -257,4 +256,25 @@ class GifGenerator {
   }
 }
 
-export { dataUrlToFile, parseSrcGif, GifGenerator, }
+/**
+ * 返回一个图片文件的blob url路径，以及它的宽高
+ */
+function getFileInfo(file: File): Promise<GifFrame> {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const data = {
+        index: 0,
+        imgFileSrc: img.src,
+        width: img.width,
+        height: img.height,
+      };
+      img.remove();
+      resolve(data);
+    }
+    img.src = url;
+  });
+}
+
+export { dataUrlToFile, parseSrcGif, GifGenerator, getFileInfo }

@@ -6,8 +6,13 @@
       <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(1);"> + </div>
     </div>
 
+    <div v-if="!getNotification(2)" data-n-ver="2" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
+      <div> 新功能：更新了滤镜功能！ </div>
+      <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(2);"> + </div>
+    </div>
+
     <!-- todo 严重bug 长度过大的gif上传后存在内存爆栈 导致标签页假死 -->
-    <div class="top mb-6">
+    <div class="top mb-6" v-if="!canEdit && !oriImageSrc">
       <upload class="uploader mx-auto" :before-upload="upload" accept=".gif">上传GIF</upload>
     </div>
 
@@ -45,7 +50,8 @@
           <div class="src w-full">
             <div ref="edit-canvas" v-show="!!oriImageSrc && oriGifLoadProgress === 1" class="mt-4">
               <div class="flex justify-center items-center w-full">
-                <canvas id="edit-canvas"> </canvas>
+                <!-- <canvas id="edit-canvas"> </canvas> -->
+                <previewer ref="previewer"></previewer>
               </div>
 
               <div class="w-full h-full flex justify-center items-center text-white text-lg text-center pointer-events-none">
@@ -67,25 +73,25 @@
                 </div>
                 <div class="flex justify-between w-full">
                   <div class="flex flex-wrap">
-                    <sbtn title="删除当前选中元素" @click="preview.removeActiveObjects()" type="error" style="padding-left: 0.45rem; padding-right: 0.45rem;">
+                    <sbtn title="删除当前选中元素" @click="previewer.preview.removeActiveObjects()" type="error" style="padding-left: 0.45rem; padding-right: 0.45rem;">
                       <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/trash.svg"/>
                     </sbtn>
                   </div>
                   <div class="flex flex-no-wrap">
-                    <sbtn class="rounded-tr-none rounded-br-none" title="第一帧" type="ghost" @click="preview.setPreviewFrame(0)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                    <sbtn class="rounded-tr-none rounded-br-none" title="第一帧" type="ghost" @click="previewer.preview.setPreviewFrame(0)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
                       <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-back.svg"/>
                     </sbtn>
-                    <sbtn class="rounded-none border-l-0" title="上一帧" type="ghost" @click="preview.setPreviewFrame(preview.curFramePointer - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                    <sbtn class="rounded-none border-l-0" title="上一帧" type="ghost" @click="previewer.preview.setPreviewFrame(previewer.preview.curFramePointer - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
                       <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-back.svg"/>
                     </sbtn>
                     <sbtn class="rounded-none border-l-0" title="播放/暂停" type="ghost" @click="togglePause" style="padding-left: 0.25rem; padding-right: 0.25rem;">
                       <img v-show="!!aaa" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play.svg"/>
                       <img v-show="!aaa" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pause.svg"/>
                     </sbtn>
-                    <sbtn class="rounded-none border-l-0" title="下一帧" type="ghost" @click="preview.setPreviewFrame(preview.curFramePointer + 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                    <sbtn class="rounded-none border-l-0" title="下一帧" type="ghost" @click="previewer.preview.setPreviewFrame(previewer.preview.curFramePointer + 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
                       <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-forward.svg"/>
                     </sbtn>
-                    <sbtn class="rounded-tl-none rounded-bl-none" title="最后一帧" type="ghost" @click="preview.setPreviewFrame(preview.frameArray.length - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                    <sbtn class="rounded-tl-none rounded-bl-none" title="最后一帧" type="ghost" @click="previewer.preview.setPreviewFrame(previewer.preview.frameArray.length - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
                       <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-forward.svg"/>
                     </sbtn>
                   </div>
@@ -106,45 +112,14 @@
 
         <div class="flex flex-row">
           <ul class="flex flex-row">
-            <li
+            <li v-for="tab in tabs" :key="tab.name"
               class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-              :class="{'bg-assets shadow': curTab === 'base'}"
-              @click="switchTab('base')"
+              :class="{'bg-assets shadow': curTab === tab.name}"
+              @click="switchTab(tab.name)"
             >
-              <img class="w-4 h-4 flex-shrink-0" src="/static/icons/hammer.svg"/>
-              <span class="ml-2 md:inline" :class="{inline: curTab === 'base', 'hidden': curTab !== 'base'}">基础设置</span>
-            </li>
-            <li
-              class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-              :class="{'bg-assets shadow': curTab === 'addText'}"
-              @click="switchTab('addText')"
-            >
-              <img class="w-4 h-4 flex-shrink-0" src="/static/icons/text.svg"/>
-              <span class="ml-2 md:inline" :class="{inline: curTab === 'addText', 'hidden': curTab !== 'addText'}">添加文字</span>
-            </li>
-            <li
-              class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-              :class="{'bg-assets shadow': curTab === 'addPic'}"
-              @click="switchTab('addPic')"
-            >
-              <img class="w-4 h-4 flex-shrink-0" src="/static/icons/image.svg"/>
-              <span class="ml-2 md:inline" :class="{inline: curTab === 'addPic', 'hidden': curTab !== 'addPic'}">添加图片</span>
-            </li>
-            <li
-              class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-              :class="{'bg-assets shadow': curTab === 'cut'}"
-              @click="switchTab('cut')"
-            >
-              <img class="w-4 h-4 flex-shrink-0" src="/static/icons/cut.svg"/>
-              <span class="ml-2 md:inline" :class="{inline: curTab === 'cut', 'hidden': curTab !== 'cut'}">帧裁剪</span>
-            </li>
-            <li
-              class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
-              :class="{'bg-assets shadow': curTab === 'resize'}"
-              @click="switchTab('resize')"
-            >
-              <img class="w-4 h-4 flex-shrink-0" src="/static/icons/contract.svg"/>
-              <span class="ml-2 md:inline" :class="{inline: curTab === 'resize', 'hidden': curTab !== 'resize'}">裁剪</span>
+              <img class="w-4 h-4 flex-shrink-0" :src="tab.icon"/>
+              <span class="ml-2 md:inline" :class="{inline: curTab === tab.name, 'hidden': curTab !== tab.name}">{{tab.title}}</span>
+              <sup v-if="tab.new" class="text-red-400 ml-1"> new </sup>
             </li>
           </ul>
         </div>
@@ -195,10 +170,10 @@
               </div>
 
               <div class="flex flex-col md:flex-row flex-wrap">
-                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleState('revert', '倒放')">倒放：{{ revert ? '开' : '关' }}</sbtn>
-                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleState('repeat', '循环')">循环：{{ repeat ? '开' : '关' }}</sbtn>
-                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会左右颠倒" :disabled="!canEdit" @click="toggleState('flipX', '左右翻转', true)">左右翻转：{{ flipX ? '开' : '关' }}</sbtn>
-                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会上下颠倒" :disabled="!canEdit" @click="toggleState('flipY', '上下翻转', true)">上下翻转：{{ flipY ? '开' : '关' }}</sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleState('revert', '倒放')">倒放：{{ gifState.revert ? '开' : '关' }}</sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleState('repeat', '循环')">循环：{{ gifState.repeat ? '开' : '关' }}</sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会左右颠倒" :disabled="!canEdit" @click="toggleState('flipX', '左右翻转', true)">左右翻转：{{ gifState.flipX ? '开' : '关' }}</sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会上下颠倒" :disabled="!canEdit" @click="toggleState('flipY', '上下翻转', true)">上下翻转：{{ gifState.flipY ? '开' : '关' }}</sbtn>
                 <!-- <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后可实现首尾相接重复的特效" :disabled="!canEdit" @click="toggleRLoop">
                   <span>反复</span>
                   <span>:{{ rloop ? '开' : '关' }} </span>
@@ -416,9 +391,17 @@
               </label>
 
               <div class="flex flex-row items-center">
-                <span>裁剪：</span><sbtn :disabled="!canEdit" @click="toggleResize">{{ !resize ? '开启' : '关闭' }}</sbtn>
+                <span>裁剪：</span><sbtn :disabled="!canEdit" @click="toggleResize">{{ !gifState.resize ? '开启' : '关闭' }}</sbtn>
               </div>
             </section>
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+            v-show="curTab === 'filter'"
+            >
+
+            <filter-panel ref="filter-panel" @filter="onFilterChange"></filter-panel>
+
           </fieldset>
 
           <fieldset class="pt-8 ">
@@ -468,10 +451,11 @@
       <div class="md:hidden my-2 flex justify-start flex-wrap">
         <sbtn class="mb-1" title="删除当前选中元素" @click="deleteActivedObject" type="error">删除当前选中文字/图片</sbtn>
       </div>
-      <div ref="timeline-wrapper" class="canvas-wrapper border rounded-sm border-gray-300">
+      <timeline ref="timeline" :frame-list="frameList" :gif-state="gifState"></timeline>
+      <!-- <div ref="timeline-wrapper" class="canvas-wrapper border rounded-sm border-gray-300">
         <canvas id="stage"></canvas>
         <canvas id="dragbar"></canvas>
-      </div>
+      </div> -->
     </div>
 
   </div>
@@ -479,18 +463,22 @@
 
 <script lang="ts">
 
-import { Vue, Component, Prop } from 'vue-property-decorator';
+import { Vue, Component, Prop, } from 'vue-property-decorator';
 
 import Upload from '@/components/widget/s-upload.vue';
 import sbtn from '@/components/widget/s-btn.vue';
 import sInput from '@/components/widget/s-input.vue';
+
+import Previewer from './components/previewer.vue';
+
+import Timeline from './components/timeline.vue';
 
 import VueSlider from 'vue-slider-component';
 import 'vue-slider-component/theme/default.css';
 
 import { Chrome as ColorPicker } from 'vue-color';
 
-import { parseSrcGif, dataUrlToFile, GifGenerator, GifFrameList, GifFrame } from '@/js/gif';
+import { parseSrcGif, dataUrlToFile, GifGenerator, GifFrameList, GifFrame, getFileInfo } from '@/js/gif';
 
 import { fabric } from 'fabric';
 
@@ -504,9 +492,19 @@ interface GenerateOption {
   removeRange?: [number, number];
 }
 
-import { RangedFrameObject } from './js/type';
-import { GifPreview } from './js/preview';
-import { Toasted } from './js/type';
+import { RangedFrameObject } from '../js/type';
+// import { GifPreview } from './js/preview';
+import { Toasted } from '../js/type';
+import { GifState } from './js/GifState';
+
+import { Text } from '../js/modules/Text';
+import { Image } from '../js/modules/Image';
+import { Filter } from '../js/modules/filter';
+import { Filters, FilterType } from '../js/modules/filters';
+import { Stage } from '../js/stage';
+// import { Timeline } from './js/timeline';
+
+import FilterPanel from './components/panels/filter.vue';
 
 @Component({
   components: {
@@ -515,16 +513,12 @@ import { Toasted } from './js/type';
     's-input': sInput,
     slider: VueSlider,
     'color-picker': ColorPicker,
+    previewer: Previewer,
+    timeline: Timeline,
+    'filter-panel': FilterPanel,
   },
 })
 export default class extends Vue implements Toasted {
-  // fabric canvas对象
-  public canvas!: fabric.Canvas;
-  public dragBarCanvas!: fabric.Canvas;
-  public dragBar!: fabric.Object;
-
-  // 添加图片裁剪用canvas
-  // public previewCanvas!: fabric.Canvas;
   public stickyPreviewCanvas: boolean = false;
   public curPreviewImg: string = '';
   public pausePreview: boolean = false;
@@ -589,40 +583,25 @@ export default class extends Vue implements Toasted {
   public frameRemoveRange: [number, number] = [1, 1]; // 区间去除起始值
   // 帧区间去除 end
 
-
-  // 倒放
-  public revert: boolean = false;
-
   // 单帧宽/高度
-  public frameWidth: number = 0;
-  public frameHeight: number = 0;
+  // public frameWidth: number = 0;
+  // public frameHeight: number = 0;
 
   // 生成进度
   public progress: number = 0;
-
-  // 是否循环
-  public repeat: boolean = true;
-
-  // 是否抽帧
-  public rs: boolean = false;
-
-  // 是否反复
-  public rloop: boolean = false;
-
-  // 是否开启裁剪
-  public resize: boolean = false;
-
-  // 镜像
-  public flipX: boolean = false;
-  public flipY: boolean = false;
 
   // timeline偏移值
   public timelineLeft: number = 0;
 
   public clipboard: any[] = [];
 
+  public previewer!: Previewer;
 
-  public preview!: GifPreview;
+  public gifState!: GifState;
+
+  public timeline!: Timeline;
+
+  public filterPanel!: FilterPanel;
 
   get canEdit(): boolean {
     return !!this.frameList?.length;
@@ -648,40 +627,28 @@ export default class extends Vue implements Toasted {
     return this.canEdit || this.isGenerating || !!this.rawFile;
   }
 
+  public created() {
+    this.gifState = new GifState();
+  }
+
   public mounted() {
     document.getElementById('loading-ph')?.remove();
 
     fabric.Object.prototype.objectCaching = false;
 
-    this.canvas = new fabric.Canvas('stage');
+    this.previewer = this.$refs['previewer'] as Previewer;
 
-    this.dragBarCanvas = new fabric.Canvas('dragbar');
+    this.timeline = this.$refs['timeline'] as Timeline;
 
-    // this.previewCanvas = new fabric.Canvas();
-    this.preview = new GifPreview('edit-canvas', this);
+    this.filterPanel = this.$refs['filter-panel'] as FilterPanel;
 
     this.initKeyPressEvent();
-  }
 
-  /**
-   * 返回一个图片文件的blob url路径，以及它的宽高
-   */
-  public async getImageData(file: File): Promise<GifFrame> {
-    return new Promise(resolve => {
-      const url = URL.createObjectURL(file);
-      const img = new Image();
-      img.onload = () => {
-        const data = {
-          index: 0,
-          imgFileSrc: img.src,
-          width: img.width,
-          height: img.height,
-        };
-        img.remove();
-        resolve(data);
-      }
-      img.src = url;
-    });
+// console.log(fabric.filterBackend);
+    // fabric.filterBackend = new fabric.WebglFilterBackend();
+    window.fabric = fabric;
+
+    window['app'] = this;
   }
 
   public async upload(e: FileList) {
@@ -692,13 +659,9 @@ export default class extends Vue implements Toasted {
       return;
     }
 
-    if (!gifFile || !this.canvas) {
-      return;
-    }
-
     this.rawFile = gifFile;
 
-    const { width, height, imgFileSrc } = await this.getImageData(gifFile);
+    const { width, height, imgFileSrc } = await getFileInfo(gifFile);
     const imgDOM = this.$refs.oriImageDom as HTMLImageElement;
 
     this.oriWidth = width;
@@ -727,41 +690,30 @@ export default class extends Vue implements Toasted {
     this.frameList = frameList;
     this.oriFrameList = frameList;
 
+    this.filterPanel.setPreviewFrame(this.frameList[0]);
+
     await this.updateEditData();
 
-    await this.makeTimeline(frameList);
-    await this.preview.initPreviewCanvas(frameList, showWidth, showHeight);
+    // await this.makeTimeline(frameList);
+    await this.timeline.refreshFrameImg();
+    this.timeline.refresh();
+    await this.previewer.initGIF(frameList, showWidth, showHeight);
 
     await this.renderPreview();
   }
 
-  public toggleRevert() {
-    this.revert = !this.revert;
-
-    this.renderPreview();
-    this.toast(`已${this.revert ? '开启' : '关闭'}倒放`, 'info')
-  }
-
-  public toggleRepeat() {
-    this.repeat = !this.repeat;
-
-    this.renderPreview();
-
-    this.toast(`已${this.repeat? '开启' : '关闭'}循环播放`, 'info')
-  }
-
   public toggleResize() {
-    this.resize = !this.resize;
+    const resize = this.gifState.toggleState('resize');
 
-    if (this.resize) {
-      this.preview.showResizeRect();
+    if (resize) {
+      this.previewer.showResizeRect();
     } else {
-      this.preview.hideResizeRect();
+      this.previewer.hideResizeRect();
     }
   }
 
-  public toggleState(key: keyof this, name?: string, resetTimeline: boolean = false) {
-    this[key] = !this[key] as any;
+  public async toggleState(key: keyof GifState, name?: string, resetTimeline: boolean = false) {
+    this.gifState.toggleState(key, name, resetTimeline);
 
     this.renderPreview();
 
@@ -770,41 +722,10 @@ export default class extends Vue implements Toasted {
     }
 
     if (resetTimeline) {
-      this.makeTimeline(this.frameList);
+
+      await this.timeline.refreshFrameImg();
+      this.timeline.refresh();
     }
-  }
-
-  public toggleRs() {
-    this.rs = !this.rs;
-
-    this.renderPreview();
-
-    this.toast(`已${this.rs? '开启' : '关闭'}抽帧${this.rs? '，将抽去原Gif一半的帧数' : ''}`, 'info')
-  }
-
-  public async toggleRLoop() {
-    this.rloop = !this.rloop;
-
-    const {
-      frameList,
-      oriFrameList,
-      rloop,
-    } = this;
-
-    let rloopFrameList = [];
-
-    if (rloop) {
-      rloopFrameList = frameList;
-      const rpart = [...rloopFrameList].sort((a, b) => b.index - a.index);
-      rloopFrameList.push(...rpart);
-    } else {
-      rloopFrameList = oriFrameList;
-    }
-
-    await this.makeTimeline(rloopFrameList);
-
-    this.renderPreview();
-    this.toast(`已${this.rloop? '开启' : '关闭'}反复`, 'info')
   }
 
   public resetStage() {
@@ -814,144 +735,13 @@ export default class extends Vue implements Toasted {
       srcgifDOM.innerHTML = '';
     }
 
-    if (!!this.canvas) {
-      this.canvas.clear();
+    if (!!this.timeline.canvas) {
+      this.timeline.canvas.clear();
     }
-  }
-
-  public async makeTimeline(frameList: GifFrameList) {
-    if (!this.canvas) {
-      console.error('makrTimeline: canvas not ready');
-      return;
-    }
-
-    if (!frameList) {
-      frameList = this.oriFrameList;
-    }
-
-    this.canvas.getObjects().forEach(obj => {
-      // @ts-ignore
-      if (obj.frameData) {
-        this.canvas.remove(obj);
-      }
-    })
-
-    const firstImg = frameList[0];
-
-    const frameWidth = this.frameWidth = this.oriWidth; // firstImg.width as number;
-    const frameHeight = this.frameHeight = this.oriHeight; // firstImg.height as number;
-
-    const canvasTotalWidth = (frameWidth + 1) * this.totalFrameCount;
-    const canvasHeight = frameHeight as number;
-
-    const timelineWrapperWidth = (this.$refs['timeline-wrapper'] as HTMLElement).offsetWidth - 2;
-
-    const scale = 1;
-    const divideWidth = 1;
-
-    this.canvas.setWidth(timelineWrapperWidth);
-    this.canvas.setHeight(canvasHeight);
-
-    this.frameList = frameList.map((frame, index) => {
-      const percent = (index + 1) / frameList.length;
-      fabric.Image.fromURL(frame.imgFileSrc, img => {
-        if (!img.width || !img.height) {
-          return;
-        }
-
-        const curWidth = img.width * scale;
-        const curHeight = img.height * scale;
-
-        const nimg = img.set({
-          left: index * (curWidth + divideWidth),
-          top: 0,
-          width: img.width,
-          name: 'frame' + index,
-          type: 'timeline-frame',
-          lockMovementX: true,
-          lockMovementY: true,
-          hasControls: false,
-          selectable: false,
-          flipX: this.flipX,
-          flipY: this.flipY,
-        }).scale(scale);
-
-        // @ts-ignore
-        nimg.frameIndex = index;
-        // @ts-ignore
-        nimg.frameData = frame;
-
-        this.canvas.add(nimg);
-      });
-
-      return frame;
-    });
-
-    this.resetDragBar(timelineWrapperWidth, canvasTotalWidth);
-  }
-
-  public resetDragBar(containerWidth: number, totalFrameWidth: number) {
-    this.dragBarCanvas.clear();
-
-    if (containerWidth >= totalFrameWidth) {
-      return;
-    }
-
-    this.dragBarCanvas.setWidth(containerWidth);
-    this.dragBarCanvas.setHeight(30);
-
-    const percent = (containerWidth / totalFrameWidth);
-
-    const dragBarWidth =  percent * containerWidth;
-    const dragBar = new fabric.Rect({
-      name: 'dragbar',
-      width: Math.max(dragBarWidth, 25),
-      height: 25,
-
-      top: 0,
-      left: 0,
-
-      fill: '#777777',
-      lockMovementY: true,
-      hasControls: false,
-    }).on('moving', ({target}) => {
-      let left = target.left as number;
-
-      if (left + dragBarWidth >= containerWidth) {
-        left = containerWidth - dragBarWidth;
-      }
-      if (left < 0) {
-        left = 0;
-      }
-
-      this.timelineLeft = left;
-
-      dragBar.set({
-        left,
-      });
-
-      this.canvas.absolutePan(new fabric.Point(left / percent, 0));
-    });
-
-
-    this.dragBarCanvas.add(dragBar);
-
-    this.dragBar = dragBar;
-
-    dragBar.set({
-      left: this.timelineLeft,
-    });
-    dragBar.fire('move');
-    // this.dragBarCanvas.renderAll();
   }
 
   // 将#时间轴#中的每一帧合并为GIF
   public async generate() {
-    if (!this.canvas) {
-      console.error('generate: canvas not ready');
-      return;
-    }
-
     this.generateDone = false;
 
     this.progress = 0;
@@ -961,7 +751,7 @@ export default class extends Vue implements Toasted {
 
     const totalWidth = (width + 1) * this.totalFrameCount;
 
-    this.canvas.absolutePan(new fabric.Point(0, 0));
+    this.timeline.canvas.absolutePan(new fabric.Point(0, 0));
 
     const dataUrlArr: string[] = [];
 
@@ -972,29 +762,29 @@ export default class extends Vue implements Toasted {
     const removeRangeStartIndex = this.frameRemoveRange[0] - 1;
     const removeRangeEndIndex = this.frameRemoveRange[1] - 1;
 
-    const isResizeRect = this.resize;
+    const isResizeRect = this.gifState.resize;
 
-    const gScaleX = this.showWidth / this.frameWidth;
-    const gScaleY = this.showHeight / this.frameHeight;
+    const gScaleX = this.showWidth / width;
+    const gScaleY = this.showHeight / height;
 
-    const resizeRect = this.preview.resizeRect;
+    const resizeRect = this.previewer.resizeRect;
     const resizeWidth = Math.round((resizeRect.width * resizeRect.scaleX) / gScaleX);
     const resizeHeight = Math.round((resizeRect.height * resizeRect.scaleY) / gScaleY);
 
     const gif = new GifGenerator({
-      repeat: this.repeat ? 0 : -1,
+      repeat: this.gifState.repeat ? 0 : -1,
       width: isResizeRect ? resizeWidth : this.oriWidth,
       height: isResizeRect ? resizeHeight : this.oriHeight,
     });
 
-    for (let i = startFrameIndex; i < endFrameIndex; (this.rs ? i+=2 : i++))  {
+    for (let i = startFrameIndex; i < endFrameIndex; i++)  {
       if (this.enableFrameRangeRemove && i >= removeRangeStartIndex && i <= removeRangeEndIndex) {
         continue;
       }
 
       let _width = width;
       let _height = height;
-      let left = !this.revert ? (width + 1) * i : totalWidth - (width + 1) * (i + 1);
+      let left = !this.gifState.revert ? (width + 1) * i : totalWidth - (width + 1) * (i + 1);
       let top = 0;
 
       if (isResizeRect) {
@@ -1004,7 +794,7 @@ export default class extends Vue implements Toasted {
         top += resizeRect.top / gScaleY;
       }
 
-      const durl = this.canvas.toDataURL({
+      const durl = this.timeline.canvas.toDataURL({
         width: _width,
         height: _height,
         left, 
@@ -1044,7 +834,7 @@ export default class extends Vue implements Toasted {
     };
 
     window.onkeydown = (e: KeyboardEvent) => {
-      const activedObjects = this.canvas.getActiveObjects();
+      const activedObjects = this.timeline.canvas.getActiveObjects();
 
       // @ts-ignore
       const allFrames = activedObjects.every(item => !!item.frameData);
@@ -1067,7 +857,7 @@ export default class extends Vue implements Toasted {
   }
 
   public onCopy() {
-    let activedObjects = this.canvas.getActiveObjects();
+    let activedObjects = this.timeline.canvas.getActiveObjects();
 
     const frameList = this.frameList;
 
@@ -1094,7 +884,7 @@ export default class extends Vue implements Toasted {
   }
 
   public onPaste() {
-    const activedObjects = this.canvas.getActiveObjects();
+    const activedObjects = this.timeline.canvas.getActiveObjects();
 
     const frameList = this.frameList;
 
@@ -1123,7 +913,7 @@ export default class extends Vue implements Toasted {
 
       this.toast(`已粘贴${copiedFrame.length}帧`, 'success');
 
-      this.makeTimeline(frameList);
+      // this.makeTimeline(frameList);
     }
 
     if (copiedObj.length) {
@@ -1134,12 +924,12 @@ export default class extends Vue implements Toasted {
             left: ((obj.left || 0) + 16),
             top: ((obj.top || 0) + 16),
           })
-          this.canvas.add(cloneObj);
-          this.canvas.setActiveObject(cloneObj);
+          this.timeline.canvas.add(cloneObj);
+          this.timeline.canvas.setActiveObject(cloneObj);
         })
       });
 
-      this.canvas.renderAll();
+      this.timeline.canvas.renderAll();
 
       // @ts-ignore
       this.toast(`已粘贴${this.copiedObj.length}个对象`, 'success');
@@ -1148,14 +938,14 @@ export default class extends Vue implements Toasted {
   }
 
   public deleteActivedObject() {
-    const activedObjects = this.canvas.getActiveObjects();
+    const activedObjects = this.timeline.canvas.getActiveObjects();
 
     if (!activedObjects.length) {
       this.toast('当前没有选中元素', 'error');
       return;
     }
 
-    this.canvas.remove(...activedObjects);
+    this.timeline.canvas.remove(...activedObjects);
 
     this.toast('删除成功', 'success');
   }
@@ -1178,8 +968,8 @@ export default class extends Vue implements Toasted {
     this.curTab = tab;
 
     if (tab === 'resize') {
-      if (this.resize) {
-        this.preview.showResizeRect();
+      if (this.gifState.resize) {
+        this.previewer.preview.showResizeRect();
       }
     } else {
       // this.preview.hideResizeRect();
@@ -1187,45 +977,36 @@ export default class extends Vue implements Toasted {
   }
 
   public addImage(imgList: FileList) {
-    this.preview.addImage(imgList, this.expandRange2Array(this.addImgRange))
+    const image = new Image(imgList, this.addImgRange);
+    image.addTo(this.previewer);
   }
-  public addText() {
-    const { textContent, textSize, textColor, textStrokeColor, textStrokeWidth, addTextRange } = this;
 
-    this.preview.addText(textContent, {
-      size: parseInt(textSize),
+  public addText() {
+    const { textContent, textSize, textColor, enableTextStroke, textStrokeColor, textStrokeWidth, addTextRange } = this;
+
+    const text = new Text(textContent, {
       color: textColor,
-      enableStroke: this.enableTextStroke,
+      fontSize: +textSize,
+
+      fontWeight: 600,
+
+      enableStroke: enableTextStroke,
       strokeWidth: textStrokeWidth,
       strokeColor: textStrokeColor,
-    }, this.expandRange2Array(this.addTextRange))
+      frameRange: addTextRange,
+    });
+    text.addTo(this.previewer);
   }
 
   public renderPreview() {
     const usefulFrame= this.usefulFrame;
     const curFrame = this.curFrameSlider;
 
-    const {
-      revert,
-      repeat,
-      resize: showResize,
-      flipX,
-      flipY,
-    } = this;
-
     this.curFrameSlider = Math.min(usefulFrame[curFrame], usefulFrame[usefulFrame.length - 1]);
 
-    this.preview.updateOptions({
-      revert,
-      repeat,
-      showResize,
-      flipX,
-      flipY,
-    });
-
-    console.log(this.usefulFrame);
+    this.previewer.preview.updateOptions(this.gifState);
     
-    this.preview.renderPreview(this.usefulFrame, this.interval, index => {
+    this.previewer.preview.renderPreview(this.usefulFrame, this.interval, index => {
       this.curFrameSlider = index;
     });
   }
@@ -1235,11 +1016,11 @@ export default class extends Vue implements Toasted {
       curFrame = 0;
     }
 
-    this.preview.setPreviewFrame(curFrame);
+    this.previewer.preview.setPreviewFrame(curFrame);
   }
 
   public setPreviewFrame(pointer: number) {
-    this.preview.setPreviewFrame(pointer);
+    this.previewer.preview.setPreviewFrame(pointer);
   }
 
   get usefulFrame(): number[] {
@@ -1248,7 +1029,6 @@ export default class extends Vue implements Toasted {
       frameSplitRange,
       enableFrameRangeRemove,
       frameRemoveRange,
-      rloop,
     } = this;
 
     let usefulFrame: number[] = Array.from(new Array(this.frameList.length).keys());
@@ -1268,19 +1048,17 @@ export default class extends Vue implements Toasted {
       });
     }
 
-    if (rloop) {
-      const rpart = [...usefulFrame].sort((a, b) => b - a);
-      usefulFrame.push(...rpart);
-    }
-
     return usefulFrame;
   }
 
   public async applyPreview2Timeline() {
     const {
-      canvas: timelineCanvas,
-      preview,
+      previewer,
     } = this;
+
+    const timelineCanvas = this.timeline.canvas;
+
+    const preview = previewer.preview;
 
     timelineCanvas.getObjects().filter(obj => !obj.isType('timeline-frame')).forEach(obj => {
       timelineCanvas.remove(obj);
@@ -1303,12 +1081,15 @@ export default class extends Vue implements Toasted {
     const {
       showWidth: width,
       showHeight: height,
-      canvas: timelineCanvas,
+      oriWidth,
+      oriHeight,
+      // canvas: timelineCanvas,
       oriImageSrc,
     } = this;
+    const timelineCanvas = this.timeline.canvas;
 
-    const scaleX = width / this.frameWidth;
-    const scaleY = height / this.frameHeight;
+    const scaleX = width / oriWidth;
+    const scaleY = height / oriHeight;
 
     const allDonePromise: Promise<void>[] = [];
 
@@ -1320,7 +1101,7 @@ export default class extends Vue implements Toasted {
 
           if (inFrame.includes(index)) {
             const newObj = cloneObj.set({
-              left: oriLeft / scaleX + ((this.frameWidth + 1) * index),
+              left: oriLeft / scaleX + ((this.oriWidth + 1) * index),
               top: oriTop / scaleY,
               scaleX: oriScaleX / scaleX,
               scaleY: oriScaleY / scaleY,
@@ -1374,16 +1155,45 @@ export default class extends Vue implements Toasted {
   private aaa: boolean = false;
 
   public togglePause() {
-    if (!this.preview) {
+    if (!this.previewer.preview) {
       return;
     }
-    if (this.preview.isPause) {
-      this.preview.play();
+    if (this.previewer.preview.isPause) {
+      this.previewer.preview.play();
     } else {
-      this.preview.pause();
+      this.previewer.preview.pause();
     }
 
-    this.aaa = this.preview.isPause;
+    this.aaa = this.previewer.preview.isPause;
+  }
+
+  async onFilterChange({ filter, type }:{filter: Filter, type: FilterType}) {
+    if (!filter) {
+      this.toast('滤镜不可用');
+      return;
+    }
+
+    await filter.addTo(this.previewer, process => {
+      this.filterPanel.setFilterState(type, '渲染预览...', `${(process * 100).toFixed(2)}%`);
+    });
+
+    await filter.addTo(this.timeline, process => {
+      this.filterPanel.setFilterState(type, '渲染时间轴...', `${(process * 100).toFixed(2)}%`);
+    });
+    this.filterPanel.clearFilterState(type);
+
+    this.timeline.refresh();
+  }
+
+  get tabs() {
+    return [
+      { name: 'base', title: '基础设置', icon: '/static/icons/hammer.svg', },
+      { name: 'addText', title: '添加文字', icon: '/static/icons/text.svg', },
+      { name: 'addPic', title: '添加图片', icon: '/static/icons/image.svg', },
+      { name: 'cut', title: '帧裁剪', icon: '/static/icons/cut.svg', },
+      { name: 'resize', title: '裁剪', icon: '/static/icons/contract.svg', },
+      { name: 'filter', title: '滤镜', icon: '/static/icons/wand.svg', new: true, },
+    ];
   }
 }
 </script>
