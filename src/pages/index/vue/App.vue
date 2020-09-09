@@ -7,12 +7,12 @@
     </div>
 
     <div v-if="!getNotification(2)" data-n-ver="2" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
-      <div> 新功能：更新了滤镜功能，会定期更新滤镜种类！ </div>
+      <div> 新功能：更新了滤镜功能！ </div>
       <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(2);"> + </div>
     </div>
 
     <!-- todo 严重bug 长度过大的gif上传后存在内存爆栈 导致标签页假死 -->
-    <div class="top mb-6">
+    <div class="top mb-6" v-if="!canEdit && !oriImageSrc">
       <upload class="uploader mx-auto" :before-upload="upload" accept=".gif">上传GIF</upload>
     </div>
 
@@ -119,6 +119,7 @@
             >
               <img class="w-4 h-4 flex-shrink-0" :src="tab.icon"/>
               <span class="ml-2 md:inline" :class="{inline: curTab === tab.name, 'hidden': curTab !== tab.name}">{{tab.title}}</span>
+              <sup v-if="tab.new" class="text-red-400 ml-1"> new </sup>
             </li>
           </ul>
         </div>
@@ -1191,7 +1192,7 @@ export default class extends Vue implements Toasted {
       { name: 'addPic', title: '添加图片', icon: '/static/icons/image.svg', },
       { name: 'cut', title: '帧裁剪', icon: '/static/icons/cut.svg', },
       { name: 'resize', title: '裁剪', icon: '/static/icons/contract.svg', },
-      { name: 'filter', title: '滤镜', icon: '/static/icons/wand.svg', },
+      { name: 'filter', title: '滤镜', icon: '/static/icons/wand.svg', new: true, },
     ];
   }
 }

@@ -4,7 +4,7 @@
       <div class="img-wrapper relative p-4 mb-4 flex-0 bg-assets shadow hover:shadow-xl transition-shadow transition-time-func rounded-md cursor-pointer" 
         v-for="(previewImg, key) in previewImgs"
         :key="key"
-        @click="applyFilter(key)"
+        @click="applyFilter(previewImg.name)"
         >
         <img class="w-full" :src="previewImg.url" :alt="previewImg.title"/>
         <div class="filter-info absolute flex justify-center items-center opacity-0 hover:opacity-100 transition-opacity duration-300">
@@ -45,12 +45,18 @@ export default class extends Vue implements Toasted {
 
   get filters() {
     const filterList = [
-      { name: 'Noise', title: '噪声', options: { noise: 128, }, },
-      { name: 'Grayscale', title: '灰阶', },
-      { name: 'Invert', title: '负片', },
-      { name: 'BlackWhite', title: '黑白', },
-      { name: 'Sepia', title: '复古', },
-      { name: 'Pixelate', title: '像素', options: { blocksize: 16, }, },
+      { name: 'Noise', type: 'Noise', title: '噪声', options: { noise: 128, }, },
+      { name: 'Grayscale', type: 'Grayscale', title: '灰阶', },
+      { name: 'Invert', type: 'Invert', title: '负片', },
+      { name: 'BlackWhite', type: 'BlackWhite', title: '黑白', },
+      { name: 'Sepia', type: 'Sepia', title: '复古', },
+      { name: 'Pixelate', type: 'Pixelate', title: '像素', options: { blocksize: 8, }, },
+      { name: 'Kodachrome', type: 'Kodachrome', title: '艳丽', },
+      { name: 'Vintage', type: 'Vintage', title: '陈旧', },
+      { name: 'Polaroid', type: 'Polaroid', title: '拍立得画风', },
+      { name: 'Technicolor', type: 'Technicolor', title: '科幻', },
+      { name: 'Sharpen', type: 'Convolute', title: '锐利', options: { matrix: [0, -1, 0, -1, 5, -1, 0, -1, 0], }, },
+      { name: 'Emboss', type: 'Convolute', title: '浮雕', options: { matrix: [1, 1, 1, 1, 0.7, -1, -1, -1, -1], }, },
     ];
 
     return filterList
@@ -97,10 +103,10 @@ export default class extends Vue implements Toasted {
 
     const img = await parseImgPromise;
 
-    this.filters.forEach(({ name, options, title }) => {
-      const filter = new fabric.Image.filters[name](options);
+    this.filters.forEach(({ type, name, options, title }) => {
+      const filter = new fabric.Image.filters[type](options);
       img.applyFilters([filter]);
-      this.$set(this.previewImgs, name, {url: img.toDataURL({format: 'png'}), title, })
+      this.$set(this.previewImgs, name, { url: img.toDataURL({format: 'png'}), title, type, name })
     });
   }
 

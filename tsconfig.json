@@ -27,7 +27,7 @@
     "outDir": "./"
 	},
 	"include": [
-		"src"
+		"src", "src/pages/index/js/modules/filters/.ts"
 	],
   "exclude": ["node_modules", "dist"]
 }
