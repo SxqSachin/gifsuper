@@ -5,7 +5,7 @@ import { Sepia } from "./filters/sepia";
 import { Pixelate } from "./filters/pixelate";
 import { BlackWhite } from "./filters/black-white";
 // import { Blur } from "./filters/blur";
-import { Kodachrome } from "./filters/Kodachrome";
+import { Kodachrome } from "./filters/kodachrome";
 import { Polaroid } from "./filters/polaroid";
 import { Technicolor } from "./filters/technicolor";
 import { Sharpen } from "./filters/sharpen";
