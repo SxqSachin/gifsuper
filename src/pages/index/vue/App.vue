@@ -722,7 +722,6 @@ export default class extends Vue implements Toasted {
     }
 
     if (resetTimeline) {
-
       await this.timeline.refreshFrameImg();
       this.timeline.refresh();
     }
