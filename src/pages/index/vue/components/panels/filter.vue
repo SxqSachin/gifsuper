@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col justify-center items-start mb-4 w-full">
     <div class="img-container flex flex-wrap w-full">
-      <div class="img-wrapper relative p-4 mb-4 flex-0 bg-assets shadow hover:shadow-xl transition-shadow transition-time-func rounded-md cursor-pointer" 
+      <div class="img-wrapper relative p-2 mb-2 flex-0 bg-assets shadow hover:shadow-xl transition-shadow transition-time-func rounded-md cursor-pointer" 
         v-for="(previewImg, key) in previewImgs"
         :key="key"
         @click="applyFilter(previewImg.name)"
@@ -119,19 +119,19 @@ export default class extends Vue implements Toasted {
 
 <style lang="scss" scoped>
 .img-container  .img-wrapper {
-  width: calc(50% - 0.5rem);
+  width: calc(50% - 0.25rem);
 }
 
 .img-container .img-wrapper:nth-child(even) {
-  margin-left: 1rem;
+  margin-left: 0.5rem;
 }
 
 .img-wrapper .filter-info,
 .img-wrapper .filter-state {
-  top: 1rem;
-  left: 1rem;
-  width: calc(100% - 2rem);
-  height: calc(100% - 2rem);
+  top: 0.5rem;
+  left: 0.5rem;
+  width: calc(100% - 1rem);
+  height: calc(100% - 1rem);
   background-color: #333333cc;
 }
 
