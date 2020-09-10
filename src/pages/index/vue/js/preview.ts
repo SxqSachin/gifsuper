@@ -103,8 +103,14 @@ class GifPreview implements Stage {
       previewCanvas: canvas,
     } = this;
 
+    canvas.getObjects().forEach(object => {
+      if (object.type === 'bg') {
+        canvas.remove(object);
+      }
+    });
+    canvas.setWidth(width).setHeight(height);
+
     this.frameGroup = null;
-    canvas.clear().setWidth(width).setHeight(height);
 
     const resizeRect = this.createResizeRect(width, height);
     const rt = this.createResizeRectBorder();
@@ -155,7 +161,8 @@ class GifPreview implements Stage {
 
     this.frameGroup = frameGroup;
 
-    canvas.add(frameGroup).add(resizeRect).add(rt, rb, rl ,rr).renderAll();
+    canvas.add(frameGroup).add(resizeRect).add(rt, rb, rl ,rr);
+    canvas.sendToBack(frameGroup).renderAll();
 
     this.renderPreview(this._frameArray ?? Array.from(new Array(frameList.length).keys()), this.interval, this.renderPreviewCallback);
   }

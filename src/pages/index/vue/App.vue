@@ -722,7 +722,6 @@ export default class extends Vue implements Toasted {
     }
 
     if (resetTimeline) {
-
       await this.timeline.refreshFrameImg();
       this.timeline.refresh();
     }
@@ -998,13 +997,13 @@ export default class extends Vue implements Toasted {
     text.addTo(this.previewer);
   }
 
-  public renderPreview() {
+  public async renderPreview() {
     const usefulFrame= this.usefulFrame;
     const curFrame = this.curFrameSlider;
 
     this.curFrameSlider = Math.min(usefulFrame[curFrame], usefulFrame[usefulFrame.length - 1]);
 
-    this.previewer.preview.updateOptions(this.gifState);
+    await this.previewer.preview.updateOptions(this.gifState);
     
     this.previewer.preview.renderPreview(this.usefulFrame, this.interval, index => {
       this.curFrameSlider = index;

@@ -49,47 +49,59 @@ export default class extends Vue implements Stage {
     const divideWidth = 1;
 
     // 清空原帧图像数据
-    this.frames.length = 0;
-
     const arr: Promise<fabric.Image>[] = [];
 
-    frameList.forEach((frame, index) => {
-      const imgPromise: Promise<fabric.Image> = new Promise(resolve => {
-        fabric.Image.fromURL(frame.imgFileSrc, img => {
-          if (!img.width || !img.height) {
-            return;
-          }
+    let res = [];
 
-          const curWidth = img.width;
-          const curHeight = img.height;
+    if (!this.frames.length) {
+      frameList.forEach((frame, index) => {
+        const imgPromise: Promise<fabric.Image> = new Promise(resolve => {
+          fabric.Image.fromURL(frame.imgFileSrc, img => {
+            if (!img.width || !img.height) {
+              return;
+            }
 
-          const nimg = img.set({
-            left: index * (curWidth + divideWidth),
-            top: 0,
-            width: img.width,
-            name: 'frame' + index,
-            type: 'timeline-frame',
-            lockMovementX: true,
-            lockMovementY: true,
-            hasControls: false,
-            selectable: false,
-            flipX: this.gifState.flipX,
-            flipY: this.gifState.flipY,
-          }) as fabric.Image;
+            const curWidth = img.width;
+            const curHeight = img.height;
 
-          // @ts-ignore
-          nimg.frameIndex = index;
-          // @ts-ignore
-          nimg.frameData = frame;
+            const nimg = img.set({
+              left: index * (curWidth + divideWidth),
+              top: 0,
+              width: img.width,
+              name: 'frame' + index,
+              type: 'timeline-frame',
+              lockMovementX: true,
+              lockMovementY: true,
+              hasControls: false,
+              selectable: false,
+              flipX: this.gifState.flipX,
+              flipY: this.gifState.flipY,
+            }) as fabric.Image;
 
-          // this.frames.push(nimg);
-          resolve(img);
+            // @ts-ignore
+            nimg.frameIndex = index;
+            // @ts-ignore
+            nimg.frameData = frame;
+
+            // this.frames.push(nimg);
+            resolve(img);
+          });
         });
+        arr.push(imgPromise);
       });
-      arr.push(imgPromise);
-    });
 
-    this.frames = await Promise.all(arr);
+      res = await Promise.all(arr);
+    } else {
+      res = this.frames.map(img => {
+        img.set({
+          flipX: this.gifState.flipX,
+          flipY: this.gifState.flipY,
+        }) as fabric.Image;
+        return img;
+      })
+    }
+
+    this.frames = res;
   }
 
   public async refresh() {
