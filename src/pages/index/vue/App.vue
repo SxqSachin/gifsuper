@@ -22,7 +22,7 @@
 
     <div class="flex flex-col md:flex-row-reverse" :class="{'md:flex-col': !isPreviewUseable}">
 
-      <div class="flex flex-col w-full md:w-2/5" :class="{'md:w-full': !isPreviewUseable, 'md-preview-sticky z-50': stickyPreviewCanvas}" >
+      <div class="flex flex-col w-full md:w-2/5 md-auto-sticky" :class="{'md:w-full': !isPreviewUseable, 'md-preview-sticky z-50': stickyPreviewCanvas}" >
         <div v-show="!!oriImageSrc" class="w-full flex items-center p-4 pb-0 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md rounded-bl-none rounded-br-none">
           <div class="w-full">
             <div class="flex">
@@ -46,7 +46,7 @@
           </div>
 
         </div>
-        <div v-show="!!oriImageSrc" :class="{'sticky top-0': stickyPreviewCanvas}" class="z-50 w-full flex mb-4 items-center p-4 pt-0 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md rounded-tl-none rounded-tr-none">
+        <div v-show="!!oriImageSrc" :class="{'sticky top-0': stickyPreviewCanvas}" class="z-50 w-full flex mb-4 items-center p-4 pt-0 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md rounded-tl-none rounded-tr-none md-auto-sticky md:top-0">
           <div class="src w-full">
             <div ref="edit-canvas" v-show="!!oriImageSrc && oriGifLoadProgress === 1" class="mt-4">
               <div class="flex justify-center items-center w-full">
@@ -1216,6 +1216,15 @@ export default class extends Vue implements Toasted {
     }
   }
 
+  @media screen and (min-width: 768px) {
+    .md-auto-sticky {
+      position: sticky;
+      top: -90px;
+    }
+    .md-auto-sticky.md\:top-0 {
+      top: 0;
+    }
+  }
   @media screen and (max-width: 767px) {
     .md-preview-sticky {
       position: sticky;
