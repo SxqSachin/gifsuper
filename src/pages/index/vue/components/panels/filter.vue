@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col justify-center items-start mb-4 w-full">
+  <div class="flex flex-col justify-center items-start mb-0 w-full">
     <div class="img-container flex flex-wrap w-full">
       <div class="img-wrapper relative p-2 mb-2 flex-0 bg-assets shadow hover:shadow-xl transition-shadow transition-time-func rounded-md cursor-pointer" 
         v-for="(previewImg, key) in previewImgs"
