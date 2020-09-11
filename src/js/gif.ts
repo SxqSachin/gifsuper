@@ -43,10 +43,10 @@ function canvasToBlob(canvas: HTMLCanvasElement) {
 }
 
 async function convertCanvasToImage(canvas: HTMLCanvasElement, filename: string) {
-  // const arrayBuffer = await canvasToBlob(canvas);
-  // return new File([arrayBuffer], filename, {type: 'image/jpeg'});
+  const arrayBuffer = await canvasToBlob(canvas);
+  return new File([arrayBuffer], filename, {type: 'image/jpeg'});
 
-  return await dataUrlToFile(canvas.toDataURL('image/png'), filename);
+  // return await dataUrlToFile(canvas.toDataURL('image/png'), filename);
   // return await urlToFile(canvas.toDataURL('image/jpeg', 0.9), filename, 'image/jpeg');
 }
 

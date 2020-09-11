@@ -1182,6 +1182,8 @@ export default class extends Vue implements Toasted {
     this.filterPanel.clearFilterState(type);
 
     this.timeline.refresh();
+
+    this.toast('滤镜引用成功', 'success');
   }
 
   get tabs() {

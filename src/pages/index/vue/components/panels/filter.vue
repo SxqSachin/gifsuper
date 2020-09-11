@@ -32,6 +32,7 @@ import { Filters, FilterType } from '@/pages/index/js/modules/filters';
 import { fabric } from 'fabric';
 import { GifFrame, GifFrameList } from '@/js/gif';
 import { Toasted } from '../../../js/type';
+import { delay } from '@/js/utility';
 
 @Component({
   components: {
@@ -96,6 +97,18 @@ export default class extends Vue implements Toasted {
     this.renderPreview();
   }
 
+  private async renderSingleFilter(img: fabric.Image, filterType: string, filterOptions: any, options: any) {
+    const { name } = options;
+    const filter = new fabric.Image.filters[filterType](filterOptions);
+
+    img.applyFilters([filter]);
+    this.$set(this.previewImgs, name, { url: img.toDataURL({format: 'png'}), ...options })
+
+    await delay(10);
+
+    return Promise.resolve();
+  }
+
   private async renderPreview() {
     const parseImgPromise: Promise<fabric.Image> = new Promise(resolve => {
       fabric.Image.fromURL(this.previewFrame.imgFileSrc, img => {
@@ -105,11 +118,11 @@ export default class extends Vue implements Toasted {
 
     const img = await parseImgPromise;
 
-    Object.values(this.filters).forEach(({ type, name, options, title }: any) => {
-      const filter = new fabric.Image.filters[type](options);
-      img.applyFilters([filter]);
-      this.$set(this.previewImgs, name, { url: img.toDataURL({format: 'png'}), title, type, name, options })
-    });
+    for(let i = 0; i < Object.values(this.filters).length; i++) {
+      const { type, name, options, title } = this.filters[Object.keys(this.filters)[i]];
+
+      await this.renderSingleFilter(img, type, options, { title, type, name, options });
+    }
   }
 
   public toast(msg: string, type: string = 'info', duration: number = 3000) {
