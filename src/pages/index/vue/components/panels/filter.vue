@@ -31,15 +31,15 @@ import { Filters, FilterType } from '@/pages/index/js/modules/filters';
 
 import { fabric } from 'fabric';
 import { GifFrame, GifFrameList } from '@/js/gif';
-import { Toasted } from '../../../js/type';
 import { delay } from '@/js/utility';
+import { AbstractPanel } from './abstract-panel'; 
 
 @Component({
   components: {
     's-btn': sBtn,
   }
 })
-export default class extends Vue implements Toasted {
+export default class extends AbstractPanel  {
   public previewFrame!: GifFrame;
 
   public previewImgs: {[type: string]: string} = {};

@@ -397,6 +397,14 @@
           </fieldset>
 
           <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+            v-show="curTab === 'frame'"
+            >
+
+            <frame-action-panel ref="frame-action-panel"></frame-action-panel>
+
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
             v-show="curTab === 'filter'"
             >
 
@@ -505,6 +513,7 @@ import { Stage } from '../js/stage';
 // import { Timeline } from './js/timeline';
 
 import FilterPanel from './components/panels/filter.vue';
+import FrameActionPanel from './components/panels/frame-action.vue';
 
 @Component({
   components: {
@@ -516,6 +525,7 @@ import FilterPanel from './components/panels/filter.vue';
     previewer: Previewer,
     timeline: Timeline,
     'filter-panel': FilterPanel,
+    'frame-action-panel': FrameActionPanel,
   },
 })
 export default class extends Vue implements Toasted {
@@ -1193,6 +1203,7 @@ export default class extends Vue implements Toasted {
       { name: 'addPic', title: '添加图片', icon: '/static/icons/image.svg', },
       { name: 'cut', title: '帧裁剪', icon: '/static/icons/cut.svg', },
       { name: 'resize', title: '裁剪', icon: '/static/icons/contract.svg', },
+      { name: 'frame', title: '帧处理', icon: '/static/icons/hammer.svg', },
       { name: 'filter', title: '滤镜', icon: '/static/icons/wand.svg', new: true, },
     ];
   }
