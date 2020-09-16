@@ -53,10 +53,14 @@ export default class extends Vue implements Stage {
 
     let res = [];
 
+    const rotated = Math.abs(+this.gifState.rotate) === 90 || Math.abs(+this.gifState.rotate) === 270;
+
     if (!this.frames.length) {
       frameList.forEach((frame, index) => {
         const imgPromise: Promise<fabric.Image> = new Promise(resolve => {
+
           fabric.Image.fromURL(frame.imgFileSrc, img => {
+            console.log(img.width, img.height);
             if (!img.width || !img.height) {
               return;
             }
@@ -65,9 +69,10 @@ export default class extends Vue implements Stage {
             const curHeight = img.height;
 
             const nimg = img.set({
-              left: index * (curWidth + divideWidth),
-              top: 0,
-              width: img.width,
+              left: (curWidth / 2) + index * (curWidth + divideWidth),
+              top: curHeight / 2,
+              width: curWidth,
+              height: curHeight,
               name: 'frame' + index,
               type: 'timeline-frame',
               lockMovementX: true,
@@ -77,6 +82,9 @@ export default class extends Vue implements Stage {
               flipX: this.gifState.flipX,
               flipY: this.gifState.flipY,
             }) as fabric.Image;
+
+            nimg.originX = 'center';
+            nimg.originY = 'center';
 
             // @ts-ignore
             nimg.frameIndex = index;
@@ -92,11 +100,18 @@ export default class extends Vue implements Stage {
 
       res = await Promise.all(arr);
     } else {
-      res = this.frames.map(img => {
-        img.set({
+      res = this.frames.map((img, index) => {
+        const curWidth = rotated ? img.height : img.width;
+        const leftBaseOffset = rotated ? (img.height / 2) : (img.width / 2);
+        const topBaseOffset = rotated ? (img.width / 2) : (img.height/ 2);
+
+        img.rotate(this.gifState.rotate).set({
+          left: leftBaseOffset + index * (curWidth + divideWidth),
+          top: topBaseOffset,
           flipX: this.gifState.flipX,
           flipY: this.gifState.flipY,
         }) as fabric.Image;
+
         return img;
       })
     }
@@ -124,9 +139,15 @@ export default class extends Vue implements Stage {
 
     const frameWidth = firstImg.width;
     const frameHeight = firstImg.height;
+    const rotated = Math.abs(+this.gifState.rotate) === 90 || Math.abs(+this.gifState.rotate) === 270;
 
-    const canvasTotalWidth = (frameWidth + 1) * frameList.length;
-    const canvasHeight = frameHeight as number;
+    let canvasTotalWidth = (frameWidth + 1) * frameList.length;
+    let canvasHeight = frameHeight as number;
+
+    if (rotated) {
+      canvasTotalWidth = (frameHeight + 1) * frameList.length;
+      canvasHeight = frameWidth as number;
+    }
 
     const timelineWrapperWidth = (this.$refs['timeline-wrapper'] as HTMLElement).offsetWidth - 2;
 
@@ -138,6 +159,8 @@ export default class extends Vue implements Stage {
     this.frames.forEach(img => {
       this.canvas.add(img);
     });
+
+    this.canvas.absolutePan(new fabric.Point(0, 0));
 
     this.resetDragBar(timelineWrapperWidth, canvasTotalWidth);
   }
@@ -151,8 +174,6 @@ export default class extends Vue implements Stage {
 
     this.dragbar.setWidth(containerWidth);
     this.dragbar.setHeight(30);
-
-    console.log(this.dragbar.getWidth());
 
     const percent = (containerWidth / totalFrameWidth);
 

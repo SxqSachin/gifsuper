@@ -174,6 +174,8 @@
                 <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleState('repeat', '循环')">循环：{{ gifState.repeat ? '开' : '关' }}</sbtn>
                 <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会左右颠倒" :disabled="!canEdit" @click="toggleState('flipX', '左右翻转', true)">左右翻转：{{ gifState.flipX ? '开' : '关' }}</sbtn>
                 <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会上下颠倒" :disabled="!canEdit" @click="toggleState('flipY', '上下翻转', true)">上下翻转：{{ gifState.flipY ? '开' : '关' }}</sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="将图片向左旋转90度" :disabled="!canEdit" @click="rotate(-90)"> 左旋转 </sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="将图片向右旋转90度" :disabled="!canEdit" @click="rotate(90)"> 右旋转 </sbtn>
                 <!-- <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后可实现首尾相接重复的特效" :disabled="!canEdit" @click="toggleRLoop">
                   <span>反复</span>
                   <span>:{{ rloop ? '开' : '关' }} </span>
@@ -390,11 +392,24 @@
                 <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">裁剪出原图中你感兴趣的部分</span>
               </label>
 
-              <div class="flex flex-row items-center">
-                <span>裁剪：</span><sbtn :disabled="!canEdit" @click="toggleResize">{{ !gifState.resize ? '开启' : '关闭' }}</sbtn>
+              <div v-show="isRotated()">
+                <span class="text-red-300"> 注意：</span>
+                <span> 注意：您当前无法在旋转状态下使用该功能（会导致使用上的问题，待该Bug修复后开放） </span>
+              </div>
+
+              <div v-show="!isRotated()" class="flex flex-row items-center">
+                <span>裁剪：</span><sbtn :disabled="!canEdit || isRotated()" @click="toggleResize">{{ !gifState.resize ? '开启' : '关闭' }}</sbtn>
               </div>
             </section>
           </fieldset>
+
+          <!-- <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+            v-show="curTab === 'frame'"
+            >
+
+            <frame-action-panel ref="frame-action-panel"></frame-action-panel>
+
+          </fieldset> -->
 
           <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
             v-show="curTab === 'filter'"
@@ -505,6 +520,7 @@ import { Stage } from '../js/stage';
 // import { Timeline } from './js/timeline';
 
 import FilterPanel from './components/panels/filter.vue';
+import FrameActionPanel from './components/panels/frame-action.vue';
 
 @Component({
   components: {
@@ -516,6 +532,7 @@ import FilterPanel from './components/panels/filter.vue';
     previewer: Previewer,
     timeline: Timeline,
     'filter-panel': FilterPanel,
+    'frame-action-panel': FrameActionPanel,
   },
 })
 export default class extends Vue implements Toasted {
@@ -627,6 +644,10 @@ export default class extends Vue implements Toasted {
     return this.canEdit || this.isGenerating || !!this.rawFile;
   }
 
+  public isRotated(): boolean {
+    return Math.abs(+this.gifState.rotate) === 90 || Math.abs(+this.gifState.rotate) === 270;
+  }
+
   public created() {
     this.gifState = new GifState();
   }
@@ -727,6 +748,18 @@ export default class extends Vue implements Toasted {
     }
   }
 
+  public async rotate(deg: number) {
+    this.gifState.rotate += deg;
+
+    if (this.gifState.rotate === 360 || this.gifState.rotate === -360) {
+      this.gifState.rotate = 0;
+    }
+
+    await this.renderPreview();
+    await this.timeline.refreshFrameImg();
+    this.timeline.refresh();
+  }
+
   public resetStage() {
     const srcgifDOM = document.querySelector('#srcgif');
 
@@ -746,7 +779,12 @@ export default class extends Vue implements Toasted {
     this.progress = 0;
     this.isGenerating = true;
 
-    const { width, height } = { width: this.oriWidth, height: this.oriHeight };
+    const rotated = Math.abs(+this.gifState.rotate) === 90 || Math.abs(+this.gifState.rotate) === 270;
+
+    let { width, height } = { width: this.oriWidth, height: this.oriHeight };
+    if (rotated) {
+      [width, height] = [height, width];
+    }
 
     const totalWidth = (width + 1) * this.totalFrameCount;
 
@@ -770,10 +808,17 @@ export default class extends Vue implements Toasted {
     const resizeWidth = Math.round((resizeRect.width * resizeRect.scaleX) / gScaleX);
     const resizeHeight = Math.round((resizeRect.height * resizeRect.scaleY) / gScaleY);
 
+    let generatorWidth = isResizeRect ? resizeWidth : this.oriWidth;
+    let generatorHeight = isResizeRect ? resizeHeight : this.oriHeight;
+
+    if (rotated) {
+      [generatorWidth, generatorHeight] = [generatorHeight, generatorWidth];
+    }
+
     const gif = new GifGenerator({
       repeat: this.gifState.repeat ? 0 : -1,
-      width: isResizeRect ? resizeWidth : this.oriWidth,
-      height: isResizeRect ? resizeHeight : this.oriHeight,
+      width: generatorWidth,
+      height: generatorHeight,
     });
 
     for (let i = startFrameIndex; i < endFrameIndex; i++)  {
@@ -796,7 +841,7 @@ export default class extends Vue implements Toasted {
       const durl = this.timeline.canvas.toDataURL({
         width: _width,
         height: _height,
-        left, 
+        left,
         top,
         format: 'png',
       });
@@ -1092,6 +1137,8 @@ export default class extends Vue implements Toasted {
 
     const allDonePromise: Promise<void>[] = [];
 
+    const curWidth = this.isRotated() ? this.oriHeight : this.oriWidth;
+
     this.frameList.forEach((frame, index) => {
       allDonePromise.push(new Promise(resolve => {
         obj.clone((cloneObj: RangedFrameObject) => {
@@ -1100,7 +1147,7 @@ export default class extends Vue implements Toasted {
 
           if (inFrame.includes(index)) {
             const newObj = cloneObj.set({
-              left: oriLeft / scaleX + ((this.oriWidth + 1) * index),
+              left: oriLeft / scaleX + ((curWidth + 1) * index),
               top: oriTop / scaleY,
               scaleX: oriScaleX / scaleX,
               scaleY: oriScaleY / scaleY,
@@ -1182,6 +1229,8 @@ export default class extends Vue implements Toasted {
     this.filterPanel.clearFilterState(type);
 
     this.timeline.refresh();
+
+    this.toast('滤镜引用成功', 'success');
   }
 
   get tabs() {

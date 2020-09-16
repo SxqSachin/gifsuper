@@ -12,6 +12,7 @@ export interface PreviewOption {
   interval?: number;
   flipX?: boolean;
   flipY?: boolean;
+  rotate?: number;
 }
 
 const DefaultPreviewOption: PreviewOption = {
@@ -101,14 +102,26 @@ class GifPreview implements Stage {
   public async initPreviewCanvas(frameList: GifFrameList, width: number, height: number) {
     const {
       previewCanvas: canvas,
+      options,
     } = this;
+
+    const {
+      rotate
+    } = options;
 
     canvas.getObjects().forEach(object => {
       if (object.type === 'bg') {
         canvas.remove(object);
       }
     });
-    canvas.setWidth(width).setHeight(height);
+
+    const rotated = Math.abs(+rotate) === 90 || Math.abs(+rotate) === 270;
+
+    if (rotated) {
+      canvas.setWidth(height).setHeight(width);
+    } else {
+      canvas.setWidth(width).setHeight(height);
+    }
 
     this.frameGroup = null;
 
@@ -169,17 +182,23 @@ class GifPreview implements Stage {
 
    // 生成指定宽高的帧Group
   public async genSrcGIFFrameGroup(frameList: GifFrameList, frameWidth: number, frameHeight: number): Promise<fabric.Group> {
-    const width = frameWidth;
-    const height = frameHeight;
-
     const promiseGroup: Promise<fabric.Object>[] = [];
 
     const {
       flipX,
       flipY,
+      rotate,
     } = this.options;
+    const rotated = Math.abs(+rotate) === 90 || Math.abs(+rotate) === 270;
 
     let res = [];
+
+    let width = frameWidth;
+    let height = frameHeight;
+
+    if (rotated) {
+      [width, height] = [height, width];
+    }
 
     if (!this.frames.length) {
       frameList.forEach((frame, index) => {
@@ -200,6 +219,9 @@ class GifPreview implements Stage {
               flipY,
             }).scaleToWidth(width).scaleToHeight(height) as fabric.Image;
 
+            nimg.originX = 'center';
+            nimg.originY = 'center';
+
             this.frames.push(nimg);
 
             resolve(nimg);
@@ -210,7 +232,7 @@ class GifPreview implements Stage {
       res = await Promise.all(promiseGroup);
     } else {
       this.frames = this.frames.map(img => {
-        img.set({
+        img.rotate(rotate).set({
           flipX,
           flipY,
         }).scaleToWidth(width).scaleToHeight(height) as fabric.Image;
