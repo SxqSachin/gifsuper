@@ -19,6 +19,9 @@ export class GifState implements PreviewOption {
   public flipX: boolean = false;
   public flipY: boolean = false;
 
+  // 旋转角度
+  public rotate: number = 0;
+
   public resize: boolean = false;
 
   public toggleState(key: keyof this, name?: string, resetTimeline: boolean = false): any {
