@@ -5,7 +5,7 @@
         v-for="(previewImg, key) in previewImgs"
         :key="key"
         >
-        <div class="w-full relative" @click="applyFilter(previewImg.name)" title="点击已应用该滤镜">
+        <div class="w-full relative" @click="applyFilter(previewImg.name)" title="点击应用该滤镜">
           <img class="w-full" :src="previewImg.url" :alt="previewImg.title"/>
 
           <div class="filter-info absolute flex justify-center items-center opacity-0 transition-opacity duration-300">
@@ -86,7 +86,7 @@ export default class extends AbstractPanel  {
 
     let filter: Filter = Filters.get(type);
 
-    this.$emit('event', { event: 'filter', filter, type });
+    this.$emit('filter', { event: 'filter', filter, type });
   }
 
   public setFilterState(type: FilterType, title: string, subtitle?: string) {
