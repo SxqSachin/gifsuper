@@ -32,7 +32,7 @@ import { Filters, FilterType } from '@/pages/index/js/modules/filters';
 import { fabric } from 'fabric';
 import { GifFrame, GifFrameList } from '@/js/gif';
 import { delay } from '@/js/utility';
-import { AbstractPanel } from './abstract-panel'; 
+import { AbstractPanel } from '@/pages/index/js/panel'; 
 
 @Component({
   components: {
@@ -45,6 +45,14 @@ export default class extends AbstractPanel  {
   public previewImgs: {[type: string]: string} = {};
 
   public filterState: {[type: string]: { show: boolean, title: string, subtitle: string }} = {};
+
+  get tabInfo() {
+    return { name: 'filter', title: '滤镜', icon: '/static/icons/wand.svg', new: true, };
+  }
+
+  get panelName() {
+    return 'filter-panel';
+  }
 
   get filters() {
     const filterList = {
@@ -67,6 +75,7 @@ export default class extends AbstractPanel  {
 
   public mounted() {
     console.log('filter panel loaded');
+    // this.addToDesk();
   }
 
   public applyFilter(type: FilterType) {
@@ -77,7 +86,7 @@ export default class extends AbstractPanel  {
 
     let filter: Filter = Filters.get(type);
 
-    this.$emit('filter', { filter, type });
+    this.$emit('event', { event: 'filter', filter, type });
   }
 
   public setFilterState(type: FilterType, title: string, subtitle?: string) {

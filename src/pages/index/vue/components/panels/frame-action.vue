@@ -16,7 +16,7 @@ import { fabric } from 'fabric';
 import { GifFrame, GifFrameList } from '@/js/gif';
 import { Toasted } from '../../../js/type';
 import { delay } from '@/js/utility';
-import { AbstractPanel } from './abstract-panel';
+import { AbstractPanel } from '@/pages/index/js/panel'; 
   
 @Component({
   components: {
@@ -24,6 +24,18 @@ import { AbstractPanel } from './abstract-panel';
   }
 })
 export default class extends AbstractPanel {
+  public mounted() {
+    console.log('frame action panel loaded');
+    // this.addToDesk();
+  }
+
+  get tabInfo() {
+    return { name: 'frame', title: '帧处理', icon: '/static/icons/hammer.svg', };
+  }
+
+  get panelName() {
+    return 'frame-action-panel';
+  }
 }
 </script>
 

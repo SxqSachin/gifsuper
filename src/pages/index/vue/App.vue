@@ -396,11 +396,11 @@
             </section>
           </fieldset>
 
-          <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+          <!-- <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
             v-show="curTab === 'frame'"
             >
 
-            <frame-action-panel ref="frame-action-panel"></frame-action-panel>
+            <frame-action-panel :desk="this" ref="frame-action-panel"></frame-action-panel>
 
           </fieldset>
 
@@ -408,8 +408,17 @@
             v-show="curTab === 'filter'"
             >
 
-            <filter-panel ref="filter-panel" @filter="onFilterChange"></filter-panel>
+            <filter-panel :desk="this" ref="filter-panel" @filter="onFilterChange"></filter-panel>
 
+          </fieldset> -->
+
+          <fieldset 
+            v-for="panel in panels" :key="panel.panelName"
+            class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+            v-show="curTab === panel.tabInfo.name"
+            >
+            <component :is="panel.panelName" :desk="this" :ref="panel.panelName" @panel-event="panel.panelEvent">
+            </component>
           </fieldset>
 
           <fieldset class="pt-8 ">
@@ -514,6 +523,8 @@ import { Stage } from '../js/stage';
 
 import FilterPanel from './components/panels/filter.vue';
 import FrameActionPanel from './components/panels/frame-action.vue';
+import { Desk } from '../js/desk';
+import { Panel } from '../js/panel';
 
 @Component({
   components: {
@@ -528,7 +539,7 @@ import FrameActionPanel from './components/panels/frame-action.vue';
     'frame-action-panel': FrameActionPanel,
   },
 })
-export default class extends Vue implements Toasted {
+export default class extends Vue implements Toasted, Desk {
   public stickyPreviewCanvas: boolean = false;
   public curPreviewImg: string = '';
   public pausePreview: boolean = false;
@@ -612,6 +623,7 @@ export default class extends Vue implements Toasted {
   public timeline!: Timeline;
 
   public filterPanel!: FilterPanel;
+  public frameActionPanel!: FrameActionPanel;
 
   get canEdit(): boolean {
     return !!this.frameList?.length;
@@ -639,6 +651,20 @@ export default class extends Vue implements Toasted {
 
   public created() {
     this.gifState = new GifState();
+
+    this.panels.push({
+      tabInfo: { name: 'filter', title: '滤镜', icon: '/static/icons/wand.svg', new: true, }, 
+      panelName: 'filter-panel',
+      panelEvent: this.onFilterChange
+    });
+    this.panels.push({
+      tabInfo: { name: 'frame', title: '帧处理', icon: '/static/icons/hammer.svg', }, 
+      panelName: 'frame-action-panel',
+    });
+
+    window.fabric = fabric;
+
+    window['app'] = this;
   }
 
   public mounted() {
@@ -650,15 +676,14 @@ export default class extends Vue implements Toasted {
 
     this.timeline = this.$refs['timeline'] as Timeline;
 
-    this.filterPanel = this.$refs['filter-panel'] as FilterPanel;
+    this.filterPanel = this.$refs['filter-panel'][0] as FilterPanel;
+    this.frameActionPanel = this.$refs['frame-action-panel'][0] as FrameActionPanel;
+
+    // debugger;
+    this.filterPanel.addToDesk(this); 
+    this.frameActionPanel.addToDesk(this); 
 
     this.initKeyPressEvent();
-
-// console.log(fabric.filterBackend);
-    // fabric.filterBackend = new fabric.WebglFilterBackend();
-    window.fabric = fabric;
-
-    window['app'] = this;
   }
 
   public async upload(e: FileList) {
@@ -1176,7 +1201,8 @@ export default class extends Vue implements Toasted {
     this.aaa = this.previewer.preview.isPause;
   }
 
-  async onFilterChange({ filter, type }:{filter: Filter, type: FilterType}) {
+  async onFilterChange({ event, filter, type }:{event: string, filter: Filter, type: FilterType}) {
+    console.log(event);
     if (!filter) {
       this.toast('滤镜不可用');
       return;
@@ -1196,16 +1222,19 @@ export default class extends Vue implements Toasted {
     this.toast('滤镜引用成功', 'success');
   }
 
-  get tabs() {
-    return [
-      { name: 'base', title: '基础设置', icon: '/static/icons/hammer.svg', },
-      { name: 'addText', title: '添加文字', icon: '/static/icons/text.svg', },
-      { name: 'addPic', title: '添加图片', icon: '/static/icons/image.svg', },
-      { name: 'cut', title: '帧裁剪', icon: '/static/icons/cut.svg', },
-      { name: 'resize', title: '裁剪', icon: '/static/icons/contract.svg', },
-      { name: 'frame', title: '帧处理', icon: '/static/icons/hammer.svg', },
-      { name: 'filter', title: '滤镜', icon: '/static/icons/wand.svg', new: true, },
-    ];
+  public tabs = [
+    { name: 'base', title: '基础设置', icon: '/static/icons/hammer.svg', },
+    { name: 'addText', title: '添加文字', icon: '/static/icons/text.svg', },
+    { name: 'addPic', title: '添加图片', icon: '/static/icons/image.svg', },
+    { name: 'cut', title: '帧裁剪', icon: '/static/icons/cut.svg', },
+    { name: 'resize', title: '裁剪', icon: '/static/icons/contract.svg', },
+  ];
+
+  public panels: any[] = [
+  ];
+
+  getDesk() {
+    return this;
   }
 }
 </script>
