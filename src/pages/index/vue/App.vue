@@ -50,7 +50,6 @@
           <div class="src w-full">
             <div ref="edit-canvas" v-show="!!oriImageSrc && oriGifLoadProgress === 1" class="mt-4">
               <div class="flex justify-center items-center w-full">
-                <!-- <canvas id="edit-canvas"> </canvas> -->
                 <previewer ref="previewer"></previewer>
               </div>
 
@@ -352,7 +351,6 @@
             <section class="flex flex-col justify-center items-start w-full">
               <label for="">
                 <span>区间去除：</span>
-                <!-- <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">删除指定区间内的帧，受制于区间裁剪数值</span> -->
                 <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">删除你不感兴趣的片段</span>
               </label>
 
@@ -475,11 +473,9 @@
       <div class="md:hidden my-2 flex justify-start flex-wrap">
         <sbtn class="mb-1" title="删除当前选中元素" @click="deleteActivedObject" type="error">删除当前选中文字/图片</sbtn>
       </div>
+
       <timeline ref="timeline" :frame-list="frameList" :gif-state="gifState"></timeline>
-      <!-- <div ref="timeline-wrapper" class="canvas-wrapper border rounded-sm border-gray-300">
-        <canvas id="stage"></canvas>
-        <canvas id="dragbar"></canvas>
-      </div> -->
+
     </div>
 
   </div>
@@ -662,16 +658,6 @@ export default class extends Vue implements Toasted, Desk {
 
   public created() {
     this.gifState = new GifState();
-
-    // this.panels.push({
-    //   tabInfo: { name: 'filter', title: '滤镜', icon: '/static/icons/wand.svg', new: true, }, 
-    //   panelName: 'filter-panel',
-    //   panelEvent: this.onFilterChange
-    // });
-    // this.panels.push({
-    //   tabInfo: { name: 'frame', title: '帧处理', icon: '/static/icons/hammer.svg', }, 
-    //   panelName: 'frame-action-panel',
-    // });
 
     window.fabric = fabric;
 
