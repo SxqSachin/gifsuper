@@ -50,7 +50,6 @@
           <div class="src w-full">
             <div ref="edit-canvas" v-show="!!oriImageSrc && oriGifLoadProgress === 1" class="mt-4">
               <div class="flex justify-center items-center w-full">
-                <!-- <canvas id="edit-canvas"> </canvas> -->
                 <previewer ref="previewer"></previewer>
               </div>
 
@@ -352,7 +351,6 @@
             <section class="flex flex-col justify-center items-start w-full">
               <label for="">
                 <span>区间去除：</span>
-                <!-- <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">删除指定区间内的帧，受制于区间裁剪数值</span> -->
                 <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">删除你不感兴趣的片段</span>
               </label>
 
@@ -407,7 +405,7 @@
             v-show="curTab === 'frame'"
             >
 
-            <frame-action-panel ref="frame-action-panel"></frame-action-panel>
+            <frame-action-panel :desk="this" ref="frame-action-panel"></frame-action-panel>
 
           </fieldset> -->
 
@@ -415,9 +413,18 @@
             v-show="curTab === 'filter'"
             >
 
-            <filter-panel ref="filter-panel" @filter="onFilterChange"></filter-panel>
+            <filter-panel :desk="this" ref="filter-panel" @filter="onFilterChange"></filter-panel>
 
           </fieldset>
+
+          <!-- <fieldset 
+            v-for="panel in panels" :key="panel.panelName"
+            class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+            v-show="curTab === panel.tabInfo.name"
+            >
+            <component :is="panel.panelName" :desk="this" :ref="panel.panelName" @panel-event="panel.panelEvent">
+            </component>
+          </fieldset> -->
 
           <fieldset class="pt-8 ">
             <sbtn title="应用修改" @click="applyPreview2Timeline" type="success" :disabled="!canEdit">将修改应用到时间轴</sbtn>
@@ -466,11 +473,9 @@
       <div class="md:hidden my-2 flex justify-start flex-wrap">
         <sbtn class="mb-1" title="删除当前选中元素" @click="deleteActivedObject" type="error">删除当前选中文字/图片</sbtn>
       </div>
+
       <timeline ref="timeline" :frame-list="frameList" :gif-state="gifState"></timeline>
-      <!-- <div ref="timeline-wrapper" class="canvas-wrapper border rounded-sm border-gray-300">
-        <canvas id="stage"></canvas>
-        <canvas id="dragbar"></canvas>
-      </div> -->
+
     </div>
 
   </div>
@@ -521,6 +526,8 @@ import { Stage } from '../js/stage';
 
 import FilterPanel from './components/panels/filter.vue';
 import FrameActionPanel from './components/panels/frame-action.vue';
+import { Desk } from '../js/desk';
+import { Panel } from '../js/panel';
 
 @Component({
   components: {
@@ -535,7 +542,7 @@ import FrameActionPanel from './components/panels/frame-action.vue';
     'frame-action-panel': FrameActionPanel,
   },
 })
-export default class extends Vue implements Toasted {
+export default class extends Vue implements Toasted, Desk {
   public stickyPreviewCanvas: boolean = false;
   public curPreviewImg: string = '';
   public pausePreview: boolean = false;
@@ -619,6 +626,7 @@ export default class extends Vue implements Toasted {
   public timeline!: Timeline;
 
   public filterPanel!: FilterPanel;
+  public frameActionPanel!: FrameActionPanel;
 
   get canEdit(): boolean {
     return !!this.frameList?.length;
@@ -650,6 +658,10 @@ export default class extends Vue implements Toasted {
 
   public created() {
     this.gifState = new GifState();
+
+    window.fabric = fabric;
+
+    window['app'] = this;
   }
 
   public mounted() {
@@ -662,14 +674,13 @@ export default class extends Vue implements Toasted {
     this.timeline = this.$refs['timeline'] as Timeline;
 
     this.filterPanel = this.$refs['filter-panel'] as FilterPanel;
+    // this.frameActionPanel = this.$refs['frame-action-panel'][0] as FrameActionPanel;
+
+    // debugger;
+    // this.filterPanel.addToDesk(this); 
+    // this.frameActionPanel.addToDesk(this); 
 
     this.initKeyPressEvent();
-
-// console.log(fabric.filterBackend);
-    // fabric.filterBackend = new fabric.WebglFilterBackend();
-    window.fabric = fabric;
-
-    window['app'] = this;
   }
 
   public async upload(e: FileList) {
@@ -1213,7 +1224,8 @@ export default class extends Vue implements Toasted {
     this.aaa = this.previewer.preview.isPause;
   }
 
-  async onFilterChange({ filter, type }:{filter: Filter, type: FilterType}) {
+  async onFilterChange({ event, filter, type }:{event: string, filter: Filter, type: FilterType}) {
+    console.log(event);
     if (!filter) {
       this.toast('滤镜不可用');
       return;
@@ -1243,6 +1255,9 @@ export default class extends Vue implements Toasted {
       { name: 'filter', title: '滤镜', icon: '/static/icons/wand.svg', new: true, },
     ];
   }
+
+  public panels: Panel[] = [];
+
 }
 </script>
 
