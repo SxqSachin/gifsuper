@@ -14,6 +14,7 @@ const resolve = (dir) => {
 const config = {
   entry: {    //js的入口文件，支持多入口 注释①
     index: path.resolve(__dirname, '../src/pages/index/index.js'),
+    compress: path.resolve(__dirname, '../src/pages/compress/index.js'),
     about: path.resolve(__dirname, '../src/pages/about/index.js'),
     comment: path.resolve(__dirname, '../src/pages/comment/index.js'),
     update: path.resolve(__dirname, '../src/pages/update/index.js'),
@@ -78,6 +79,11 @@ const config = {
       chunks: ['index'],
     }),
     new HtmlWebpackPlugin({
+      filename: 'compress.html',
+      template: './src/pages/compress/public/index.html',
+      chunks: ['compress'],
+    }),
+    new HtmlWebpackPlugin({
       filename: 'about.html',
       template: './src/pages/about/public/index.html',
       chunks: ['about'],
@@ -109,15 +115,8 @@ const config = {
         },
         {
           from: path.resolve(__dirname, '../src/pages/comment/public/static'),//"/src/public/static",
-          // transform: (content) => {
-          //   return uglifyJS.minify(content.toString()).code.toString();
-          // },
           to: path.resolve(__dirname, '../dist/static')
         },
-        // {
-        //   from: path.resolve(__dirname, '../src/pages/about/public/static'),//"/src/public/static",
-        //   to: path.resolve(__dirname, '../dist/static')
-        // },
       ]
     }),
     new MiniCssExtractPlugin({
