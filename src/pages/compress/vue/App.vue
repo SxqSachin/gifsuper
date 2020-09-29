@@ -54,7 +54,7 @@ interface GenerateOption {
   removeRange?: [number, number];
 }
 
-import { Toasted } from '../js/type';
+// import { Toasted } from '../js/type';
 
 import axios from 'axios';
 
@@ -67,7 +67,7 @@ import axios from 'axios';
     'color-picker': ColorPicker,
   },
 })
-export default class extends Vue implements Toasted {
+export default class extends Vue {
   // 上传的Gif
   public rawFile: File = null;
   public oriImageSrc: string = '';
