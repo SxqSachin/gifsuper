@@ -23,7 +23,16 @@
     <sbtn @click="onCompressFuzz">压缩Fuzz</sbtn>
     <sbtn @click="onCompressColor">压缩Color</sbtn>
 
-    <img :src="nImg" alt="">
+    <div class="flex">
+
+      <div v-for="img in newImgList" :key="img">
+        <img :src="img.url" alt="">
+        <div>
+          旧:{{img.oldSize}}MB | 新:{{img.newSize}}
+        </div>
+      </div>
+
+    </div>
   </div>
 </template>
 
@@ -47,14 +56,18 @@ import { fabric } from 'fabric';
 const FrameIndex = 1;
 const TextZIndex = 10;
 
-interface GenerateOption {
-  baseInterval: number;
+// interface GenerateOption {
+//   baseInterval: number;
 
-  generateRange: [number, number];
-  removeRange?: [number, number];
-}
+//   generateRange: [number, number];
+//   removeRange?: [number, number];
+// }
 
-// import { Toasted } from '../js/type';
+
+type CompressInfo = {
+  method: string;
+  options: any;
+};
 
 import axios from 'axios';
 
@@ -78,6 +91,8 @@ export default class extends Vue {
   public canEdit: boolean = false;
 
   public nImg: string = '';
+
+  public newImgList: any[] = [];
 
   public mounted() {
     document.getElementById('loading-ph')?.remove();
@@ -114,49 +129,43 @@ export default class extends Vue {
     return !!localStorage.getItem(`notification-update-${ver}`);
   }
 
-  public async onCompressFuzz() {
+
+  public async doCompress({ method, options }: CompressInfo) {
     const formData = new FormData();
-    formData.append('img', this.rawFile);
-    formData.append('fuzz', '7');
-    const res = await axios.post('http://localhost:3000/compress/fuzz', formData);
+
+    Object.keys(options).forEach(k => {
+      formData.append(k, options[k]);
+    });
+
+    const res = await axios.post(`http://localhost:3000/compress/${method}`, formData);
     const rawResponse = res.data;
 
+    return rawResponse;
+  }
 
-    const blob = new Blob([rawResponse], { type: res.headers["content-type"] });
-    const url = URL.createObjectURL(blob);
+  public async onCompressFuzz() {
+    const { data } = await this.doCompress({method: 's2', options: {img: this.rawFile, fuzz: 7}});
 
-    console.log(res);
+    const { size: rawSize } = data.raw_img_info;
+    const { size, name } = data.res_info;
 
-    console.log(blob);
-
-    // convert to Base64
-    // toData
-
-    // // create an image
-    var outputImg = document.createElement('img');
-    outputImg.src = url;
-
-    // append it to your page
-    document.body.appendChild(outputImg);
+    this.newImgList.push({
+      oldSize: rawSize,
+      newSize: size,
+      url: `http://localhost:3000/img?uuid=${name}`
+    });
   }
   public async onCompressColor() {
-    const formData = new FormData();
-    formData.append('img', this.rawFile);
-    formData.append('color', '64');
-    const res = await axios.post('http://localhost:3000/compress/color', formData);
-    const rawResponse = res.data;
+    const { data } = await this.doCompress({method: 's1', options: {img: this.rawFile, colors: 64}});
 
-    console.log(res);
+    const { size: rawSize } = data.raw_img_info;
+    const { size, name } = data.res_info;
 
-    // convert to Base64
-    var b64Response = btoa(unescape(encodeURIComponent(rawResponse)))
-
-    // create an image
-    var outputImg = document.createElement('img');
-    outputImg.src = 'data:image/png;base64,'+b64Response;
-
-    // append it to your page
-    document.body.appendChild(outputImg);
+    this.newImgList.push({
+      oldSize: rawSize,
+      newSize: size,
+      url: `http://localhost:3000/img?uuid=${name}`
+    });
   }
 }
 </script>
