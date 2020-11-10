@@ -48,6 +48,7 @@
   "dependencies": {
     "@babel/plugin-syntax-decorators": "^7.10.1",
     "@babel/runtime": "^7.10.2",
+    "axios": "^0.20.0",
     "fabric": "^4.1.0",
     "tailwindcss": "^1.4.6",
     "vue": "^2.6.11",
