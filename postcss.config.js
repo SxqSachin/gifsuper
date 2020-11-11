@@ -13,6 +13,9 @@ const purgecss = require("@fullhuman/postcss-purgecss")({
     './node_modules/vue-slider-component/theme/*.css',
     './node_modules/vue-slider-component/src/*.css',
     './node_modules/vue-slider-component/dist-css/*.css',
+    './node_modules/vue-select/src/*.css',
+    './node_modules/vue-select/src/*.scss',
+    './node_modules/vue-select/dist/*.css',
     // './node_modules/vue-ionicons/ionicons.css',
     // './src/assets/css/*.css',
     // './src/assets/css/*.scss',
@@ -34,6 +37,6 @@ module.exports = {
     cssnano({ preset: 'default', }),
     ...process.env.NODE_ENV === 'production'
       ? [purgecss]
-      : []
+      : [purgecss]
   ]
 }

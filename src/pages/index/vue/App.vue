@@ -520,8 +520,12 @@ import FilterPanel from './components/panels/filter.vue';
 import { Desk } from '../js/desk';
 import { Panel } from '../js/panel';
 
+import vSelect from 'vue-select';
+import 'vue-select/dist/vue-select.css'
+
 @Component({
   components: {
+    'v-select': vSelect,
     'upload': Upload,
     sbtn,
     's-input': sInput,
@@ -575,6 +579,12 @@ export default class extends Vue implements Toasted, Desk {
   public textStrokeObj: {[key: string]: string} = { hex: '#000' };
   public textSize: string = '42';
   public textStrokeWidth: number = 1;
+
+  public font: string = '';
+  public fontList: {font: string, label: string}[] = [
+    {font: 'song', label:'songti'},
+    {font: 'song2', label:'songti2'},
+  ];
 
   public addTextRange: [number, number] = [1, 1]; // 添加文字起始值
 
