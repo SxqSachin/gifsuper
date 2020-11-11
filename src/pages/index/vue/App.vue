@@ -1296,6 +1296,7 @@ export default class extends Vue implements Toasted, Desk {
 }
 </script>
 
+
 <style>
 @font-face {
     font-family: zhankukuaileti;
