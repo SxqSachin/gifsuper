@@ -8,6 +8,7 @@ export type TextOption = {
   color?: string,
 
   fontWeight?: 400 | 600,
+  fontFamily?: string,
 
   enableStroke?: boolean,
   strokeWidth?: number,
@@ -24,6 +25,7 @@ export class Text implements StageModule {
   private fontSize: number = 42;
 
   private fontWeight: number = 600;
+  private fontFamily: string = '';
 
   private enableStroke: boolean = false;
   private strokeColor: string = '#000';
@@ -39,6 +41,7 @@ export class Text implements StageModule {
     this.fontSize = option.fontSize;
 
     this.fontWeight = option.fontWeight;
+    this.fontFamily = option.fontFamily;
 
     this.enableStroke = option.enableStroke;
     this.strokeColor = option.strokeColor;
@@ -67,7 +70,9 @@ export class Text implements StageModule {
 
       fontSize,
       color,
-      fontWeight, 
+
+      fontWeight,
+      fontFamily,
 
       enableStroke,
 
@@ -85,6 +90,12 @@ export class Text implements StageModule {
       cornerSize: 8,
       transparentCorners: false
     }) as fabric.IText & RangedFrameObject;
+
+    if (fontFamily) {
+      itext.set({
+        fontFamily,
+      })
+    }
 
     if (enableStroke) {
       itext.set({
