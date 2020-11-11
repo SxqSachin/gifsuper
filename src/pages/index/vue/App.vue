@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper p-4 sm:p-4 md:p-8 lg:p-8 max:w-screen w-full">
 
-    <div v-if="false && !getNotification(1)" data-n-ver="1" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
+    <!-- <div v-if="false && !getNotification(1)" data-n-ver="1" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
       <div> 新功能：现在可以实时预览各项编辑操作啦！ </div>
       <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(1);"> + </div>
     </div>
@@ -9,6 +9,11 @@
     <div v-if="!getNotification(2)" data-n-ver="2" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
       <div> 新功能：更新了滤镜功能！ </div>
       <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(2);"> + </div>
+    </div> -->
+
+    <div v-if="!getNotification(3)" data-n-ver="3" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
+      <div> 新功能：现在添加文字可选字体啦！字体库会慢慢补充哦！ </div>
+      <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(3);"> + </div>
     </div>
 
     <!-- todo 严重bug 长度过大的gif上传后存在内存爆栈 导致标签页假死 -->
@@ -118,7 +123,6 @@
             >
               <img class="w-4 h-4 flex-shrink-0" :src="tab.icon"/>
               <span class="ml-2 md:inline" :class="{inline: curTab === tab.name, 'hidden': curTab !== tab.name}">{{tab.title}}</span>
-              <sup v-if="tab.new" class="text-red-400 ml-1"> new </sup>
             </li>
           </ul>
         </div>
@@ -216,6 +220,20 @@
                  ></slider>
               </div>
 
+              <div class="flex items-center mb-4">
+                <label for="" class="whitespace-no-wrap">字体<sup class="text-red-400"> new </sup>：</label>
+                <v-select
+                  v-model="fontFamily"
+                  class="w-full"
+                  :options="fontList"
+                  :style="`font-family:${fontFamily};`"
+                  :reduce="font => font.font">
+                  <template #option="{ font, label }">
+                    <p class="text-2xl" :style="`font-family:${font};`" >{{ label }}</p>
+                  </template>
+                </v-select>
+              </div>
+
               <section class="flex flex-col w-full mb-4">
                 <div class="flex flex-row items-center mb-4">
                   <span>文字边线：</span><sbtn :disabled="!canEdit" @click="enableTextStroke = !enableTextStroke">{{ !enableTextStroke ? '开启' : '关闭' }}</sbtn>
@@ -248,7 +266,6 @@
               <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
                 <label for="">
                   <span>范围添加文字</span>
-                  <sup class="text-red-400"> new </sup>
                   <span>：</span>
                   <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">只在指定范围内添加文字</span>
                 </label>
@@ -296,7 +313,6 @@
             <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
               <label for="">
                 <span>范围添加图片</span>
-                <sup class="text-red-400"> new </sup>
                 <span>：</span>
                 <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">只在指定范围内添加图片</span>
               </label>
@@ -580,10 +596,19 @@ export default class extends Vue implements Toasted, Desk {
   public textSize: string = '42';
   public textStrokeWidth: number = 1;
 
-  public font: string = '';
+  public fontFamily: string = '';
   public fontList: {font: string, label: string}[] = [
-    {font: 'song', label:'songti'},
-    {font: 'song2', label:'songti2'},
+    {font: '', label:'默认'},
+    {font: 'zhankukuaileti', label: '站酷快乐体'},
+    {font: 'zhankuwenyiti', label: '站酷文艺体'},
+    {font: 'zhankugaoduanheiti', label: '站酷高端黑体'},
+    {font: 'fangzhengfangsong', label: '方正仿宋'},
+    {font: 'fangzhengkaiti', label: '方正楷体'},
+    {font: 'yangrengdongzhushiti', label: '杨任东竹石体'},
+    {font: 'xianerti', label: '贤二体'},
+    {font: 'qiantuxiaotuti', label:' 千图小兔体'},
+    {font: 'qingsongshouxieti2', label: '清松手写体2'},
+    {font: 'youshebiaotihei', label: '优设标题黑'},
   ];
 
   public addTextRange: [number, number] = [1, 1]; // 添加文字起始值
@@ -1033,16 +1058,25 @@ export default class extends Vue implements Toasted, Desk {
   public addImage(imgList: FileList) {
     const image = new Image(imgList, this.addImgRange);
     image.addTo(this.previewer);
+
+    this.toast('添加成功', 'success', 1000);
   }
 
   public addText() {
     const { textContent, textSize, textColor, enableTextStroke, textStrokeColor, textStrokeWidth, addTextRange } = this;
+    const { fontFamily } = this;
+
+    if (!textContent || !textContent.length) {
+      this.toast('请先输入需要添加的文字', 'warn');
+      return;
+    }
 
     const text = new Text(textContent, {
       color: textColor,
       fontSize: +textSize,
 
       fontWeight: 600,
+      fontFamily,
 
       enableStroke: enableTextStroke,
       strokeWidth: textStrokeWidth,
@@ -1050,6 +1084,8 @@ export default class extends Vue implements Toasted, Desk {
       frameRange: addTextRange,
     });
     text.addTo(this.previewer);
+
+    this.toast('添加成功', 'success', 1000);
   }
 
   public async renderPreview() {
@@ -1241,7 +1277,7 @@ export default class extends Vue implements Toasted, Desk {
 
     this.timeline.refresh();
 
-    this.toast('滤镜引用成功', 'success');
+    this.toast('滤镜应用成功', 'success');
   }
 
   get tabs() {
@@ -1252,7 +1288,6 @@ export default class extends Vue implements Toasted, Desk {
       { name: 'cut', title: '帧裁剪', icon: '/static/icons/cut.svg', },
       { name: 'resize', title: '裁剪', icon: '/static/icons/contract.svg', },
       { name: 'filter', title: '滤镜', icon: '/static/icons/wand.svg', },
-      { name: 'compression', title: '压缩', icon: '/static/icons/wand.svg', new: true, },
     ];
   }
 
@@ -1260,6 +1295,49 @@ export default class extends Vue implements Toasted, Desk {
 
 }
 </script>
+
+<style>
+@font-face {
+    font-family: zhankukuaileti;
+    src: url('https://static.sxqsachin.com/font/ZhanKuKuaiLeTi2016XiuDingBan.ttf') format('truetype');
+}
+@font-face {
+    font-family: zhankuwenyiti;
+    src: url('https://static.sxqsachin.com/font/ZhanKuWenYiTi.ttf') format('truetype');
+}
+@font-face {
+    font-family: zhankugaoduanheiti;
+    src: url('https://static.sxqsachin.com/font/GaoDuanHeiXiuDing151105.ttf') format('truetype');
+}
+@font-face {
+    font-family: fangzhengfangsong;
+    src: url('https://static.sxqsachin.com/font/FangZhengFangSongJianTi.ttf') format('truetype');
+}
+@font-face {
+    font-family: fangzhengkaiti;
+    src: url('https://static.sxqsachin.com/font/FangZhengKaiTiJianTi.ttf') format('truetype');
+}
+@font-face {
+    font-family: yangrengdongzhushiti;
+    src: url('https://static.sxqsachin.com/font/YangRenDongZhuShiTi.ttf') format('truetype');
+}
+@font-face {
+    font-family: xianerti;
+    src: url('https://static.sxqsachin.com/font/XianErTi.ttf') format('truetype');
+}
+@font-face {
+    font-family: qiantuxiaotuti;
+    src: url('https://static.sxqsachin.com/font/QianTuXiaoTuTi.ttf') format('truetype');
+}
+@font-face {
+    font-family: qingsongshouxieti2;
+    src: url('https://static.sxqsachin.com/font/QingSongShouXieTi2.ttf') format('truetype');
+}
+@font-face {
+    font-family: youshebiaotihei;
+    src: url('https://static.sxqsachin.com/font/YouSheBiaoTiHei.ttf') format('truetype');
+}
+</style>
 
 <style lang="scss" scoped>
   .wrapper {
