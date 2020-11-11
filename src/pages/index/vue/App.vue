@@ -224,7 +224,7 @@
                 <label for="" class="whitespace-no-wrap">字体<sup class="text-red-400"> new </sup>：</label>
                 <v-select
                   v-model="fontFamily"
-                  class="w-full"
+                  class="w-full text-color-primary"
                   :options="fontList"
                   :style="`font-family:${fontFamily};`"
                   :reduce="font => font.font">
@@ -1296,6 +1296,12 @@ export default class extends Vue implements Toasted, Desk {
 }
 </script>
 
+
+<style>
+.vs__selected {
+  color: var(--primary-text-color);
+}
+</style>
 
 <style>
 @font-face {
