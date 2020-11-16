@@ -60,7 +60,6 @@ export default class extends Vue implements Stage {
         const imgPromise: Promise<fabric.Image> = new Promise(resolve => {
 
           fabric.Image.fromURL(frame.imgFileSrc, img => {
-            console.log(img.width, img.height);
             if (!img.width || !img.height) {
               return;
             }

@@ -274,7 +274,10 @@ class GifPreview implements Stage {
 
     if (revert) {
       frameArray.sort((a, b) => b - a);
+    } else {
+      frameArray.sort((a, b) => a - b);
     }
+
     this._frameArray = frameArray;
     this.interval = interval;
     this.renderPreviewCallback = callback;
