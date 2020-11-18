@@ -50,6 +50,7 @@
     "@babel/runtime": "^7.10.2",
     "axios": "^0.20.0",
     "fabric": "^4.1.0",
+    "js-base64": "^3.6.0",
     "tailwindcss": "^1.4.6",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",

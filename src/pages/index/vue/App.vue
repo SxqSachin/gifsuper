@@ -539,6 +539,8 @@ import { Panel } from '../js/panel';
 import vSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css'
 
+import { checkOrigin } from '../../../js/auth'
+
 @Component({
   components: {
     'v-select': vSelect,
@@ -686,6 +688,8 @@ export default class extends Vue implements Toasted, Desk {
     window.fabric = fabric;
 
     window['app'] = this;
+
+    checkOrigin();
   }
 
   public mounted() {

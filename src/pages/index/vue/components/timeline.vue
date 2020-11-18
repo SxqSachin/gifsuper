@@ -188,7 +188,18 @@ export default class extends Vue implements Stage {
       fill: '#777777',
       lockMovementY: true,
       hasControls: false,
-    }).on('moving', ({target}) => {
+    }).on('moving', (arg) => {
+      let target = undefined;
+      if (arg.target) {
+        target = arg.target;
+      } else if ((arg?.transform as any)?.target) {
+        target = (arg?.transform as any)?.target;
+      }
+
+      if (!target) {
+        target = {left: 0};
+      }
+
       let left = target.left as number;
 
       if (left + dragBarWidth >= containerWidth) {
