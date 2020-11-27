@@ -1,0 +1,6065 @@
+<template>
+  <div :class="getAnimClass" :style="getStyle" v-if="!destroy">
+    <div class="content">
+      <!-- <ion-icon v-if="type === 'info'" class="icon color-info" name="information-circle-outline"></ion-icon>
+      <ion-icon v-if="type === 'success'" class="icon color-success" name="checkmark-circle-outline"></ion-icon>
+      <ion-icon v-if="type === 'warn'" class="icon color-warn" name="warning-outline"></ion-icon>
+      <ion-icon v-if="type === 'error'" class="icon color-error" name="close-circle-outline"></ion-icon> -->
+      <span class="msg">{{ msg }}</span>
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+
+import { Vue, Prop, Component } from 'vue-property-decorator';
+
+let count = 0;
+
+import { delay } from '@/js/utility';
+
+@Component({
+  components: {
+  },
+})
+export default class extends Vue {
+  public msg?: string = '';
+  public duration?: number = 3000;
+  public type?: string = 'INFO';
+
+  public destroy?: boolean = false;
+
+
+  public isEnter?: boolean = false;
+
+  public count: number = 0;
+
+  public async mounted() {
+    await delay(100);
+    this.isEnter = true;
+
+    this.count = count++;
+
+    // @ts-ignore
+    await delay(this.duration);
+    this.isEnter = false;
+
+    // @ts-ignore
+    await delay(1000);
+
+    this.destroy = true;
+    await this.$nextTick();
+    this.$destroy();
+  }
+
+  get getAnimClass(): object {
+    const cls: any = {
+      'msgbox-wrapper': true,
+      'msgbox-type--info': this.type === 'info',
+      'msgbox-type--success': this.type === 'success',
+      'msgbox-type--warn': this.type === 'warn',
+      'msgbox-type--error': this.type === 'error',
+     };
+
+    if (this.isEnter) {
+      cls.enter = true;
+    }
+
+    return cls;
+  }
+
+  get getStyle(): object {
+    const style: any = {
+      'z-index': (10000 + this.count),
+    };
+
+    return style;
+  }
+}
+
+</script>
+
+<style lang="scss" scoped>
+$box-width: 24em;
+$mobile-box-width: 80vw;
+
+$box-height: 3.5em;
+
+.msgbox-wrapper {
+  position: fixed;
+  top: 0;
+  left: calc(50% - #{$box-width / 2});
+
+  width: $box-width;
+  min-height: $box-height;
+
+  padding: 1em;
+
+  font-size: 18px;
+
+  background: var(--assets-bg);
+  border-radius: 4px;
+
+  transform: translateY(calc(#{-$box-height} - 1em));
+  transition: 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+
+  border: 1px solid transparent;
+  box-shadow: var(--shadow);
+
+  opacity: 0;
+
+  .content {
+    display: flex;
+    align-items: center;
+
+    height: 100%;
+
+    .icon {
+      font-size: 1.5em;
+      width: 32px;
+    }
+
+    .msg {
+      margin-left: 0.62em;
+      color: var(--secondary-text-color);
+    }
+  }
+
+  &.enter {
+    transform: translateY(calc(1.5em)) scale(0.9) !important;
+    z-index: 9999 !important;
+
+    box-shadow: none;
+
+    opacity: 1;
+  }
+
+  &:last-of-type {
+    &.enter {
+      transform: translateY(calc(1.5em)) scale(1) !important;
+
+      box-shadow: var(--shadow);
+    }
+
+    z-index: 100000 !important;
+  }
+
+  &.msgbox-type--info {
+    border-color: var(--color-info);
+
+    .icon {
+      color: var(--color-info)
+    }
+  }
+  &.msgbox-type--success {
+    border-color: var(--color-success);
+
+    .icon {
+      color: var(--color-success);
+    }
+  }
+  &.msgbox-type--warn {
+    border-color: var(--color-warn);
+
+    .icon {
+      color: var(--color-warn);
+    }
+  }
+  &.msgbox-type--error {
+    border-color: var(--color-error);
+
+    .icon {
+      color: var(--color-error);
+    }
+  }
+
+  @media screen and (max-width: 767px) {
+    left: calc(50% - #{$mobile-box-width / 2});
+    width: $mobile-box-width;
+  }
+}
+
+</style>
+<template>
+  <div class="s-select_wrapper">
+    <select
+      class="s-select"
+      :placeholder="placeholder"
+      :value="value"
+      @change="emitChange($event.target.value)"
+    >
+    <slot></slot>
+    </select>
+  </div>
+</template>
+
+<script lang="ts">
+import { Prop, Vue, Component } from 'vue-property-decorator';
+
+@Component({})
+export default class SSelect extends Vue {
+  @Prop({ default: true })
+  public full!: boolean;
+
+  @Prop({ default: '请输入' })
+  public placeholder!: boolean;
+
+  @Prop({ default: '' })
+  public value!: string;
+
+  public val: string = '';
+
+  public mounted() {
+    this.val = this.value;
+  }
+
+  public emitChange(value: string) {
+    this.val = value;
+    this.$emit('change', value);
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.s-select_wrapper {
+  display: inline-block;
+
+  vertical-align: top;
+
+  border-bottom: 1px solid $divide-color;
+
+  width: 100%;
+
+  .s-select {
+    display: inline-block;
+
+    height: 2rem;
+    width: 100%;
+
+    line-height: 2rem;
+    size: 20rem;
+
+    background: white;
+    color: var(--content-text-color);
+
+    border: 0;
+
+    &::placeholder {
+      color: $secondary-text-color;
+    }
+
+    &:focus {
+      border: 0;
+    }
+  }
+}
+</style><template>
+  <div class="s-modal" :class="{'s-modal--show': show}">
+    <div class="s-modal__wrapper" @click="onClick">
+      <div class="s-modal__shade" ref="shade"></div>
+      <div class="s-modal__content">
+        <slot></slot>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import { Prop, Vue, Component } from 'vue-property-decorator';
+
+@Component({})
+export default class SModal extends Vue {
+  @Prop({ default: false })
+  public show!: boolean;
+
+  private innerShow: boolean = false;
+
+  public onClick(e: MouseEvent) {
+    // if (e.target === this.$refs.shade) {
+    // }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.s-modal {
+  pointer-events: none;
+  position: fixed;
+  overflow: hidden;
+
+  top: 0;
+
+  width: 100vw;
+  height: 100vh;
+
+  &.s-modal--show {
+    pointer-events: initial;
+
+    .s-modal__wrapper {
+      transition: transform 250ms, opacity 350ms;
+
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  .s-modal__wrapper {
+    z-index: 10000;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+
+    transition: transform 1000ms, opacity 250ms;
+    opacity: 0;
+    transform: scale(1.2);
+
+    @media screen and (max-width: $xs) {
+    }
+
+    .s-modal__shade {
+      position: absolute;
+
+      z-index: 1;
+
+      left: 0;
+      top: 0;
+
+      width: 100vw;
+      height: 100vh;
+
+      background: rgba(0, 0, 0, 0.38);
+
+      // filter: blur(8px);
+    }
+
+    .s-modal__content {
+      z-index: 2;
+      position: absolute;
+
+      top: 12vh;
+      right: 10vw;
+      left: 10vw;
+
+      border-radius: 4px;
+
+      max-height: 100vh - 12vh * 2;
+
+      @media screen and (max-width: $xs) {
+        background: white;
+      }
+    }
+  }
+}
+</style><template>
+  <div class="s-input-wrapper border-b border-gray-300" :class="{full: full, 'no-divide-line': ((noDivideLine && noBorder))}">
+    <input
+      class="s-input"
+      title="title"
+      :type="type"
+      :placeholder="placeholder"
+      :value="value"
+      :autofocus="autofocus"
+      @input="emitChange($event.target.value)"
+      @focus="emitEvent('focus')"
+      @blur="emitEvent('blur')"
+    />
+  </div>
+</template>
+
+<script lang="ts">
+import { Prop, Vue, Component } from 'vue-property-decorator';
+
+@Component({})
+export default class SInput extends Vue {
+  @Prop({ default: true })
+  public full!: boolean;
+
+  @Prop({ default: '请输入' })
+  public placeholder!: boolean;
+
+  @Prop({ default: false })
+  public noBorder!: boolean;
+
+  @Prop({ default: false })
+  public autofocus!: boolean;
+
+  @Prop({ default: '' })
+  public value!: string | number;
+
+  @Prop({ default: 'text' })
+  public type!: string | number;
+
+  public noDivideLine: boolean = false;
+  public val: string | number = '';
+
+  public mounted() {
+    this.val = this.value;
+  }
+
+  public emitChange(value: string) {
+    this.noDivideLine = !!value;
+    this.val = value;
+    this.$emit('input', value);
+  }
+  public emitEvent(event: string) {
+    this.$emit(event);
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.s-input-wrapper {
+  display: inline-block;
+
+  vertical-align: top;
+
+  // border-bottom: 1px solid var(--border-color-light);
+
+  color: var(--content-text-color);
+
+  &.full {
+    display: block;
+
+    .s-input {
+      width: 100%;
+    }
+  }
+
+  &.no-divide-line {
+    border-bottom: 0;
+  }
+
+  .s-input {
+    display: inline-block;
+
+    height: 2rem;
+
+    line-height: 2rem;
+    size: 20rem;
+
+    background: transparent;
+
+    border: 0;
+
+    &::placeholder {
+      color: var(--neutral-text-color);
+    }
+
+    &:focus {
+      border: 0;
+    }
+  }
+}
+</style><template>
+  <div class="upload-wrapper flex flex-col items-center justify-center" :style="style">
+
+    <input class="hidden" ref="file" :multiple="multiple" type="file" :accept="accept" @change="onUpload"/>
+
+    <div v-if="drag" class="drop-box"
+      @click="onChooseFile"
+      @drop.stop.prevent="onDropFile"
+      @dragenter.prevent
+      @dragover.prevent
+      >
+      <div class="icon">
+      </div>
+      <div class="text">
+        {{ placeholderDrop }}
+      </div>
+    </div>
+
+    <s-btn v-if="!drag" full @click="onChooseFile" :disabled="disabled"><slot>{{ placeholder }}</slot></s-btn>
+
+  </div>
+
+</template>
+
+<script lang="ts">
+import {Component, Vue, Prop} from 'vue-property-decorator';
+
+import sBtn from './s-btn.vue';
+
+@Component({
+  components: {
+    's-btn': sBtn,
+  },
+})
+export default class SUpload extends Vue {
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  public multiple?: boolean;
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  public disabled?: boolean;
+
+  @Prop({
+    type: String,
+    default: '*',
+  })
+  public accept?: string;
+
+  @Prop({
+    type: String,
+    default: '上传文件',
+  })
+  public placeholder?: string;
+
+  @Prop({
+    type: String,
+    default: '点击或拖动上传文件',
+  })
+  public placeholderDrop?: string;
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  public drag?: boolean;
+
+  @Prop({
+    type: String,
+    default: '#454545',
+  })
+  public hoverColor?: string;
+
+  @Prop({
+    type: Function,
+    default: () => Number,
+  })
+  public beforeUpload?: (files: FileList) => boolean;
+
+  public onChooseFile(e: MouseEvent) {
+    const fileInput: HTMLElement = this.$refs.file as HTMLElement;
+
+    fileInput.click();
+  }
+
+  public onDropFile(e: DragEvent) {
+    e.preventDefault();
+
+    const dataTransfer: DataTransfer = e.dataTransfer as DataTransfer;
+
+    const files: FileList = dataTransfer.files;
+
+    this.upload(files);
+  }
+
+  // 注意这是附加在change事件上的 也就是说 如果前后两次上传的文件一样的话，那么第二次上传将不会触发这个事件
+  public onUpload(e: Event) {
+    const fileInput: HTMLInputElement = this.$refs.file as HTMLInputElement;
+
+    const files: FileList | null = fileInput.files;
+
+    if (!files) {
+      return;
+    }
+
+    this.upload(files);
+
+    if (this.$refs['file']) {
+      (this.$refs['file'] as HTMLInputElement).value = '';
+    }
+  }
+
+  public upload(files: FileList) {
+    if (!files || !files.length) {
+      return;
+    }
+
+    if (this.beforeUpload && typeof this.beforeUpload === 'function') {
+      this.beforeUpload(files);
+    }
+  }
+
+  public get style(): object {
+    return {
+      '--color': '#909090',
+      '--color-hover': this.hoverColor,
+    };
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+
+.upload-wrapper {
+
+  .drop-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+    width: 100%;
+    height: 100%;
+
+    border: 2px dashed var(--color);
+    border-radius: 8px;
+
+    transition: 0.25s ease-in;
+
+    cursor: pointer;
+
+    .icon,
+    .text {
+      color: var(--color);
+
+      transition: 0.2s ease-in;
+    }
+    .icon {
+      color: var(--color);
+    }
+    .text {
+      color: var(--color);
+      font-size: 20px;
+    }
+  }
+
+  &:hover {
+    .drop-box {
+      border-color: var(--color-hover);
+
+      .icon,
+      .text {
+        color: var(--color-hover);
+      }
+    }
+  }
+}
+
+</style><template>
+  <div class="whitespace-no-wrap s-btn-wrapper px-4 py-1" :class="getWrapperClass">
+    <button :class="getBtnClass" @click="onClick" :disabled="disabled || loading">
+      <slot v-if="!loading"></slot>
+    </button>
+  </div>
+</template>
+
+<script lang="ts">
+import { Prop, Vue, Component } from 'vue-property-decorator';
+
+export type BTN_TYPE = 'info' | 'success' | 'warn' | 'error' | 'disabled' | 'ghost';
+
+@Component({
+  components: {
+  },
+})
+export default class SBtn extends Vue {
+  @Prop({ type: Boolean, default: false })
+  public full!: boolean;
+
+  @Prop({ type: Boolean, default: false })
+  public disabled!: boolean;
+
+  @Prop({ type: String, default: 'info' })
+  public type!: BTN_TYPE;
+
+  @Prop({ type: Boolean, default: false })
+  public loading!: false;
+
+  public onClick() {
+    if (this.disabled) {
+      return;
+    }
+
+    this.$emit('click');
+  }
+
+  get getWrapperClass(): { [key: string]: boolean } {
+    const res = {
+      's-btn-wrapper': true,
+      'full': this.full,
+      'disabled': this.disabled,
+      ['type--' + this.type]: true,
+    };
+
+    return res;
+  }
+
+  get getBtnClass(): { [key: string]: boolean } {
+    const res = {
+      's-btn': true,
+    };
+
+    return res;
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.s-btn-wrapper {
+  height: 2.18rem;
+  // width: 12em;
+
+  border: 0;
+  border-radius: 2pt;
+
+  color: white;
+  background-color: red;
+
+  .s-btn {
+    width: 100%;
+    height: 100%;
+
+    border: 0;
+    background-color: transparent;
+  }
+
+  &.full {
+    width: 100%;
+  }
+
+  &.disabled, & [disabled] {
+    cursor: not-allowed;
+
+    .s-btn {
+      color: var(--r-seconday-text-color);
+    }
+  }
+
+  &.type--info {
+    background-color: var(--color-info);
+    &.disabled{
+      background-color: var(--color-info--disabled);
+    }
+    .s-btn {
+      color: var(--r-primary-text-color);
+    }
+  }
+  &.type--success {
+    background-color: var(--color-success);
+    &.disabled{
+      background-color: var(--color-success--disabled);
+    }
+    .s-btn {
+      color: var(--r-primary-text-color);
+    }
+  }
+  &.type--warn {
+    background-color: var(--color-warn);
+    &.disabled{
+      background-color: var(--color-warn--disabled);
+    }
+    .s-btn {
+      color: var(--r-primary-text-color);
+    }
+  }
+  &.type--error {
+    background-color: var(--color-error);
+    &.disabled{
+      background-color: var(--color-error--disabled);
+    }
+    .s-btn {
+      color: var(--r-primary-text-color);
+    }
+  }
+  &.type--disabled {
+    background-color: var(--color-disabled);
+    &.disabled{
+      background-color: var(--color-disabled--disabled);
+    }
+    .s-btn {
+      color: var(--r-primary-text-color);
+    }
+  }
+  &.type--ghost {
+    background-color: var(--color-ghost);
+    border: 1px solid var(--border-color-mid);
+
+    .s-btn {
+      color: var(--primary-text-color);
+    }
+  }
+}
+</style>import Vue, { VNode } from 'vue';
+
+declare global {
+  namespace JSX {
+    // tslint:disable no-empty-interface
+    interface Element extends VNode {}
+    // tslint:disable no-empty-interface
+    interface ElementClass extends Vue {}
+    interface IntrinsicElements {
+      [elem: string]: any;
+    }
+  }
+}
+.theme {
+  --primary-bg: #fff;
+  --secondary-bg: #fafafa;
+  --third-bg: #f4f4f4;
+  --body-bg: var(--secondary-bg);
+
+  --assets-bg: #fff;
+
+  --r-primary-bg: #141414;
+  --r-secondary-bg: #333;
+  --r-third-bg: #555;
+  --r-assets-bg: #141414;
+
+  --primary-text-color: #2c3e50;
+  --secondary-text-color: #555;
+  --neutral-text-color: #909090;
+  --content-text-color: #2c3e50;
+
+  --r-primary-text-color: #eee;
+  --r-secondary-text-color: #aaa;
+  --r-neutral-text-color: #909090;
+  --r-content-text-color: #ccc;
+
+  --link-color: #286ea4;
+
+  --border-color: #777;
+  --border-color-light: #f0f0f0;
+  --border-color-mid: #777;
+}
+.theme {
+  --primary-bg: #fff;
+  --secondary-bg: #f2f2f2;
+  --third-bg: #f4f4f4;
+  --body-bg: var(--secondary-bg);
+
+  --assets-bg: #fff;
+
+  --r-primary-bg: #141414;
+  --r-secondary-bg: #333;
+  --r-third-bg: #555;
+  --r-assets-bg: #141414;
+
+  --primary-text-color: #2c3e50;
+  --secondary-text-color: #555;
+  --neutral-text-color: #909090;
+  --content-text-color: #2c3e50;
+
+  --r-primary-text-color: #eee;
+  --r-secondary-text-color: #aaa;
+  --r-neutral-text-color: #909090;
+  --r-content-text-color: #ccc;
+
+  --link-color: #286ea4;
+
+  --border-color: #777;
+  --border-color-light: #f0f0f0;
+  --border-color-mid: #777;
+}.theme {
+  --primary-bg: #141414;
+  --secondary-bg: #333;
+  --third-bg: #555;
+  --body-bg: var(--secondary-bg);
+
+  --assets-bg: #404040;
+
+  --r-primary-bg: #fff;
+  --r-secondary-bg: #fafafa;
+  --r-third-bg: #f4f4f4;
+  --r-assets-bg: #fff;
+
+  --primary-text-color: #eee;
+  --secondary-text-color: #aaa;
+  --neutral-text-color: #909090;
+  --content-text-color: #ccc;
+
+  --r-primary-text-color: #2c3e50;
+  --r-secondary-text-color: #555;
+  --r-neutral-text-color: #909090;
+  --r-content-text-color: #2c3e50;
+
+  --link-color: #69aee3;
+
+  --border-color: #777;
+  --border-color-light: #f0f0f0;
+  --border-color-mid: #777;
+}body, h1, h2, h3, h4, h5, h6, hr, p, blockquote, /* structural elements 结构元素 */
+dl, dt, dd, ul, ol, li, /* list elements 列表元素 */
+pre, /* text formatting elements 文本格式元素 */
+fieldset, lengend, button, input, textarea, /* form elements 表单元素 */
+th, td {
+  /* table elements 表格元素 */
+  margin: 0;
+  padding: 0;
+}
+body,
+body * {
+  box-sizing: border-box;
+}
+
+input {
+  border: none;
+  -moz-appearance: none;
+  -webkit-appearance: none; /*解决ios上按钮的圆角问题*/
+  border-radius: 0; /*解决ios上输入框圆角问题*/
+  outline: medium; /*去掉鼠标点击的默认黄色边框*/
+  background-color: transparent;
+  font-size: 15px;
+}
+
+h1 {
+  font-size: 2em;
+  font-weight: bold;
+}
+h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+h3 {
+  font-size: 1.17em;
+  font-weight: bold;
+}
+
+textarea:focus, input:focus {
+  outline: 0;
+}
+
+a {
+  color: var(--link-color);
+}
+
+button:focus {
+  outline: 0;
+}@import './color.scss';
+
+$xs: 767px;
+$sm: 768px;
+$md: 992px;
+$lg: 1200px;
+
+$sm-border-radius: 4px;
+$border-radius: 8px;
+
+$grey: #dfdfdf;
+$grey-2: #616161;
+$grey-3: #555555;
+$grey-4: #454545;
+
+$border: 1px solid $grey;
+$def-border: 1px solid $grey;
+$shadow: 0px 8px 16px -8px rgba(0, 0, 0, 0.1);
+
+$xs-spacing: 4px;
+$sm-spacing: 8px;
+$md-spacing: 16px;
+$lm-spacing: 24px;
+$lg-spacing: 32px;
+$xl-spacing: 42px;
+
+$ft-size-16: 16px;
+$ft-size-18: 18px;
+$ft-size-20: 20px;
+$ft-size-22: 22px;
+$ft-size-24: 24px;
+
+$ft-size-small: 14px;
+$ft-size-normal: $ft-size-16;
+$ft-size-large: $ft-size-20;
+
+$ft-size-xlarge: 24px;
+$ft-size-xxlarge: 28px;
+
+.ft-size-16 {
+  font-size: 16px;
+}
+.ft-size-18 {
+  font-size: 18px;
+}
+.ft-size-20 {
+  font-size: 20px;
+}
+.ft-size-24 {
+  font-size: 24px;
+}
+
+.color-grey, .color-grey-1 {
+  color: $grey;
+}
+.color-grey-2 {
+  color: $grey-2;
+}
+.color-grey-3 {
+  color: $grey-3;
+}
+
+.bg-white {
+  background: $white;
+}
+
+.def-border-color {
+  border-color: $border-color;
+}
+
+.transition-time-func {
+  transition-duration: 0.38s;
+
+  transition-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+@mixin card {
+  box-shadow: 0px 8px 16px -8px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+@media screen and (max-width: $xs) {
+  [xs-hidden] {
+    display: none;
+  }
+  .xs-hidden {
+    display: none;
+  }
+  .xs-hidden-i {
+    display: none !important;
+  }
+}
+
+:root {
+  --shadow: 0px 8px 16px -8px rgba(0, 0, 0, 0.1);
+}
+
+body {
+  background-color: var(--body-bg);
+  color: var(--content-text-color);
+}
+
+.shadow-diy {
+  box-shadow: var(--shadow);
+}
+
+.bg-primary {
+  background-color: var(--primary-bg);
+}
+.bg-body {
+  background-color: var(--body-bg);
+}
+.bg-secondary {
+  background-color: var(--secondary-bg);
+}
+.bg-third {
+  background-color: var(--third-bg);
+}
+.bg-assets {
+  background-color: var(--assets-bg);
+}
+.primary-text-color,
+.text-color-primary {
+  color: var(--primary-text-color);
+}
+.secondary-text-color,
+.text-color-secondary {
+  color: var(--secondary-text-color);
+}
+.content-text-color,
+.text-color-content {
+  color: var(--content-text-color);
+}
+.neutral-text-color,
+.text-color-neutral {
+  color: var(--neutral-text-color);
+}
+.r-text-color-primary {
+  color: var(--r-primary-text-color);
+}
+.r-text-color-secondary {
+  color: var(--r-secondary-text-color);
+}
+.r-text-color-content {
+  color: var(--r-content-text-color);
+}
+.r-text-color-neutral {
+  color: var(--r-neutral-text-color);
+}
+
+.border-color-light {
+  border-color: var(--border-color-light);
+}
+
+.border-color-mid {
+  border-color: var(--border-color-mid);
+}
+
+.border-color-2 {
+  border-color: var(--border-color-mid);
+}
+
+.border-color-info {
+  border-color: var(--color-info);
+}
+
+.z-100 {
+  z-index: 100;
+}
+.z-200 {
+  z-index: 200;
+}
+
+.theme--dark {
+  --primary-bg: #141414;
+  --secondary-bg: #333;
+  --third-bg: #555;
+  --body-bg: var(--secondary-bg);
+
+  --assets-bg: #404040;
+
+  --r-primary-bg: #fff;
+  --r-secondary-bg: #fafafa;
+  --r-third-bg: #f4f4f4;
+  --r-assets-bg: #fff;
+
+  --primary-text-color: #eee;
+  --secondary-text-color: #aaa;
+  --neutral-text-color: #909090;
+  --content-text-color: #ccc;
+
+  --r-primary-text-color: #2c3e50;
+  --r-secondary-text-color: #555;
+  --r-neutral-text-color: #909090;
+  --r-content-text-color: #2c3e50;
+
+  --link-color: #69aee3;
+
+  --border-color: #777;
+  --border-color-light: #f0f0f0;
+  --border-color-mid: #777;
+}
+
+#loading-ph + .loading-place-holder-hhh {
+  opacity: 0;
+  height: 0;
+}
+.loading-place-holder-hhh {
+  display: none;
+}$light-color: #f6f6f6;
+$light-color-2: #f2f2f2;
+
+$divide-color: #e0e0e0;
+$border-color: #e0e0e0;
+$border-color-2: #dcdee2;
+
+$white: #fff;
+$white-1: #fafafa;
+
+$black: #000000;
+$grey: #dfdfdf;
+$grey-2: #616161;
+$grey-3: #555555;
+$grey-4: #454545;
+
+$color-info: #8CBCFF;
+$color-success: #62da66;
+$color-warn: #FFD29A;
+$color-error: #EB796E;
+$color-disabled: #dfdfdf;
+$color-ghost: transparent;
+
+$secondary-text-color: #909090;
+
+$text-color: #2c3e50;
+$text-color-1: #434343;
+$text-color-2: #999;
+$text-color-3: #ccc;
+
+$text-color-grey: $grey-2;
+
+:root {
+  --color-info: rgb(102, 166, 255);
+  --color-success: #62da66;
+  --color-warn: #FFD29A;
+  --color-error: #EB796E;
+  --color-disabled: #dfdfdf;
+  --color-ghost: transparent;
+
+  --color-info--500: rgba(102, 166, 255, 0.62);
+  --color-success--500: #62da669E;
+  --color-warn--500: #FFD29A9E;
+  --color-error--500: #EB796E9E;
+  --color-disabled--500: #dfdfdf9E;
+  --color-ghost: transparent;
+
+  --color-info--disabled: #8CBCFF9E;
+  --color-success--disabled: #62da669E;
+  --color-warn--disabled: #FFD29A9E;
+  --color-error--disabled: #EB796E9E;
+  --color-disabled--disabled: #dfdfdf9E;
+}
+
+.color-info { color: var(--color-info); }
+.color-success { color: var(--color-success); }
+.color-warn { color: var(--color-warn); }
+.color-error { color: var(--color-error); }
+.color-disabled { color: var(--color-disabled); }
+.color-ghost { color: var(--color-ghost); }
+
+.color-info--disabled { color: var(--color-info--500); }
+.color-success--disabled { color: var(--color-success--500); }
+.color-warn--disabled { color: var(--color-warn--500); }
+.color-error--disabled { color: var(--color-error--500); }
+.color-disabled--disabled { color: var(--color-disabled--500); }
+.color-ghost { color: var(--color-ghost); }
+@tailwind base;
+
+@tailwind components;
+
+@tailwind utilities;
+// import Vue, { VNode } from 'vue';
+
+// declare module "*.vue" {
+//     import Vue from "vue";
+//     export default Vue;
+// }const minus2 = (str: string) => {
+  return str.substr(-2);
+};
+
+export function timestampToYMD(timestamp: number) {
+  const dateObj = new Date(timestamp - 0);
+
+  const year = dateObj.getFullYear();
+  const month = '0' + (dateObj.getMonth() + 1);
+  const date = '0' + dateObj.getDate();
+
+  return `${year}-${month.substr(-2)}-${date.substr(-2)}`;
+}
+
+export function normalizeNumber(val: number): string {
+  let valStr = val.toString();
+
+  if (valStr.indexOf('.') < 0) {
+    valStr += '.00';
+  }
+
+  const valPart = valStr.split('.');
+
+  const integerPart = valPart[0];
+  const decimalPart = valPart[1];
+
+  const res = integerPart.replace(/(\d)(?=(?:\d{3})+$)/g, '$1,') + '.' + decimalPart;
+  console.log(valPart, res);
+
+  return res;
+}
+
+export function timestampToString(timestamp: number) {
+  const dateObj = new Date(timestamp - 0);
+
+  const year = dateObj.getFullYear();
+  const month = minus2('0' + (dateObj.getMonth() + 1));
+  const date = minus2('0' + dateObj.getDate());
+  const hours = minus2('0' + dateObj.getHours());
+  const minutes = minus2('0' + dateObj.getMinutes());
+  const seconds = minus2('0' + dateObj.getSeconds());
+
+  return `${year}-${month}-${date} ${hours}:${minutes}:${seconds}`;
+}
+
+export function parseJSON(jsonString: string, def: any = {}): any {
+  let json: any = {};
+  try {
+    json = JSON.parse(jsonString);
+  } catch {
+    json = def;
+  }
+
+  return json;
+}
+
+export function throttle(func: () => void, delay: number) {
+  let timer: NodeJS.Timeout | null = null;
+
+  let startTime: number = Date.now();
+
+  return function() {
+    const curTime: number = Date.now();
+    const remaining = delay - (curTime - startTime);
+
+    // @ts-ignore
+    const context: any = this;
+    const args = arguments;
+
+    if (timer) {
+      clearTimeout(timer);
+    }
+
+    if (remaining <= 0) {
+      // @ts-ignore
+      func.apply(context, args);
+      startTime = Date.now();
+    } else {
+      timer = setTimeout(func, remaining);
+    }
+  };
+}
+
+export function delay(wait = 0) {
+  return new Promise((resolve, reject) => {
+    setTimeout(resolve, wait);
+  });
+}/*
+  stackoverflow: questions/35940290/how-to-convert-base64-string-to-javascript-file-object-like-as-from-file-input-f
+*/
+
+export interface GifFrame {
+  index: number;
+  imgFileSrc: string;
+  width: number;
+  height: number;
+}
+export type GifFrameList = GifFrame[];
+
+async function urlToFile(url: string, filename: string, mimeType: string) {
+  const response = await fetch(url);
+  const arrayBuffer = await response.arrayBuffer();
+
+  return new File([arrayBuffer], filename, { type: mimeType });
+}
+
+function dataUrlToFile(dataurl: string, filename: string) {
+  const arr = dataurl.split(',');
+  const mime = (arr[0].match(/:(.*?);/) as RegExpMatchArray)[1];
+  const bstr = atob(arr[1]);
+
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+
+  return new File([u8arr], filename, { type: mime });
+}
+
+function canvasToBlob(canvas: HTMLCanvasElement) {
+  const promise: Promise<Blob> = new Promise(resolve => {
+    canvas.toBlob(blob => {
+      resolve(blob as Blob);
+    });
+  });
+
+  return promise;
+}
+
+async function convertCanvasToImage(canvas: HTMLCanvasElement, filename: string) {
+  const arrayBuffer = await canvasToBlob(canvas);
+  return new File([arrayBuffer], filename, {type: 'image/jpeg'});
+
+  // return await dataUrlToFile(canvas.toDataURL('image/png'), filename);
+  // return await urlToFile(canvas.toDataURL('image/jpeg', 0.9), filename, 'image/jpeg');
+}
+
+async function parseSrcGif(gifFile: File, onLoad?: (cur?: number, total?: number) => void): Promise<GifFrameList> {
+  const srcgifDOM = document.querySelector('#srcgif') as HTMLCanvasElement;
+
+  const gifImg = document.createElement('img');
+  gifImg.setAttribute('rel:animated_src', URL.createObjectURL(gifFile));
+  gifImg.setAttribute('rel:auto_play', '0');
+  srcgifDOM.appendChild(gifImg);
+
+  // @ts-ignore
+  const superGif = new SuperGif({ 
+    gif: gifImg,
+    on_load: onLoad,
+  });
+
+  // @ts-ignore
+  const frameList: GifFrameList = [];
+
+  const promiseList: Promise<GifFrame>[] = [];
+
+  const promise: Promise<GifFrameList> = new Promise((resolve, reject) => {
+    superGif.load(async () => {
+      for (let frame = 1; frame <= superGif.get_length(); frame++) {
+        // 遍历gif实例的每一帧
+        superGif.move_to(frame);
+
+        // 将每一帧的canvas转换成file对象
+        const curFile = await convertCanvasToImage(superGif.get_canvas(), gifFile.name.replace('.gif', `-${frame}`));
+        const curFileUrl = URL.createObjectURL(curFile);
+
+        const imgFile = new Image();
+        imgFile.src = curFileUrl;
+
+        promiseList.push(new Promise(resolve => {
+          imgFile.onload = () => {
+            const gifFrame: GifFrame = {
+              index: frame - 1,
+              imgFileSrc: imgFile.src,
+              width: imgFile.width,
+              height: imgFile.height,
+            };
+            resolve(gifFrame);
+          };
+        }));
+      }
+
+      const gifFrameList = await Promise.all(promiseList);
+
+      gifFrameList.forEach(item => {
+        frameList.push(item);
+      })
+
+      // superGif2.play();
+
+      resolve(frameList);
+    });
+  });
+
+  return promise;
+}
+
+class GifGenerator {
+  private gif: any;
+
+  private bodyDOM: HTMLElement;
+
+  private df: DocumentFragment;
+
+  private pall: Array<Promise<HTMLImageElement>>;
+
+  constructor(options?: {[key: string]: any}) {
+
+    const opts = {
+      worker: 2,
+      quality: 10,
+      workerScript: '/static/js/gif.worker.js',
+      ...options,
+    };
+
+    // @ts-ignore
+    this.gif = new GIF(opts);
+
+    this.bodyDOM = document.body;
+
+    this.df = document.createDocumentFragment();
+
+    this.pall = [];
+  }
+
+  public init() {
+    // @ts-ignore
+    this.gif = new GIF({
+      worker: 2,
+      quality: 10,
+      workerScript: '/static/js/gif.worker.js',
+    });
+
+    this.bodyDOM = document.body;
+
+    this.df = document.createDocumentFragment();
+
+    this.pall = [];
+  }
+
+  public async render(progressCallBack?: (progress: number) => void): Promise<Blob> {
+    this.bodyDOM.append(this.df);
+
+    await Promise.all(this.pall);
+
+    this.gif.render();
+
+    if (typeof progressCallBack === 'function') {
+      this.gif.on('progress', progressCallBack);
+    }
+
+    const promise: Promise<Blob> = new Promise(resolve => {
+      this.gif.on('finished', (blob: Blob) => {
+        resolve(blob);
+
+        this.init();
+      });
+    });
+
+    return promise;
+  }
+
+  public async renderToElem(selector: string, progressCallBack?: (progress: number) => void): Promise<void>;
+  public async renderToElem(elem: HTMLElement | string, progressCallBack?: (progress: number) => void): Promise<void> {
+    const dtsDOM = (elem instanceof HTMLElement) ? elem : document.querySelector(elem);
+
+    if (!dtsDOM) {
+      console.error('Gif.js: renderToElem dtsElement not found');
+      return;
+    }
+
+    const blob = await this.render(progressCallBack);
+    const reader = new FileReader();
+
+    dtsDOM.innerHTML = '';
+
+    reader.onload = (e: any) => {
+      const dataUrl = e!.target!.result;
+
+      const dtsGif = new Image();
+      dtsGif.src = dataUrl;
+
+      dtsDOM.appendChild(dtsGif);
+    };
+
+    reader.readAsDataURL(blob);
+
+    return Promise.resolve();
+  }
+
+  public addDataUrl(dataUrls: string[] | string, options?: any): GifGenerator {
+    if (Array.isArray(dataUrls)) {
+      dataUrls.forEach(dataUrl => {
+        this._addDataUrl(dataUrl, options);
+      });
+    } else {
+      this._addDataUrl(dataUrls, options);
+    }
+
+    return this;
+  }
+
+  public addImgElems(imgElems: HTMLImageElement, options?: any): GifGenerator;
+  public addImgElems(imgElems: HTMLImageElement[] | HTMLImageElement, options?: any): GifGenerator {
+    if (Array.isArray(imgElems)) {
+      imgElems.forEach(imgElem => {
+        this._addImgElem(imgElem, options);
+      });
+    } else {
+      this._addImgElem(imgElems, options);
+    }
+
+    return this;
+  }
+
+  private _addDataUrl(dataUrl: string, options?: any) {
+    const img = new Image();
+    img.src = dataUrl;
+
+    this._addImgElem(img, options);
+  }
+
+  private _addImgElem(imgElem: HTMLImageElement, options?: any) {
+    imgElem.style.position = 'fixed';
+    imgElem.style.opacity = '0';
+
+    this.df.append(imgElem);
+
+    const promise: Promise<HTMLImageElement> = new Promise(resolve => {
+      // 直到_df被挂载到页面上时，onload才会被触发
+      imgElem.onload = () => {
+        this.gif.addFrame(imgElem, options);
+
+        imgElem.remove();
+
+        resolve(imgElem);
+      };
+    });
+
+    this.pall.push(promise);
+  }
+}
+
+/**
+ * 返回一个图片文件的blob url路径，以及它的宽高
+ */
+function getFileInfo(file: File): Promise<GifFrame> {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const data = {
+        index: 0,
+        imgFileSrc: img.src,
+        width: img.width,
+        height: img.height,
+      };
+      img.remove();
+      resolve(data);
+    }
+    img.src = url;
+  });
+}
+
+export { dataUrlToFile, parseSrcGif, GifGenerator, getFileInfo }
+import messageComp from '@/components/msg/message-box.vue';
+import Vue from 'vue';
+
+const MessageBox = Vue.extend(messageComp);
+
+export interface MessageBoxOptions {
+  duration?: number;
+  type?: 'info' | 'success' | 'warn' | 'error';
+}
+
+const defOptions: MessageBoxOptions = {
+  duration: 3000,
+  type: 'info',
+};
+
+function message(msg: string, options?: MessageBoxOptions): void {
+  options = Object.assign(defOptions, options);
+
+  const msgbox = new MessageBox({
+    data: {
+      msg,
+      duration: options.duration,
+      type: options.type,
+    },
+  });
+
+  const vm = msgbox.$mount();
+
+  document.body.appendChild(vm.$el);
+}
+
+
+export default message;
+import { Base64 } from 'js-base64';
+
+const ca = Base64.atob;
+
+export function checkOrigin() {
+  const origins = 'aHR0cHM6Ly93d3cuZ2lmc3VwZXIuY29tbc27c69aHR0cHM6Ly9naWZzdXBlci5jb20=bc27c69aHR0cDovL2xvY2FsaG9zdDo4MDgy';
+  const target = 'YUhSMGNITTZMeTluYVdaemRYQmxjaTVqYjIwPQ==';
+  try {
+    if (!origins.split('bc27c69').map(arg => ca(arg)).includes(location.origin)) {
+      location.href = ca(target);
+    }
+  } catch {
+    location.href = ca(ca(target));
+  }
+}
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta charset="utf-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="GifSuper,Gif在线制作网站,一个帮助你快速编辑GIF的在线工具网站,在线即可编辑GIF动态图与动态表情包。"/>
+  <meta name="keywords" content="GIF,GIF在线制作,GIF表情在线编辑,GIF编辑,GIF编辑文字,在线编辑动态图,动态表情编辑"/>
+
+  <meta name="author" content="SxqSachin" />
+  <meta name="robots" content="index,follow" />
+  <meta name="google" content="index,follow" />
+  <meta name="googlebot" content="index,follow" />
+  <meta name="verify" content="index,follow" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+
+  <title>Gif Super，一个帮助您快速编辑GIF的在线工具网站</title>
+
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
+
+  <style>
+    @import url('/static/css/theme-light.css') (prefers-color-scheme: light), (prefers-color-scheme: no-preference);
+    @import url('/static/css/theme-dark.css') (prefers-color-scheme: dark);
+  </style>
+
+  <style>
+    header { height: 48px; }
+    main { min-height: calc(100vh - 92px - 48px); }
+    img.logo { width: 32px; height: 32px; }
+    footer { min-height: 92px; }
+    .loading-calm-cat {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background-position: center;
+      background-size: 320px;
+      background-repeat: no-repeat;
+      background-image: url("https://static.sxqsachin.com/imgs/gifsuper_loading.gif");
+    }
+  </style>
+
+  <script>
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?0d54d1ca6bc93cf45d41a523003a2bdf";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+  </script>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-168829362-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-168829362-1');
+  </script>
+
+</head>
+
+<body class="flex flex-col min-h-screen theme">
+  <header class="text-center flex items-center justify-center lg:justify-between shadow px-8 border-b border-gray-400 bg-primary">
+    <div class="flex items-center">
+      <img class="logo" src="/static/imgs/logo.png" alt="Gif Super Logo"/>
+      <a href="/" class="ml-2 cursor-pointer text-color-primary"> Gif Super </a>
+      <sup class="text-red-300 ml-1"> Beta </sup>
+      <a href="/" class="hidden lg:block ml-8 text-color-primary"> 帮助您在线操作GIF文件 </a>
+    </div>
+
+    <div class="flex">
+      <a href="javascript:void(0);" class="hidden lg:block ml-8 cursor-pointer text-red-400" onclick="add2Favorite()" rel="sidebar"> 收藏本站 </a>
+      <a href="/" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> 主页 </a>
+      <a href="/comment.html" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> Bug反馈&留言 </a>
+      <a href="/update.html" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> 更新日志 </a>
+      <a href="/about.html" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> 关于GifSuper </a>
+    </div>
+  </header>
+
+  <main class="w-full md:w-4/5 mx-auto">
+    <div id="app"></div>
+
+    <div id="loading-ph" class="loading w-full h-64 mt-16 flex flex-col justify-center items-center">
+      <div class="mb-4 rounded-full loading-calm-cat"></div>
+      <p class="mb-4">功能模块加载中，请稍候。。。</p>
+      <p class="mb-4">首次加载耗时稍长，请耐心等待。</p>
+    </div>
+
+    <div class="loading-place-holder-hhh">
+      <div> 上传GIF！</div>
+      <h1> 基础调整 </h1>
+      <h1> 文字操作 </h1>
+      <h2> 添加文字 </h2>
+      <h2> 文字内容 </h2>
+      <fieldset>
+        <label for="textContent">文字内容</label>
+        <input id="textContent" type="text"/>
+      </fieldset>
+      <h2> 文字颜色 </h2>
+      <fieldset>
+        <label for="textColor">文字内容</label>
+        <input id="textColor" type="text"/>
+      </fieldset>
+      <h1> 时间轴 </h1>
+
+      <div class="edit-panel w-full p-4 lg:p-8 border rounded-md border-color-2 mt-8 flex flex-col">
+
+        <div class="flex-1 flex flex-col mr-0 mb-4 w-full">
+
+          <fieldset class="flex items-start flex-col lg:flex-row pb-4 mb-8 border-b border-gray-600 w-full" v-show="canEdit">
+            <legend class="mb-4 text-lg"> 图片信息 </legend>
+
+            <div class="flex w-full">
+              <div class="flex items-center mb-4 mr-0 lg:mr-4 w-full lg:w-auto">
+                <label for="interval" class="whitespace-no-wrap flex-0 inline-block">总帧数：</label>
+                <div>{{ this.frameList.length }}</div>
+              </div>
+              <div class="flex items-center mb-4 mr-0 lg:mr-4 w-full lg:w-auto">
+                <label for="interval" class="whitespace-no-wrap flex-0 inline-block">大小：</label>
+                <div>{{ this.rawFile ? +(this.rawFile.size / (1024 * 1024)).toFixed(2) : 0 }}MB</div>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col lg:flex-row pb-8 mb-8 border-b border-gray-600 w-full">
+            <legend class="mb-4 text-lg"> 基础调整 </legend>
+
+            <div class="flex flex-col justify-center items-start mb-4 pt-4 pb-8 w-full">
+              <label for="">
+                <span>帧间隔：</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">毫秒单位，帧间隔越小，生成后的Gif就越流畅，同时总时长变短</span>
+              </label>
+
+              <slider class="flex-1"
+                v-model="interval"
+                :min="15"
+                :max="200"
+                :marks="[15, 200]"
+                :lazy="true"
+                :disabled="!canEdit"
+                :drag-on-click="true"
+                :contained="true"
+                tooltip="always"
+                tooltip-placement="bottom"
+                style="width: calc(100% - 14px);"
+               ></slider>
+            </div>
+
+            <div class="flex flex-col lg:flex-row">
+              <sbtn class="mr-0 w-full lg:w-auto lg:mr-4 mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleRevert">倒放：{{ revert ? '开' : '关' }}</sbtn>
+              <sbtn class="mr-0 w-full lg:w-auto lg:mr-4 mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleRepeat">循环：{{ repeat ? '开' : '关' }}</sbtn>
+              <sbtn class="mr-0 w-full lg:w-auto lg:mr-4 mb-1" title="开启后将会抽去原Gif中一般的帧数，可以减小文件大小，代价是Gif流畅程度将会下降" :disabled="!canEdit" @click="toggleRs">抽帧：{{ rs ? '开' : '关' }}</sbtn>
+              <!-- <sbtn class="mr-0 w-full lg:w-auto lg:mr-4 mb-1" title="重置时间轴" :disabled="!canEdit" type="error" @click="makeTimeline">重置</sbtn> -->
+            </div>
+
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col lg:flex-row pb-8 mb-8 border-b border-gray-600 w-full">
+            <legend class="mb-4 text-lg">
+              <span> 文字操作 </span>
+              <span class="ml-2 inline-block mb-4 pb-2 text-color-neutral text-sm border-gray-400">生成文字后可于下方“时间轴”处调整文字位置</span>
+            </legend>
+            <div class="w-full flex flex-wrap items-start flex-col">
+              <div class="flex justify-center items-center mr-4 mb-4 w-full">
+                <label for="" class="whitespace-no-wrap">文字内容：</label>
+                <s-input class="w-full" v-model="textContent" :style="{color: this.textColor}" placeholder="请输入内容，支持可输入的表情"></s-input>
+              </div>
+              <div class="flex justify-start items-center mb-4 w-full">
+                <label for="" class="whitespace-no-wrap">文字颜色：</label>
+                <color-picker class="z-50 ml-0 border border-gray-500" v-model="textColorObj"></color-picker>
+              </div>
+              <div class="flex justify-center items-center mb-4 pb-8 w-full">
+                <label for="" class="whitespace-no-wrap">文字大小：</label>
+                <slider class="flex-1"
+                  v-model="textSize"
+                  :min="14"
+                  :max="128"
+                  :lazy="true"
+                  :disabled="!canEdit"
+                  :drag-on-click="true"
+                  tooltip="always"
+                  tooltip-placement="bottom"
+                 ></slider>
+              </div>
+
+              <div class="flex justify-center items-center mb-4">
+                <sbtn
+                  class="mr-4 mb-1"
+                  @click="addText(textContent, textColor)"
+                  :disabled="!canEdit">为指定帧添加文字</sbtn>
+                <s-input v-model="textRange" placeholder="如:0,1,2,(4-10)"></s-input>
+              </div>
+              <sbtn
+                class="mb-1 w-full"
+                @click="addTextToAllFrame"
+                :disabled="!canEdit">为所有帧添加文字</sbtn>
+
+            </div>
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col lg:flex-row border-gray-600 w-full">
+            <legend class="mb-4 text-lg"> 帧操作 </legend>
+            <div class="flex flex-col justify-center items-start mb-4 pt-4 pb-8 w-full">
+              <label for="">
+                <span>区间裁剪：</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">生成后的Gif仅保留指定区间内的帧图像</span>
+              </label>
+
+              <div class="img-wrapper w-full flex justify-center items-center z-50">
+                <img class="absolute transform -translate-y-1/2" v-show="!!curFrameSplitFrameImg" :src="curFrameSplitFrameImg" alt=""/>
+              </div>
+
+              <slider class="flex-1 py-0"
+                v-model="frameSplitRange"
+                :disabled="!canEdit"
+                :min="1"
+                :max="!!this.frameList.length ? this.frameList.length : 10"
+                :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
+                :contained="true"
+                tooltip="always"
+                tooltip-placement="bottom"
+                @dragging="onFrameSplitRangeDragging"
+                @drag-end="onFrameSplitRangeDragEnd"
+                style="width: calc(100% - 14px);"
+               ></slider>
+            </div>
+
+            <div class="flex flex-col justify-center items-start mb-4 pt-4 pb-8 w-full">
+              <label for="">
+                <span>区间去除：</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">删除指定区间内的帧，受制于区间裁剪数值</span>
+              </label>
+              <sbtn class="mb-1" :disabled="!canEdit" @click="enableFrameRangeRemove = !enableFrameRangeRemove">区间去除：{{ enableFrameRangeRemove ? '开启' : '关闭' }}</sbtn>
+
+              <div class="img-wrapper w-full flex justify-center items-center z-50">
+                <img class="absolute transform -translate-y-1/2" v-show="!!curFrameRemoveFrameImg" :src="curFrameRemoveFrameImg" alt=""/>
+              </div>
+
+              <slider class="flex-1 w-full"
+                v-show="enableFrameRangeRemove"
+                :disabled="!canEdit"
+                ref="frameRemoveRange"
+                v-model="frameRemoveRange"
+                :min="frameSplitRange[0]"
+                :max="frameSplitRange[1]"
+                :marks="[frameSplitRange[0], frameSplitRange[1]]"
+                :contained="true"
+                tooltip="always"
+                tooltip-placement="bottom"
+                @dragging="onFrameRemoveRangeDragging"
+                @drag-end="onFrameRemoveRangeDragEnd"
+                style="width: calc(100% - 14px);"
+               ></slider>
+            </div>
+          </fieldset>
+
+          <fieldset class="pt-8 border-t border-gray-600">
+            <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
+          </fieldset>
+        </div>
+
+        <div class="flex-0 w-full border-t lg:border-t-0 mt-4 pt-4 lg:pt-0">
+          <label for="" class="hidden lg:inline" v-show="generateDone">新图像：（保存图片：右击图片->图片另存为）</label>
+          <label for="" class="inline lg:hidden" v-show="generateDone">新图像：（长按图片->保存图片）</label>
+
+          <div class="flex justify-center h-full items-center mt-4">
+            <div class="my-12 lg:my-0" v-show="isGenerating">
+              <div class="mb-12 text-center">生成中： {{progress}}%</div>
+
+              <!-- <loading></loading> -->
+              <div class="loading-calm-cat"></div>
+            </div>
+
+            <div v-show="!isGenerating">
+              <div id="dtsgif" class="mt-4 lg:mt-0 flex justify-center items-center"> </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="pb-4 flex justify-center items-center border-t border-gray-400 flex-col bg-primary">
+    <div class="w-full mb-4 py-4 px-16 lg:px-32 flex flex:col md:flex-row justify-center flex-row items-center border-b border-gray-400">
+      <span>友情链接：</span>
+      <ul class="flex flex:col md:flex-row">
+        <li>
+          <a href="https://www.jiushimeng.com/?gifsuper" target="_blank">就是萌！收集你身边的萌！</a>
+        </li>
+        <li>
+          <a href="https://music.qugeek.com/?gifsuper" target="_blank">墨灵音乐 · 一站式音乐体验</a>
+        </li>
+      </ul>
+    </div>
+    <div class="flex flex-col justify-center items-center mb-2 leading-6">
+      <p>如有Bug报告/建议，请联系站长</p>
+      <p>
+        <span>QQ：2512870210</span>
+        <span class="inline lg:hidden"> | </span>
+        <span class="inline lg:hidden"><a href="/comment.html">Bug反馈&留言</a></span>
+        <span class="inline lg:hidden"> | </span>
+        <span class="inline lg:hidden"><a href="/about.html">关于Gif Spuer</a></span>
+      </p>
+    </div>
+    <div class="flex justify-center items-center">
+      <div>2020</div>
+      <div class="ml-4">@GifSuper</div>
+    </div>
+    <!-- <a class="ml-4" href="http://www.beian.miit.gov.cn/">苏ICP备17070289号</a> -->
+  </footer>
+
+  <script>
+    (function() {
+      if (new Date().getHours() > 20 || new Date().getHours() < 6) {
+        document.body.classList.remove('theme');
+        document.body.classList.add('theme--dark');
+      }
+    })()
+  </script>
+
+  <script src="/static/js/libgif.js"></script>
+  <script src="/static/js/gif.js"></script>
+  <!-- <script src="/static/js/fabric.min.js"></script> -->
+  <script>
+    function add2Favorite() { var url = window.location || 'https://gifsuper.com'; var title = document.title || 'Gif Super，一个帮助您快速编辑GIF的在线工具网站'; var ua = navigator.userAgent.toLowerCase(); if (ua.indexOf("360se") > -1) { alert("由于360浏览器功能限制，请 Ctrl+D 手动收藏！"); } else if (ua.indexOf("msie 8") > -1) { window.external.AddToFavoritesBar(url, title); } else if (document.all) { try{ window.external.addFavorite(url, title); }catch(e){ alert('您的浏览器不支持自动收藏，请 Ctrl+D 手动收藏!'); } } else if (window.sidebar) { window.sidebar.addPanel(title, url, ""); } else { alert('您的浏览器不支持自动收藏，请 Ctrl+D 手动收藏!'); } }
+  </script>
+</body>
+
+</html><template>
+  <div class="wrapper p-4 sm:p-4 md:p-8 lg:p-8 max:w-screen w-full">
+
+    <div v-if="false && !getNotification(1)" data-n-ver="1" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
+      <div> 新功能：现在可以实时预览各项编辑操作啦！ </div>
+      <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(1);"> + </div>
+    </div>
+
+    <div v-if="!getNotification(2)" data-n-ver="2" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
+      <div> 新功能：更新了滤镜功能！ </div>
+      <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(2);"> + </div>
+    </div>
+
+    <!-- todo 严重bug 长度过大的gif上传后存在内存爆栈 导致标签页假死 -->
+    <div class="top mb-6" v-if="!canEdit">
+      <upload class="uploader mx-auto" :before-upload="upload" accept=".gif">上传GIF</upload>
+    </div>
+
+    <fieldset v-if="!canEdit" class="pb-4">
+      <h2 class="font-normal text-lg color-info"> 提示： 上传Gif后可在下方进行编辑 </h2>
+    </fieldset>
+
+    <sbtn @click="onCompressFuzz">压缩Fuzz</sbtn>
+    <sbtn @click="onCompressColor">压缩Color</sbtn>
+
+    <div class="flex">
+
+      <div v-for="img in newImgList" :key="img">
+        <img :src="img.url" alt="">
+        <div>
+          旧:{{img.oldSize}}MB | 新:{{img.newSize}}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+
+import { Vue, Component, Prop, } from 'vue-property-decorator';
+
+import Upload from '@/components/widget/s-upload.vue';
+import sbtn from '@/components/widget/s-btn.vue';
+import sInput from '@/components/widget/s-input.vue';
+
+import VueSlider from 'vue-slider-component';
+import 'vue-slider-component/theme/default.css';
+
+import { Chrome as ColorPicker } from 'vue-color';
+
+import { parseSrcGif, dataUrlToFile, GifGenerator, GifFrameList, GifFrame, getFileInfo } from '@/js/gif';
+
+import { fabric } from 'fabric';
+
+const FrameIndex = 1;
+const TextZIndex = 10;
+
+// interface GenerateOption {
+//   baseInterval: number;
+
+//   generateRange: [number, number];
+//   removeRange?: [number, number];
+// }
+
+
+type CompressInfo = {
+  method: string;
+  options: any;
+};
+
+import axios from 'axios';
+
+@Component({
+  components: {
+    'upload': Upload,
+    sbtn,
+    's-input': sInput,
+    slider: VueSlider,
+    'color-picker': ColorPicker,
+  },
+})
+export default class extends Vue {
+  // 上传的Gif
+  public rawFile: File = null;
+  public oriImageSrc: string = '';
+
+  public oriWidth: number = 0;
+  public oriHeight: number = 0;
+
+  public canEdit: boolean = false;
+
+  public nImg: string = '';
+
+  public newImgList: any[] = [];
+
+  public mounted() {
+    document.getElementById('loading-ph')?.remove();
+  }
+
+  public toast(msg: string, type: string = 'info', duration: number = 3000) {
+    // @ts-ignore
+    this.$message(msg, { type, duration})
+  }
+
+  public async upload(e: FileList) {
+    const gifFile = e[0];
+
+    if (gifFile.type !== 'image/gif') {
+      this.toast('只支持上传Gif文件', 'error');
+      return;
+    }
+
+    this.rawFile = gifFile;
+
+    this.canEdit = true;
+  }
+
+  public clearNotification(ver: number) {
+    localStorage.setItem(`notification-update-${ver}`, '1');
+
+    const notificationDOM = document.querySelector(`[data-n-ver="${ver}"]`);
+
+    if (notificationDOM) {
+      notificationDOM.remove();
+    }
+  }
+  public getNotification(ver: number): boolean {
+    return !!localStorage.getItem(`notification-update-${ver}`);
+  }
+
+
+  public async doCompress({ method, options }: CompressInfo) {
+    const formData = new FormData();
+
+    Object.keys(options).forEach(k => {
+      formData.append(k, options[k]);
+    });
+
+    const res = await axios.post(`http://localhost:3000/compress/${method}`, formData);
+    const rawResponse = res.data;
+
+    return rawResponse;
+  }
+
+  public async onCompressFuzz() {
+    const { data } = await this.doCompress({method: 's2', options: {img: this.rawFile, fuzz: 7}});
+
+    const { size: rawSize } = data.raw_img_info;
+    const { size, name } = data.res_info;
+
+    this.newImgList.push({
+      oldSize: rawSize,
+      newSize: size,
+      url: `http://localhost:3000/img?uuid=${name}`
+    });
+  }
+  public async onCompressColor() {
+    const { data } = await this.doCompress({method: 's1', options: {img: this.rawFile, colors: 64}});
+
+    const { size: rawSize } = data.raw_img_info;
+    const { size, name } = data.res_info;
+
+    this.newImgList.push({
+      oldSize: rawSize,
+      newSize: size,
+      url: `http://localhost:3000/img?uuid=${name}`
+    });
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+  .wrapper {
+    .uploader {
+      max-width: calc(100vw - 2rem);
+    }
+
+    & /deep/ .canvas-container {
+      margin: 0 auto;
+    }
+  }
+
+  .vc-chrome {
+    box-shadow: none;
+    & /deep/ .vc-chrome-fields-wrap {
+      display: none;
+    }
+  }
+
+  @media screen and (min-width: 768px) {
+    .md-auto-sticky {
+      position: sticky;
+      top: -90px;
+    }
+    .md-auto-sticky.md\:top-0 {
+      top: 0;
+    }
+  }
+  @media screen and (max-width: 767px) {
+    .md-preview-sticky {
+      position: sticky;
+      top: -90px;
+    }
+  }
+</style>import '@babel/polyfill'
+
+import '@/assets/css/base.css'
+import '@/assets/css/base.scss'
+import '@/assets/css/normalize.scss';
+
+import Vue from 'vue';
+import App from './vue/App.vue';
+
+import message from '@/js/msg/message.ts';
+
+Vue.prototype.$message = message;
+Vue.config.ignoredElements = [/^ion-/];
+
+new Vue({
+  render: h => h(App),
+}).$mount('#app');<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta charset="utf-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="GifSuper是一个帮助你快速编辑GIF的在线工具网站,在线即可编辑GIF动态图与动态表情包。"/>
+  <meta name="keywords" content="GIF,GIF在线制作,GIF表情在线编辑,GIF编辑,GIF编辑文字,在线编辑动态图,动态表情编辑,关于GifSuper"/>
+
+  <meta name="author" content="SxqSachin" />
+  <meta name="robots" content="index,follow" />
+  <meta name="google" content="index,follow" />
+  <meta name="googlebot" content="index,follow" />
+  <meta name="verify" content="index,follow" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+
+  <title>更新内容</title>
+
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
+
+  <style>
+    @import url('/static/css/theme-light.css') (prefers-color-scheme: light), (prefers-color-scheme: no-preference);
+    @import url('/static/css/theme-dark.css') (prefers-color-scheme: dark);
+  </style>
+
+  <style>
+    header { height: 48px; }
+    main { min-height: calc(100vh - 42px - 48px); }
+    img.logo { width: 32px; height: 32px; }
+    footer { min-height: 42px; }
+  </style>
+
+  <style>
+  </style>
+
+  <script>
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?0d54d1ca6bc93cf45d41a523003a2bdf";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+  </script>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-168829362-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-168829362-1');
+  </script>
+
+</head>
+
+<body class="flex flex-col min-h-screen theme">
+  <header class="text-center flex items-center justify-center lg:justify-between shadow px-8 border-b border-gray-400 bg-primary">
+    <div class="flex items-center">
+      <img class="logo" src="/static/imgs/logo.png" alt="Gif Super Logo"/>
+      <a href="/" class="ml-2 cursor-pointer text-color-primary"> Gif Super </a>
+      <sup class="text-red-300 ml-1"> Beta </sup>
+      <a href="/" class="hidden lg:block ml-8 text-color-primary"> 帮助您在线操作GIF文件 </a>
+    </div>
+
+    <div class="flex">
+      <a href="/" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> 主页 </a>
+      <a href="/comment.html" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> Bug反馈&留言 </a>
+      <a href="/update.html" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> 更新日志 </a>
+      <a href="/about.html" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> 关于GifSuper </a>
+    </div>
+  </header>
+
+  <main class="w-full lg:w-3/5 mx-auto p-4 lg:p-8 text-color-primary">
+    <!-- <a href="https://github.com/SxqSachin/gifsuper" target="_blank" class="github-corner hidden md:block absolute right-0" style="top: 48px;" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#70B7FD; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style> -->
+    <article class="leading-8">
+      <h1 class="mb-4 text-xl">更新记录</h1>
+
+      <ul>
+        <li class="mb-4">
+          <h2>v0.2.1</h2>
+          <ul class="list-inside list-disc">
+            <li>添加文字可选字体</lu>
+          </ul>
+        </li>
+
+        <li class="mb-4">
+          <h2>v0.2.0</h2>
+          <ul class="list-inside list-disc">
+            <li>新增滤镜功能</lu>
+          </ul>
+        </li>
+
+        <li class="mb-4">
+          <h2>v0.1.3</h2>
+          <ul class="list-inside list-disc">
+            <li>PC端布局调整，方便PC端操作</lu>
+          </ul>
+        </li>
+        <li class="mb-4">
+          <h2>v0.1.2</h2>
+          <ul class="list-inside list-disc">
+            <li>新增“裁剪”功能</lu>
+            <li>新增“左右&上下翻转”功能</lu>
+          </ul>
+        </li>
+        <li class="mb-4">
+          <h2>v0.1.11</h2>
+          <ul class="list-inside list-disc">
+            <li>新增“更新日志”页面</lu>
+          </ul>
+        </li>
+        <li class="mb-4">
+          <h2>v0.1.1</h2>
+          <ul class="list-inside list-disc">
+            <li>新增预览界面固定功能</lu>
+            <li>新增预览播放/暂停&逐帧操作功能</lu>
+          </ul>
+        </li>
+        <li class="mb-4">
+          <h2>v0.1.0a</h2>
+          <ul class="list-inside list-disc">
+            <li>修复IOS预览画布非自适应宽高问题</lu>
+            <li>新添加的文字&图片将会被默认选中</lu>
+          </ul>
+        </li>
+        <li class="mb-4">
+          <h2>v0.1.0</h2>
+          <ul class="list-inside list-disc">
+            <li>编辑效果实时预览功能</lu>
+          </ul>
+        </li>
+        <li class="mb-4">
+          <h2>v0.0.6</h2>
+          <ul class="list-inside list-disc">
+            <li>文字描边功能</lu>
+          </ul>
+        </li>
+        <li class="mb-4">
+          <h2>v0.0.5</h2>
+          <ul class="list-inside list-disc">
+            <li>新增帧区间裁剪功能</lu>
+            <li>新增帧区间去除功能</lu>
+          </ul>
+        </li>
+        <li class="mb-4">
+          <h2>v0.0.4</h2>
+          <ul class="list-inside list-disc">
+            <li>新增部分帧添加文字功能</lu>
+            <li>新增部分帧添加图片功能</lu>
+          </ul>
+        </li>
+        <li class="mb-4">
+          <h2>v0.0.3</h2>
+          <ul class="list-inside list-disc">
+            <li>新增添加图片功能</lu>
+            <li>功能模块独立为单个标签页</li>
+            <li>PC端夜间模式</li>
+            <li>添加“留言”页面</li>
+          </ul>
+        </li>
+        <li class="mb-4">
+          <h2>v0.0.2</h2>
+          <ul class="list-inside list-disc">
+            <li>UI调整</li>
+            <li>适配IOS夜间模式</li>
+          </ul>
+        </li>
+        <li>
+          <h2>v0.0.1</h2>
+          <ul class="list-inside list-disc">
+            <li>GifSuper上线测试</li>
+          </ul>
+        </li>
+      </ul>
+    </article>
+  </main>
+
+  <footer class="pb-4 flex justify-center items-center border-t border-gray-400 flex-col bg-primary">
+    <!-- <div class="w-full mb-4 py-4 px-16 lg:px-32 flex flex:col md:flex-row justify-center flex-row items-center border-b border-gray-400">
+      <span>友情链接：</span>
+      <ul class="flex flex:col md:flex-row">
+      </ul>
+    </div> -->
+    <div class="flex flex-col justify-center items-center mb-2 leading-6">
+      <p>如有Bug报告/建议，请联系站长</p>
+      <p>
+        <span>QQ：2512870210</span>
+        <span class="inline lg:hidden"> | </span>
+        <span class="inline lg:hidden"><a href="/comment.html">Bug反馈&留言</a></span>
+        <span class="inline lg:hidden"> | </span>
+        <span class="inline lg:hidden"><a href="/about.html">关于Gif Spuer</a></span>
+      </p>
+    </div>
+    <div class="flex justify-center items-center">
+      <div>2020</div>
+      <div class="ml-4">@GifSuper</div>
+    </div>
+    <!-- <a class="ml-4" href="http://www.beian.miit.gov.cn/">苏ICP备17070289号</a> -->
+  </footer>
+
+  <script>
+    (function() {
+      if (new Date().getHours() > 20 || new Date().getHours() < 6) {
+        document.body.classList.remove('theme');
+        document.body.classList.add('theme--dark');
+      }
+    })()
+  </script>
+
+  <!-- <script type="module" src="https://unpkg.com/ionicons@5.0.0/dist/ionicons/ionicons.esm.js"></script> -->
+
+  <script>
+    function add2Favorite() { var url = window.location || 'https://gifsuper.com'; var title = document.title || 'Gif Super，一个帮助您快速编辑GIF的在线工具网站'; var ua = navigator.userAgent.toLowerCase(); if (ua.indexOf("360se") > -1) { alert("由于360浏览器功能限制，请 Ctrl+D 手动收藏！"); } else if (ua.indexOf("msie 8") > -1) { window.external.AddToFavoritesBar(url, title); } else if (document.all) { try{ window.external.addFavorite(url, title); }catch(e){ alert('您的浏览器不支持自动收藏，请 Ctrl+D 手动收藏!'); } } else if (window.sidebar) { window.sidebar.addPanel(title, url, ""); } else { alert('您的浏览器不支持自动收藏，请 Ctrl+D 手动收藏!'); } }
+  </script>
+</body>
+
+</html>import '@/assets/css/base.css'
+import '@/assets/css/base.scss'
+import '@/assets/css/normalize.scss';<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta charset="utf-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+  <meta name="description" content="GifSuper是一个帮助你快速编辑GIF的在线工具网站,您可以在这个页面给GifSuper留言，反馈Bug或提供建议。"/>
+  <meta name="keywords" content="GIF,GIF在线制作,GIF表情在线编辑,GIF编辑,GIF编辑文字,在线编辑动态图,动态表情编辑,给GifSuper留言"/>
+
+  <meta name="author" content="SxqSachin" />
+  <meta name="robots" content="index,follow" />
+  <meta name="google" content="index,follow" />
+  <meta name="googlebot" content="index,follow" />
+  <meta name="verify" content="index,follow" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+
+  <title>给Gif Super留言</title>
+
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
+
+  <style>
+    @import url('/static/css/theme-light.css') (prefers-color-scheme: light), (prefers-color-scheme: no-preference);
+    @import url('/static/css/theme-dark.css') (prefers-color-scheme: dark);
+  </style>
+
+  <style>
+    header { height: 48px; }
+    main { min-height: calc(100vh - 42px - 48px); }
+    img.logo { width: 32px; height: 32px; }
+    footer { min-height: 42px; }
+    .comment-wrapper { color: var(--content-text-color); font-size: 16px; }
+    .comment-wrapper a { color: var(--link-color); }
+    .comment-wrapper .vwrap .vheader .vinput:focus { border-bottom-color: var(--color-info); }
+    .comment-wrapper .vinput, .vbtn { color: var(--secondary-text-color) !important; }
+    .comment-wrapper .vpanel .vwrap > .vrow { border-top: 1px solid var(--border-color-light); }
+    .comment-wrapper .vcards .vcard .vh .vmeta .vat { color: var(--link-color); }
+    .comment-wrapper svg { fill: var(--secondary-text-color); }
+  </style>
+
+  <script>
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?0d54d1ca6bc93cf45d41a523003a2bdf";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+  </script>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-168829362-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-168829362-1');
+  </script>
+
+</head>
+
+<body class="flex flex-col min-h-screen theme">
+  <header class="text-center flex items-center justify-center lg:justify-between shadow px-8 border-b border-gray-400 bg-primary">
+    <div class="flex items-center">
+      <img class="logo" src="/static/imgs/logo.png" alt="Gif Super Logo"/>
+      <a href="/" class="ml-2 cursor-pointer text-color-primary"> Gif Super </a>
+      <sup class="text-red-300 ml-1"> Beta </sup>
+      <a href="/" class="hidden lg:block ml-8 text-color-primary"> 帮助您在线操作GIF文件 </a>
+    </div>
+
+    <div class="flex">
+      <a href="/" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> 主页 </a>
+      <a href="/comment.html" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> Bug反馈&留言 </a>
+      <a href="/update.html" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> 更新日志 </a>
+      <a href="/about.html" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> 关于GifSuper </a>
+    </div>
+  </header>
+
+  <main class="w-full lg:w-3/5 mx-auto p-4 lg:p-8 text-color-primary">
+    <!-- <a href="https://github.com/SxqSachin/gifsuper" target="_blank" class="github-corner hidden md:block absolute right-0" style="top: 48px;" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#70B7FD; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style> -->
+    <div class="comment-wrapper p-4 sm:p-4 lg:pb-12 lg:pb-12 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
+      <h1 id="pinglun" class="inline-block text-lg mb-4 w-full">给Gif Super留言</h1>
+      <p>在这里您可以留下关于Gif Super的Bug反馈与建议等内容。</p>
+      <p>请不要发布与本站无关的信息。</p>
+      <div id="comment" class="comment v mt-4"></div>
+    </div>
+  </main>
+
+  <footer class="pb-4 flex justify-center items-center border-t border-gray-400 flex-col bg-primary">
+    <!-- <div class="w-full mb-4 py-4 px-16 lg:px-32 flex flex:col md:flex-row justify-center flex-row items-center border-b border-gray-400">
+      <span>友情链接：</span>
+      <ul class="flex flex:col md:flex-row">
+      </ul>
+    </div> -->
+    <div class="flex flex-col justify-center items-center mb-2 leading-6">
+      <p>如有Bug报告/建议，请联系站长</p>
+      <p>
+        <span>QQ：2512870210</span>
+        <span class="inline lg:hidden"> | </span>
+        <span class="inline lg:hidden"><a href="/comment.html">Bug反馈&留言</a></span>
+        <span class="inline lg:hidden"> | </span>
+        <span class="inline lg:hidden"><a href="/about.html">关于Gif Spuer</a></span>
+      </p>
+    </div>
+    <div class="flex justify-center items-center">
+      <div>2020</div>
+      <div class="ml-4">@GifSuper</div>
+    </div>
+    <!-- <a class="ml-4" href="http://www.beian.miit.gov.cn/">苏ICP备17070289号</a> -->
+  </footer>
+
+  <script>
+    (function() {
+      if (new Date().getHours() > 20 || new Date().getHours() < 6) {
+        document.body.classList.remove('theme');
+        document.body.classList.add('theme--dark');
+      }
+    })()
+  </script>
+
+  <!-- <script type="module" src="https://unpkg.com/ionicons@5.0.0/dist/ionicons/ionicons.esm.js"></script> -->
+
+  <script>
+    function add2Favorite() { var url = window.location || 'https://gifsuper.com'; var title = document.title || 'Gif Super，一个帮助您快速编辑GIF的在线工具网站'; var ua = navigator.userAgent.toLowerCase(); if (ua.indexOf("360se") > -1) { alert("由于360浏览器功能限制，请 Ctrl+D 手动收藏！"); } else if (ua.indexOf("msie 8") > -1) { window.external.AddToFavoritesBar(url, title); } else if (document.all) { try{ window.external.addFavorite(url, title); }catch(e){ alert('您的浏览器不支持自动收藏，请 Ctrl+D 手动收藏!'); } } else if (window.sidebar) { window.sidebar.addPanel(title, url, ""); } else { alert('您的浏览器不支持自动收藏，请 Ctrl+D 手动收藏!'); } }
+  </script>
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  <script src="/static/js/comment.js"></script>
+
+</body>
+
+</html>(function() { const valine = new Valine(); valine.init({ el: '#comment', appId: '1H1OdEwtagloOEfMAw9LyLVD-gzGzoHsz', appKey: 'qWCPOJb1xfI0Ym5lsgC4Yodc', placeholder: '留言内容...', recordIP: true, meta: ['nick', 'mail'], requiredFields: ['nick', 'mail'], enableQQ: true, avatar: 'retro', path: window.location.pathname, }); })();import '@/assets/css/base.css'
+import '@/assets/css/base.scss'
+import '@/assets/css/normalize.scss';<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta charset="utf-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="GifSuper,Gif在线制作网站,一个帮助你快速编辑GIF的在线工具网站,在线即可编辑GIF动态图与动态表情包。"/>
+  <meta name="keywords" content="GIF,GIF在线制作,GIF表情在线编辑,GIF编辑,GIF编辑文字,在线编辑动态图,动态表情编辑"/>
+
+  <meta name="author" content="SxqSachin" />
+  <meta name="robots" content="index,follow" />
+  <meta name="google" content="index,follow" />
+  <meta name="googlebot" content="index,follow" />
+  <meta name="verify" content="index,follow" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+
+  <title>Gif Super，一个帮助您快速编辑GIF的在线工具网站</title>
+
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
+
+  <style>
+    @import url('/static/css/theme-light.css') (prefers-color-scheme: light), (prefers-color-scheme: no-preference);
+    @import url('/static/css/theme-dark.css') (prefers-color-scheme: dark);
+  </style>
+
+  <style>
+    header { height: 48px; }
+    main { min-height: calc(100vh - 92px - 48px); }
+    img.logo { width: 32px; height: 32px; }
+    footer { min-height: 92px; }
+    .loading-calm-cat {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background-position: center;
+      background-size: 320px;
+      background-repeat: no-repeat;
+      background-image: url("https://static.sxqsachin.com/imgs/gifsuper_loading.gif");
+    }
+  </style>
+
+  <script>
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?0d54d1ca6bc93cf45d41a523003a2bdf";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+  </script>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-168829362-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-168829362-1');
+  </script>
+
+  <script data-ad-client="ca-pub-1451575114945845" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
+</head>
+
+<body class="flex flex-col min-h-screen theme">
+  <header class="text-center flex items-center justify-center lg:justify-between shadow px-8 border-b border-gray-400 bg-primary">
+    <div class="flex items-center">
+      <img class="logo" src="/static/imgs/logo.png" alt="Gif Super Logo"/>
+      <a href="/" class="ml-2 cursor-pointer text-color-primary"> Gif Super </a>
+      <sup class="text-red-300 ml-1"> Beta </sup>
+      <a href="/" class="hidden lg:block ml-8 text-color-primary"> 帮助您在线操作GIF文件 </a>
+    </div>
+
+    <div class="flex">
+      <a href="/" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> 主页 </a>
+      <a href="/comment.html" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> Bug反馈&留言 </a>
+      <a href="/update.html" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> 更新日志 </a>
+      <a href="/about.html" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> 关于GifSuper </a>
+    </div>
+  </header>
+
+  <main class="w-full md:w-4/5 mx-auto">
+    <div id="app"></div>
+
+    <!-- <a href="https://github.com/SxqSachin/gifsuper" target="_blank" class="github-corner hidden md:block absolute right-0" style="top: 48px;" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#70B7FD; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style> -->
+
+    <div id="loading-ph" class="loading w-full h-64 mt-16 flex flex-col justify-center items-center">
+      <div class="mb-4 rounded-full loading-calm-cat"></div>
+      <p class="mb-4">功能模块加载中，请稍候。。。</p>
+      <p class="mb-4">首次加载耗时稍长，请耐心等待。</p>
+    </div>
+
+    <div class="loading-place-holder-hhh">
+      <div> 上传GIF！</div>
+      <h1> 基础调整 </h1>
+      <h1> 文字操作 </h1>
+      <h2> 添加文字 </h2>
+      <h2> 文字内容 </h2>
+      <fieldset>
+        <label for="textContent">文字内容</label>
+        <input id="textContent" type="text"/>
+      </fieldset>
+      <h2> 文字颜色 </h2>
+      <fieldset>
+        <label for="textColor">文字内容</label>
+        <input id="textColor" type="text"/>
+      </fieldset>
+      <h1> 时间轴 </h1>
+
+      <div class="edit-panel w-full p-4 lg:p-8 border rounded-md border-color-2 mt-8 flex flex-col">
+
+        <div class="flex-1 flex flex-col mr-0 mb-4 w-full">
+
+          <fieldset class="flex items-start flex-col lg:flex-row pb-4 mb-8 border-b border-gray-600 w-full" v-show="canEdit">
+            <legend class="mb-4 text-lg"> 图片信息 </legend>
+
+            <div class="flex w-full">
+              <div class="flex items-center mb-4 mr-0 lg:mr-4 w-full lg:w-auto">
+                <label for="interval" class="whitespace-no-wrap flex-0 inline-block">总帧数：</label>
+                <div>{{ this.frameList.length }}</div>
+              </div>
+              <div class="flex items-center mb-4 mr-0 lg:mr-4 w-full lg:w-auto">
+                <label for="interval" class="whitespace-no-wrap flex-0 inline-block">大小：</label>
+                <div>{{ this.rawFile ? +(this.rawFile.size / (1024 * 1024)).toFixed(2) : 0 }}MB</div>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col lg:flex-row pb-8 mb-8 border-b border-gray-600 w-full">
+            <legend class="mb-4 text-lg"> 基础调整 </legend>
+
+            <div class="flex flex-col justify-center items-start mb-4 pt-4 pb-8 w-full">
+              <label for="">
+                <span>帧间隔：</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">毫秒单位，帧间隔越小，生成后的Gif就越流畅，同时总时长变短</span>
+              </label>
+
+              <slider class="flex-1"
+                v-model="interval"
+                :min="15"
+                :max="200"
+                :marks="[15, 200]"
+                :lazy="true"
+                :disabled="!canEdit"
+                :drag-on-click="true"
+                :contained="true"
+                tooltip="always"
+                tooltip-placement="bottom"
+                style="width: calc(100% - 14px);"
+               ></slider>
+            </div>
+
+            <div class="flex flex-col lg:flex-row">
+              <sbtn class="mr-0 w-full lg:w-auto lg:mr-4 mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleRevert">倒放：{{ revert ? '开' : '关' }}</sbtn>
+              <sbtn class="mr-0 w-full lg:w-auto lg:mr-4 mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleRepeat">循环：{{ repeat ? '开' : '关' }}</sbtn>
+              <sbtn class="mr-0 w-full lg:w-auto lg:mr-4 mb-1" title="开启后将会抽去原Gif中一般的帧数，可以减小文件大小，代价是Gif流畅程度将会下降" :disabled="!canEdit" @click="toggleRs">抽帧：{{ rs ? '开' : '关' }}</sbtn>
+              <!-- <sbtn class="mr-0 w-full lg:w-auto lg:mr-4 mb-1" title="重置时间轴" :disabled="!canEdit" type="error" @click="makeTimeline">重置</sbtn> -->
+            </div>
+
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col lg:flex-row pb-8 mb-8 border-b border-gray-600 w-full">
+            <legend class="mb-4 text-lg">
+              <span> 文字操作 </span>
+              <span class="ml-2 inline-block mb-4 pb-2 text-color-neutral text-sm border-gray-400">生成文字后可于下方“时间轴”处调整文字位置</span>
+            </legend>
+            <div class="w-full flex flex-wrap items-start flex-col">
+              <div class="flex justify-center items-center mr-4 mb-4 w-full">
+                <label for="" class="whitespace-no-wrap">文字内容：</label>
+                <s-input class="w-full" v-model="textContent" :style="{color: this.textColor}" placeholder="请输入内容，支持可输入的表情"></s-input>
+              </div>
+              <div class="flex justify-start items-center mb-4 w-full">
+                <label for="" class="whitespace-no-wrap">文字颜色：</label>
+                <color-picker class="z-50 ml-0 border border-gray-500" v-model="textColorObj"></color-picker>
+              </div>
+              <div class="flex justify-center items-center mb-4 pb-8 w-full">
+                <label for="" class="whitespace-no-wrap">文字大小：</label>
+                <slider class="flex-1"
+                  v-model="textSize"
+                  :min="14"
+                  :max="128"
+                  :lazy="true"
+                  :disabled="!canEdit"
+                  :drag-on-click="true"
+                  tooltip="always"
+                  tooltip-placement="bottom"
+                 ></slider>
+              </div>
+
+              <div class="flex justify-center items-center mb-4">
+                <sbtn
+                  class="mr-4 mb-1"
+                  @click="addText(textContent, textColor)"
+                  :disabled="!canEdit">为指定帧添加文字</sbtn>
+                <s-input v-model="textRange" placeholder="如:0,1,2,(4-10)"></s-input>
+              </div>
+              <sbtn
+                class="mb-1 w-full"
+                @click="addTextToAllFrame"
+                :disabled="!canEdit">为所有帧添加文字</sbtn>
+
+            </div>
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col lg:flex-row border-gray-600 w-full">
+            <legend class="mb-4 text-lg"> 帧操作 </legend>
+            <div class="flex flex-col justify-center items-start mb-4 pt-4 pb-8 w-full">
+              <label for="">
+                <span>区间裁剪：</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">生成后的Gif仅保留指定区间内的帧图像</span>
+              </label>
+
+              <div class="img-wrapper w-full flex justify-center items-center z-50">
+                <img class="absolute transform -translate-y-1/2" v-show="!!curFrameSplitFrameImg" :src="curFrameSplitFrameImg" alt=""/>
+              </div>
+
+              <slider class="flex-1 py-0"
+                v-model="frameSplitRange"
+                :disabled="!canEdit"
+                :min="1"
+                :max="!!this.frameList.length ? this.frameList.length : 10"
+                :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
+                :contained="true"
+                tooltip="always"
+                tooltip-placement="bottom"
+                @dragging="onFrameSplitRangeDragging"
+                @drag-end="onFrameSplitRangeDragEnd"
+                style="width: calc(100% - 14px);"
+               ></slider>
+            </div>
+
+            <div class="flex flex-col justify-center items-start mb-4 pt-4 pb-8 w-full">
+              <label for="">
+                <span>区间去除：</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">删除指定区间内的帧，受制于区间裁剪数值</span>
+              </label>
+              <sbtn class="mb-1" :disabled="!canEdit" @click="enableFrameRangeRemove = !enableFrameRangeRemove">区间去除：{{ enableFrameRangeRemove ? '开启' : '关闭' }}</sbtn>
+
+              <div class="img-wrapper w-full flex justify-center items-center z-50">
+                <img class="absolute transform -translate-y-1/2" v-show="!!curFrameRemoveFrameImg" :src="curFrameRemoveFrameImg" alt=""/>
+              </div>
+
+              <slider class="flex-1 w-full"
+                v-show="enableFrameRangeRemove"
+                :disabled="!canEdit"
+                ref="frameRemoveRange"
+                v-model="frameRemoveRange"
+                :min="frameSplitRange[0]"
+                :max="frameSplitRange[1]"
+                :marks="[frameSplitRange[0], frameSplitRange[1]]"
+                :contained="true"
+                tooltip="always"
+                tooltip-placement="bottom"
+                @dragging="onFrameRemoveRangeDragging"
+                @drag-end="onFrameRemoveRangeDragEnd"
+                style="width: calc(100% - 14px);"
+               ></slider>
+            </div>
+          </fieldset>
+
+          <fieldset class="pt-8 border-t border-gray-600">
+            <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
+          </fieldset>
+        </div>
+
+        <div class="flex-0 w-full border-t lg:border-t-0 mt-4 pt-4 lg:pt-0">
+          <label for="" class="hidden lg:inline" v-show="generateDone">新图像：（保存图片：右击图片->图片另存为）</label>
+          <label for="" class="inline lg:hidden" v-show="generateDone">新图像：（长按图片->保存图片）</label>
+
+          <div class="flex justify-center h-full items-center mt-4">
+            <div class="my-12 lg:my-0" v-show="isGenerating">
+              <div class="mb-12 text-center">生成中： {{progress}}%</div>
+
+              <!-- <loading></loading> -->
+              <div class="loading-calm-cat"></div>
+            </div>
+
+            <div v-show="!isGenerating">
+              <div id="dtsgif" class="mt-4 lg:mt-0 flex justify-center items-center"> </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="pb-4 flex justify-center items-center border-t border-gray-400 flex-col bg-primary">
+    <!-- <div class="w-full mb-4 py-4 px-16 lg:px-32 flex flex:col md:flex-row justify-center flex-row items-center border-b border-gray-400">
+      <span>友情链接：</span>
+      <ul class="flex flex:col md:flex-row">
+      </ul>
+    </div> -->
+    <div class="flex flex-col justify-center items-center mb-2 leading-6">
+      <p>如有Bug报告/建议，请联系站长</p>
+      <p>
+        <span>QQ：2512870210</span>
+        <span class="inline lg:hidden"> | </span>
+        <span class="inline lg:hidden"><a href="/comment.html">Bug反馈&留言</a></span>
+        <span class="inline lg:hidden"> | </span>
+        <span class="inline lg:hidden"><a href="/about.html">关于Gif Spuer</a></span>
+      </p>
+    </div>
+    <div class="flex justify-center items-center">
+      <div>2020</div>
+      <div class="ml-4">@GifSuper</div>
+    </div>
+    <!-- <a class="ml-4" href="http://www.beian.miit.gov.cn/">苏ICP备17070289号</a> -->
+  </footer>
+
+  <script>
+    (function() {
+      if (new Date().getHours() > 20 || new Date().getHours() < 6) {
+        document.body.classList.remove('theme');
+        document.body.classList.add('theme--dark');
+      }
+    })()
+  </script>
+
+  <script src="/static/js/libgif.js"></script>
+  <script src="/static/js/gif.js"></script>
+  <!-- <script src="/static/js/fabric.min.js"></script> -->
+  <script>
+    function add2Favorite() { var url = window.location || 'https://gifsuper.com'; var title = document.title || 'Gif Super，一个帮助您快速编辑GIF的在线工具网站'; var ua = navigator.userAgent.toLowerCase(); if (ua.indexOf("360se") > -1) { alert("由于360浏览器功能限制，请 Ctrl+D 手动收藏！"); } else if (ua.indexOf("msie 8") > -1) { window.external.AddToFavoritesBar(url, title); } else if (document.all) { try{ window.external.addFavorite(url, title); }catch(e){ alert('您的浏览器不支持自动收藏，请 Ctrl+D 手动收藏!'); } } else if (window.sidebar) { window.sidebar.addPanel(title, url, ""); } else { alert('您的浏览器不支持自动收藏，请 Ctrl+D 手动收藏!'); } }
+  </script>
+</body>
+
+<template>
+  <div>
+    <div>
+      {{ title }}
+    </div>
+
+    <div>
+      {{ process }}
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import { Vue, Component, Prop, } from 'vue-property-decorator';
+
+import { Filter } from '@/pages/index/js/modules/filter';
+import { Filters, FilterType } from '@/pages/index/js/modules/filters';
+
+import { fabric } from 'fabric';
+import { GifFrame, GifFrameList } from '@/js/gif';
+
+@Component({ })
+export default class extends Vue {
+  @Prop({type: String, default: ''})
+  public title!: string;
+
+  @Prop({type: Number, default: 1})
+  public process!: string;
+}
+</script>
+
+<style lang="scss" scoped>
+
+</style><template>
+  <div class="flex flex-col justify-center items-start mb-0 w-full">
+    <div class="img-container flex flex-wrap w-full">
+      <div class="img-wrapper p-2 mb-2 flex-0 bg-assets shadow hover:shadow-xl transition-shadow transition-time-func rounded-md cursor-pointer" 
+        v-for="(previewImg, key) in previewImgs"
+        :key="key"
+        >
+        <div class="w-full relative" @click="applyFilter(previewImg.name)" title="点击应用该滤镜">
+          <img class="w-full" :src="previewImg.url" :alt="previewImg.title"/>
+
+          <div class="filter-info absolute flex justify-center items-center opacity-0 transition-opacity duration-300">
+            <span class="text-gray-400"> {{ previewImg.title }} </span>
+          </div>
+
+          <div v-show="filterState[key] && filterState[key].show" class="filter-state absolute flex flex-col justify-center items-center">
+            <p v-show="filterState[key] && filterState[key].title" class="text-gray-400 mb-2"> {{ filterState[key] ? filterState[key].title : '' }} </p>
+            <p v-show="filterState[key] && filterState[key].subtitle" class="text-gray-400"> {{ filterState[key] ? filterState[key].subtitle : '' }} </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import { Vue, Component, Prop, } from 'vue-property-decorator';
+
+import sBtn from '@/components/widget/s-btn.vue';
+import { Filter } from '@/pages/index/js/modules/filter';
+import { Filters, FilterType } from '@/pages/index/js/modules/filters';
+
+import { fabric } from 'fabric';
+import { GifFrame, GifFrameList } from '@/js/gif';
+import { delay } from '@/js/utility';
+import { AbstractPanel } from '@/pages/index/js/panel'; 
+
+@Component({
+  components: {
+    's-btn': sBtn,
+  }
+})
+export default class extends AbstractPanel  {
+  public previewFrame!: GifFrame;
+
+  public previewImgs: {[type: string]: string} = {};
+
+  public filterState: {[type: string]: { show: boolean, title: string, subtitle: string }} = {};
+
+  get tabInfo() {
+    return { name: 'filter', title: '滤镜', icon: '/static/icons/wand.svg', new: true, };
+  }
+
+  get panelName() {
+    return 'filter-panel';
+  }
+
+  get filters() {
+    const filterList = {
+      'Noise': { name: 'Noise', type: 'Noise', title: '噪声', options: { noise: 128, }, },
+      'Grayscale': { name: 'Grayscale', type: 'Grayscale', title: '灰阶', },
+      'Invert': { name: 'Invert', type: 'Invert', title: '负片', },
+      'BlackWhite': { name: 'BlackWhite', type: 'BlackWhite', title: '黑白', },
+      'Sepia': { name: 'Sepia', type: 'Sepia', title: '复古', },
+      'Pixelate': { name: 'Pixelate', type: 'Pixelate', title: '像素', options: { blocksize: 8, }, },
+      'Kodachrome': { name: 'Kodachrome', type: 'Kodachrome', title: '艳丽', },
+      'Vintage': { name: 'Vintage', type: 'Vintage', title: '陈旧', },
+      'Polaroid': { name: 'Polaroid', type: 'Polaroid', title: '拍立得画风', },
+      'Technicolor': { name: 'Technicolor', type: 'Technicolor', title: '科幻', },
+      'Sharpen': { name: 'Sharpen', type: 'Convolute', title: '锐利', options: { matrix: [0, -1, 0, -1, 5, -1, 0, -1, 0], }, },
+      'Emboss': { name: 'Emboss', type: 'Convolute', title: '浮雕', options: { matrix: [1, 1, 1, 1, 0.7, -1, -1, -1, -1], }, },
+    };
+
+    return filterList
+  }
+
+  public mounted() {
+    console.log('filter panel loaded');
+    // this.addToDesk();
+  }
+
+  public applyFilter(type: FilterType) {
+    if (this.filterState[type] && this.filterState[type].show) {
+      this.toast('滤镜应用中，请稍候');
+      return;
+    }
+
+    let filter: Filter = Filters.get(type);
+
+    this.$emit('filter', { event: 'filter', filter, type });
+  }
+
+  public setFilterState(type: FilterType, title: string, subtitle?: string) {
+    this.$set(this.filterState, type, { show: true, title, subtitle, });
+  }
+  public clearFilterState(type: FilterType) {
+    this.$set(this.filterState, type, { show: false, title: '', subtitle: '', });
+  }
+
+  public clearFilter() {
+    this.$emit('clear');
+  }
+
+  public setPreviewFrame(frame: GifFrame) {
+    this.previewFrame = frame;
+
+    this.renderPreview();
+  }
+
+  private async renderSingleFilter(img: fabric.Image, filterType: string, filterOptions: any, options: any) {
+    const { name } = options;
+    const filter = new fabric.Image.filters[filterType](filterOptions);
+
+    img.applyFilters([filter]);
+    this.$set(this.previewImgs, name, { url: img.toDataURL({format: 'png'}), ...options })
+
+    await delay(10);
+
+    return Promise.resolve();
+  }
+
+  private async renderPreview() {
+    const parseImgPromise: Promise<fabric.Image> = new Promise(resolve => {
+      fabric.Image.fromURL(this.previewFrame.imgFileSrc, img => {
+        resolve(img);
+      });
+    })
+
+    const img = await parseImgPromise;
+
+    for(let i = 0; i < Object.values(this.filters).length; i++) {
+      const { type, name, options, title } = this.filters[Object.keys(this.filters)[i]];
+
+      await this.renderSingleFilter(img, type, options, { title, type, name, options });
+    }
+  }
+
+  public toast(msg: string, type: string = 'info', duration: number = 3000) {
+    // @ts-ignore
+    this.$message(msg, { type, duration });
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.img-container .img-wrapper {
+  width: calc(50% - 0.25rem);
+}
+
+.img-wrapper:hover .filter-info {
+  opacity: 1;
+}
+
+.img-container .img-wrapper:nth-child(even) {
+  margin-left: 0.5rem;
+}
+
+.img-wrapper .filter-info,
+.img-wrapper .filter-state {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #333333cc;
+}
+
+</style>
+<template>
+  <div>
+    123
+  </div>
+</template>
+
+<script lang="ts">
+import { Vue, Component, Prop, } from 'vue-property-decorator';
+
+import sBtn from '@/components/widget/s-btn.vue';
+import { Filter } from '@/pages/index/js/modules/filter';
+import { Filters, FilterType } from '@/pages/index/js/modules/filters';
+
+import { fabric } from 'fabric';
+import { GifFrame, GifFrameList } from '@/js/gif';
+import { Toasted } from '../../../js/type';
+import { delay } from '@/js/utility';
+import { AbstractPanel } from '@/pages/index/js/panel'; 
+  
+@Component({
+  components: {
+    's-btn': sBtn,
+  }
+})
+export default class extends AbstractPanel {
+  public mounted() {
+    console.log('frame action panel loaded');
+    // this.addToDesk();
+  }
+
+  get tabInfo() {
+    return { name: 'frame', title: '帧处理', icon: '/static/icons/hammer.svg', };
+  }
+
+  get panelName() {
+    return 'frame-action-panel';
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+
+</style>
+<template>
+  <div class="timeline-wrapper" ref="timeline-wrapper">
+
+    <canvas id="timeline"></canvas>
+
+    <canvas id="dragbar"></canvas>
+  </div>
+</template>
+
+<script lang="ts">
+import { Vue, Component, Prop, } from 'vue-property-decorator';
+import { fabric } from 'fabric';
+
+import { GifPreview, PreviewOption } from '../js/preview';
+import { Toasted, } from '../../js/type';
+import { GifFrameList, GifFrame } from '@/js/gif';
+import { Stage } from '../../js/stage';
+import { GifState } from '../js/GifState';
+
+@Component({ })
+export default class extends Vue implements Stage {
+  private _canvas!: fabric.Canvas; 
+  private _dragbar!: fabric.Canvas; 
+
+  private timelineLeft: number = 0;
+
+  // 保存每一帧的图像数据
+  // 这里不包含除了帧图像之外的fabric.Object
+  private frames: fabric.Image[] = [];
+  
+  // 传入的帧列表
+  @Prop({ type: Array, default: [] })
+  public frameList!: GifFrame[];
+  
+  // 传入的帧状态
+  @Prop({ type: GifState, default: [] })
+  public gifState!: GifState;
+
+  public mounted() {
+    this._canvas = new fabric.Canvas('timeline');
+    this._dragbar = new fabric.Canvas('dragbar');
+  }
+
+  // 刷新帧图像信息
+  public async refreshFrameImg() {
+    const { frameList } = this;
+
+    const divideWidth = 1;
+
+    // 清空原帧图像数据
+    const arr: Promise<fabric.Image>[] = [];
+
+    let res = [];
+
+    const rotated = Math.abs(+this.gifState.rotate) === 90 || Math.abs(+this.gifState.rotate) === 270;
+
+    if (!this.frames.length) {
+      frameList.forEach((frame, index) => {
+        const imgPromise: Promise<fabric.Image> = new Promise(resolve => {
+
+          fabric.Image.fromURL(frame.imgFileSrc, img => {
+            if (!img.width || !img.height) {
+              return;
+            }
+
+            const curWidth = img.width;
+            const curHeight = img.height;
+
+            const nimg = img.set({
+              left: (curWidth / 2) + index * (curWidth + divideWidth),
+              top: curHeight / 2,
+              width: curWidth,
+              height: curHeight,
+              name: 'frame' + index,
+              type: 'timeline-frame',
+              lockMovementX: true,
+              lockMovementY: true,
+              hasControls: false,
+              selectable: false,
+              flipX: this.gifState.flipX,
+              flipY: this.gifState.flipY,
+            }) as fabric.Image;
+
+            nimg.originX = 'center';
+            nimg.originY = 'center';
+
+            // @ts-ignore
+            nimg.frameIndex = index;
+            // @ts-ignore
+            nimg.frameData = frame;
+
+            // this.frames.push(nimg);
+            resolve(img);
+          });
+        });
+        arr.push(imgPromise);
+      });
+
+      res = await Promise.all(arr);
+    } else {
+      res = this.frames.map((img, index) => {
+        const curWidth = rotated ? img.height : img.width;
+        const leftBaseOffset = rotated ? (img.height / 2) : (img.width / 2);
+        const topBaseOffset = rotated ? (img.width / 2) : (img.height/ 2);
+
+        img.rotate(this.gifState.rotate).set({
+          left: leftBaseOffset + index * (curWidth + divideWidth),
+          top: topBaseOffset,
+          flipX: this.gifState.flipX,
+          flipY: this.gifState.flipY,
+        }) as fabric.Image;
+
+        return img;
+      })
+    }
+
+    this.frames = res;
+  }
+
+  public async refresh() {
+    if (!this.canvas) {
+      console.error('makrTimeline: canvas not ready');
+      return;
+    }
+
+    // 清理所有原始帧
+    this.canvas.getObjects().forEach(obj => {
+      // @ts-ignore
+      if (obj.frameData) {
+        this.canvas.remove(obj);
+      }
+    });
+
+    const { frameList } = this;
+
+    const firstImg = frameList[0];
+
+    const frameWidth = firstImg.width;
+    const frameHeight = firstImg.height;
+    const rotated = Math.abs(+this.gifState.rotate) === 90 || Math.abs(+this.gifState.rotate) === 270;
+
+    let canvasTotalWidth = (frameWidth + 1) * frameList.length;
+    let canvasHeight = frameHeight as number;
+
+    if (rotated) {
+      canvasTotalWidth = (frameHeight + 1) * frameList.length;
+      canvasHeight = frameWidth as number;
+    }
+
+    const timelineWrapperWidth = (this.$refs['timeline-wrapper'] as HTMLElement).offsetWidth - 2;
+
+    const divideWidth = 1;
+
+    this.canvas.setWidth(timelineWrapperWidth);
+    this.canvas.setHeight(canvasHeight);
+
+    this.frames.forEach(img => {
+      this.canvas.add(img);
+    });
+
+    this.canvas.absolutePan(new fabric.Point(0, 0));
+
+    this.resetDragBar(timelineWrapperWidth, canvasTotalWidth);
+  }
+
+  public resetDragBar(containerWidth: number, totalFrameWidth: number) {
+    this.dragbar.clear();
+
+    if (containerWidth >= totalFrameWidth) {
+      return;
+    }
+
+    this.dragbar.setWidth(containerWidth);
+    this.dragbar.setHeight(30);
+
+    const percent = (containerWidth / totalFrameWidth);
+
+    const dragBarWidth =  percent * containerWidth;
+    const dragBar = new fabric.Rect({
+      name: 'dragbar',
+      width: Math.max(dragBarWidth, 25),
+      height: 25,
+
+      top: 0,
+      left: 0,
+
+      fill: '#777777',
+      lockMovementY: true,
+      hasControls: false,
+    }).on('moving', (arg) => {
+      let target = undefined;
+      if (arg.target) {
+        target = arg.target;
+      } else if ((arg?.transform as any)?.target) {
+        target = (arg?.transform as any)?.target;
+      }
+
+      if (!target) {
+        target = {left: 0};
+      }
+
+      let left = target.left as number;
+
+      if (left + dragBarWidth >= containerWidth) {
+        left = containerWidth - dragBarWidth;
+      }
+      if (left < 0) {
+        left = 0;
+      }
+
+      this.timelineLeft = left;
+
+      dragBar.set({
+        left,
+      });
+
+      this.canvas.absolutePan(new fabric.Point(left / percent, 0));
+    });
+
+
+    this.dragbar.add(dragBar);
+
+    dragBar.set({
+      left: this.timelineLeft,
+    });
+    dragBar.fire('move');
+  }
+
+  get canvas() {
+    return this._canvas;
+  }
+
+  get dragbar() {
+    return this._dragbar;
+  }
+
+  get imgs(): fabric.Image[] {
+    return this.frames;
+  }
+
+}
+</script>
+
+<style lang="scss" scoped>
+
+  .timeline-wrapper {
+    & /deep/ .canvas-container {
+      margin: 0 auto;
+    }
+  }
+  
+</style><template>
+  <div>
+
+    <canvas id="previewer"></canvas>
+
+  </div>
+</template>
+
+<script lang="ts">
+import { Vue, Component, Prop, } from 'vue-property-decorator';
+
+import { GifPreview, PreviewOption } from '../js/preview';
+import { Toasted, } from '../../js/type';
+import { GifFrameList } from '@/js/gif';
+import { Stage } from '../../js/stage';
+
+@Component({ })
+export default class Previewer extends Vue implements Toasted, Stage {
+  private _preview!: GifPreview;
+
+  public mounted() {
+    this._preview = new GifPreview('previewer', this);
+  }
+
+  public toast(msg: string, type: string = 'info', duration: number = 3000) {
+    // @ts-ignore
+    this.$message(msg, { type, duration})
+  }
+
+  public async initGIF(frameList: GifFrameList, width: number, height: number) {
+    await this._preview.initPreviewCanvas(frameList, width, height);
+  }
+
+  public render(usefulFrame, curFrame, interval, previewOption: PreviewOption) {
+    const {
+      revert,
+      repeat,
+      resize: showResize,
+      flipX,
+      flipY,
+    } = previewOption;
+
+    let curFrameSlider = Math.min(usefulFrame[curFrame], usefulFrame[usefulFrame.length - 1]);
+
+    this._preview.updateOptions({
+      revert,
+      repeat,
+      showResize,
+      flipX,
+      flipY,
+    });
+
+    this._preview.renderPreview(usefulFrame, interval, index => {
+      curFrameSlider = index;
+    });
+  }
+
+  public hideResizeRect() {
+    this._preview.hideResizeRect();
+  }
+  public showResizeRect() {
+    this._preview.showResizeRect();
+  }
+
+  get resizeRect(): fabric.Rect {
+    return this._preview.resizeRect;
+  }
+
+  get preview() {
+    return this._preview;
+  }
+
+  get canvas() {
+    return this._preview.previewCanvas;
+  }
+
+  get imgs(): fabric.Image[] {
+    return this._preview.frames;
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+
+</style><template>
+  <div class="wrapper p-4 sm:p-4 md:p-8 lg:p-8 max:w-screen w-full">
+
+    <!-- <div v-if="false && !getNotification(1)" data-n-ver="1" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
+      <div> 新功能：现在可以实时预览各项编辑操作啦！ </div>
+      <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(1);"> + </div>
+    </div>
+
+    <div v-if="!getNotification(2)" data-n-ver="2" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
+      <div> 新功能：更新了滤镜功能！ </div>
+      <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(2);"> + </div>
+    </div> -->
+
+    <div v-if="!getNotification(3)" data-n-ver="3" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
+      <div> 新功能：现在添加文字可选字体啦！字体库会慢慢补充哦！ </div>
+      <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(3);"> + </div>
+    </div>
+
+    <!-- todo 严重bug 长度过大的gif上传后存在内存爆栈 导致标签页假死 -->
+    <div class="top mb-6" v-if="!canEdit && !oriImageSrc">
+      <upload class="uploader mx-auto" :before-upload="upload" accept=".gif">上传GIF</upload>
+    </div>
+
+    <fieldset v-if="!canEdit && !oriImageSrc" class="pb-4">
+      <h2 class="font-normal text-lg color-info"> 提示： 上传Gif后可在下方进行编辑 </h2>
+    </fieldset>
+
+    <div class="flex flex-col md:flex-row-reverse" :class="{'md:flex-col': !isPreviewUseable}">
+
+      <div class="flex flex-col w-full md:w-2/5 md-auto-sticky" :class="{'md:w-full': !isPreviewUseable, 'md-preview-sticky z-50': stickyPreviewCanvas}" >
+        <div v-show="!!oriImageSrc" class="w-full flex items-center p-4 pb-0 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md rounded-bl-none rounded-br-none">
+          <div class="w-full">
+            <div class="flex">
+              <div class="flex-auto">
+                <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block block">预览：</label>
+                <label v-show="canEdit || isGenerating" for="srcgif" class="hidden md:block w-full whitespace-no-wrap truncate">点击添加的文字/图片来进行缩放/旋转操作。</label>
+                <label v-show="canEdit || isGenerating" for="srcgif" class="hidden md:block w-full">可用鼠标框选元素。</label>
+                <label v-show="canEdit || isGenerating" for="srcgif" class="block md:hidden w-full whitespace-no-wrap truncate">点击添加的文字/图片来进行缩放/旋转操作。</label>
+                <label v-show="canEdit || isGenerating" for="srcgif" class="block md:hidden w-full">（长按+拖动）可框选元素。</label>
+              </div>
+            </div>
+
+            <div id="srcgif" class="flex justify-center items-center hidden"> </div>
+
+            <div v-show="!!oriImageSrc && oriGifLoadProgress < 1" class="flex flex-col justify-center items-center">
+              <img ref="oriImageDom" :src="oriImageSrc" alt="" srcset=""/>
+              <div v-show="!!oriImageSrc && oriGifLoadProgress < 1" class="mask w-full h-full float-left absolute flex justify-center items-center bg-opacity-75 bg-gray-800 text-white text-lg text-center" :style="{width: `${showWidth}px`, height: `${showHeight}px`}"> 
+                读取数据中： {{ Math.max(0, (oriGifLoadProgress * 100 - 1).toFixed(0)) }} %
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div v-show="!!oriImageSrc" :class="{'sticky top-0': stickyPreviewCanvas}" class="z-50 w-full flex mb-4 items-center p-4 pt-0 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md rounded-tl-none rounded-tr-none md-auto-sticky md:top-0">
+          <div class="src w-full">
+            <div ref="edit-canvas" v-show="!!oriImageSrc && oriGifLoadProgress === 1" class="mt-4">
+              <div class="flex justify-center items-center w-full">
+                <previewer ref="previewer"></previewer>
+              </div>
+
+              <div class="w-full h-full flex justify-center items-center text-white text-lg text-center pointer-events-none">
+                <img class="float-left absolute transform -translate-y-1/2" :style="{width: `${showWidth}px`, height: `${showHeight}px`}" v-show="!!curPreviewImg" :src="curPreviewImg" alt="当前预览帧"/>
+              </div>
+
+              <div class="mt-2 flex justify-between flex-wrap" v-show="!!oriImageSrc && oriGifLoadProgress === 1">
+
+                <div class="flex justify-center items-center mb-2 w-full">
+                  <slider class="flex-auto"
+                    v-model="curFrameSlider"
+                    :min="1"
+                    :max="usefulFrame.length"
+                    :disabled="!canEdit"
+                    :drag-on-click="true"
+                    :duration="0"
+                    @change="onCurFrameChange"
+                   ></slider>
+                </div>
+                <div class="flex justify-between w-full">
+                  <div class="flex flex-wrap">
+                    <sbtn title="删除当前选中元素" @click="previewer.preview.removeActiveObjects()" type="error" style="padding-left: 0.45rem; padding-right: 0.45rem;">
+                      <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/trash.svg"/>
+                    </sbtn>
+                  </div>
+                  <div class="flex flex-no-wrap">
+                    <sbtn class="rounded-tr-none rounded-br-none" title="第一帧" type="ghost" @click="previewer.preview.setPreviewFrame(0)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                      <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-back.svg"/>
+                    </sbtn>
+                    <sbtn class="rounded-none border-l-0" title="上一帧" type="ghost" @click="previewer.preview.setPreviewFrame(previewer.preview.curFramePointer - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                      <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-back.svg"/>
+                    </sbtn>
+                    <sbtn class="rounded-none border-l-0" title="播放/暂停" type="ghost" @click="togglePause" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                      <img v-show="!!aaa" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play.svg"/>
+                      <img v-show="!aaa" class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pause.svg"/>
+                    </sbtn>
+                    <sbtn class="rounded-none border-l-0" title="下一帧" type="ghost" @click="previewer.preview.setPreviewFrame(previewer.preview.curFramePointer + 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                      <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-forward.svg"/>
+                    </sbtn>
+                    <sbtn class="rounded-tl-none rounded-bl-none" title="最后一帧" type="ghost" @click="previewer.preview.setPreviewFrame(previewer.preview.frameArray.length - 1)" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                      <img class="w-6 h-6 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-forward.svg"/>
+                    </sbtn>
+                  </div>
+                  <div class="flex flex-wrap">
+                    <sbtn class="ml-2 visible md:invisible" title="开启/关闭 固定" type="ghost" @click="stickyPreviewCanvas = !stickyPreviewCanvas" style="padding-left: 0.25rem; padding-right: 0.25rem;">
+                      <img v-show="stickyPreviewCanvas" style="width: 1.7rem;" class="h-6 flex-shrink-0 cursor-pointer" src="/static/icons/pin.png"/>
+                      <img v-show="!stickyPreviewCanvas" style="width: 1.6rem; height: 1.6rem;" class="flex-shrink-0 cursor-pointer" src="/static/icons/pin-1.png"/>
+                    </sbtn>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="w-full md:w-3/5 p-1 md:pb-3 md:pr-3 rounded-md border-color-2 flex flex-col" :class="{'md:w-full': !isPreviewUseable}">
+
+        <div class="flex flex-row">
+          <ul class="flex flex-row">
+            <li v-for="tab in tabs" :key="tab.name"
+              class="flex items-center py-2 px-3 bg-body cursor-pointer rounded-md rounded-bl-none rounded-br-none"
+              :class="{'bg-assets shadow': curTab === tab.name}"
+              @click="switchTab(tab.name)"
+            >
+              <img class="w-4 h-4 flex-shrink-0" :src="tab.icon"/>
+              <span class="ml-2 md:inline" :class="{inline: curTab === tab.name, 'hidden': curTab !== tab.name}">{{tab.title}}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="flex-auto flex flex-col mr-0 mb-4 w-full">
+
+          <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md rounded-tl-none"
+            v-show="curTab === 'base'"
+            >
+            <section class="flex flex-col flex-auto w-full">
+              <h2 class="mb-4 text-lg"> 图片信息 </h2>
+
+              <div class="flex w-full">
+                <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
+                  <label for="interval" class="whitespace-no-wrap flex-0 inline-block">总帧数：</label>
+                  <div>{{ this.frameList.length }}</div>
+                </div>
+                <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
+                  <label for="interval" class="whitespace-no-wrap flex-0 inline-block">大小：</label>
+                  <div>{{ this.rawFile ? +(this.rawFile.size / (1024 * 1024)).toFixed(2) : 0 }}MB</div>
+                </div>
+              </div>
+            </section>
+
+            <section class="flex flex-col flex-auto mt-4 w-full">
+              <h2 class="mb-4 text-lg"> 基础调整 </h2>
+
+              <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
+                <label for="">
+                  <span>帧间隔：</span>
+                  <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">毫秒单位，帧间隔越小，生成后的Gif就越流畅，同时总时长变短</span>
+                </label>
+
+                <slider class="flex-auto"
+                  v-model="interval"
+                  :min="15"
+                  :max="300"
+                  :marks="[15, 300]"
+                  :lazy="true"
+                  :disabled="!canEdit"
+                  :drag-on-click="true"
+                  :contained="true"
+                  @change="renderPreview"
+                  tooltip="always"
+                  tooltip-placement="bottom"
+                  style="width: calc(100% - 14px);"
+                 ></slider>
+              </div>
+
+              <div class="flex flex-col md:flex-row flex-wrap">
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会是原Gif的倒放版" :disabled="!canEdit" type="info" @click="toggleState('revert', '倒放')">倒放：{{ gifState.revert ? '开' : '关' }}</sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会循环播放，关闭后则只会进行1次播放循环" :disabled="!canEdit" @click="toggleState('repeat', '循环')">循环：{{ gifState.repeat ? '开' : '关' }}</sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会左右颠倒" :disabled="!canEdit" @click="toggleState('flipX', '左右翻转', true)">左右翻转：{{ gifState.flipX ? '开' : '关' }}</sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会上下颠倒" :disabled="!canEdit" @click="toggleState('flipY', '上下翻转', true)">上下翻转：{{ gifState.flipY ? '开' : '关' }}</sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="将图片向左旋转90度" :disabled="!canEdit" @click="rotate(-90)"> 左旋转 </sbtn>
+                <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="将图片向右旋转90度" :disabled="!canEdit" @click="rotate(90)"> 右旋转 </sbtn>
+                <!-- <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后可实现首尾相接重复的特效" :disabled="!canEdit" @click="toggleRLoop">
+                  <span>反复</span>
+                  <span>:{{ rloop ? '开' : '关' }} </span>
+                </sbtn> -->
+                <!-- <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="开启后将会抽去原Gif中一般的帧数，可以减小文件大小，代价是Gif流畅程度将会下降" :disabled="!canEdit" @click="toggleRs">抽帧：{{ rs ? '开' : '关' }}</sbtn> -->
+                <!-- <sbtn class="mr-0 w-full md:w-auto md:mr-4 mb-1" title="重置时间轴" :disabled="!canEdit" type="error" @click="makeTimeline">重置</sbtn> -->
+              </div>
+            </section>
+
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+            v-show="curTab === 'addText'"
+            >
+
+            <section class="flex flex-col w-full">
+              <div class="flex justify-center items-center mb-4 w-full">
+                <label for="" class="whitespace-no-wrap">文字内容：</label>
+                <s-input class="w-full" v-model="textContent" placeholder="请输入内容，支持Emoji等表情符号"></s-input>
+              </div>
+
+              <div class="flex items-center mb-4">
+                <label for="" class="whitespace-no-wrap">文字颜色：</label>
+                <color-picker class="z-40 ml-0 border border-gray-500" v-model="textColorObj"></color-picker>
+              </div>
+
+              <div class="flex justify-center items-center mb-4 pb-8 w-full">
+                <label for="" class="whitespace-no-wrap">文字大小：</label>
+                <slider class="flex-auto"
+                  v-model="textSize"
+                  :marks="[10, 128]"
+                  :min="10"
+                  :max="128"
+                  :lazy="true"
+                  :disabled="!canEdit"
+                  :drag-on-click="true"
+                  tooltip="always"
+                  tooltip-placement="bottom"
+                 ></slider>
+              </div>
+
+              <div class="flex items-center mb-4">
+                <label for="" class="whitespace-no-wrap">字体<sup class="text-red-400"> new </sup>：</label>
+                <v-select
+                  v-model="fontFamily"
+                  class="w-full text-color-primary"
+                  :options="fontList"
+                  :style="`font-family:${fontFamily};`"
+                  :reduce="font => font.font">
+                  <template #option="{ font, label }">
+                    <p class="text-2xl" :style="`font-family:${font};`" >{{ label }}</p>
+                  </template>
+                </v-select>
+              </div>
+
+              <section class="flex flex-col w-full mb-4">
+                <div class="flex flex-row items-center mb-4">
+                  <span>文字边线：</span><sbtn :disabled="!canEdit" @click="enableTextStroke = !enableTextStroke">{{ !enableTextStroke ? '开启' : '关闭' }}</sbtn>
+                </div>
+
+                <div class="flex flex-col justify-start w-full" v-show="enableTextStroke">
+                  <div class="flex items-center mb-4">
+                    <label for="" class="whitespace-no-wrap">字边线色：</label>
+                    <color-picker class="z-40 ml-0 border border-gray-500" v-model="textStrokeObj"></color-picker>
+                  </div>
+
+                  <div class="flex justify-center items-center pb-8 w-full">
+                    <label for="" class="whitespace-no-wrap">边线粗细：</label>
+                    <slider class="flex-auto"
+                      v-model="textStrokeWidth"
+                      :marks="[1, 12]"
+                      :min="1"
+                      :max="12"
+                      :lazy="true"
+                      :disabled="!canEdit"
+                      :drag-on-click="true"
+                      tooltip="always"
+                      tooltip-placement="bottom"
+                     ></slider>
+                  </div>
+
+                </div>
+              </section>
+
+              <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
+                <label for="">
+                  <span>范围添加文字</span>
+                  <span>：</span>
+                  <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">只在指定范围内添加文字</span>
+                </label>
+
+                <slider class="flex-auto pt-0"
+                  v-model="addTextRange"
+                  :disabled="!canEdit"
+                  :min="1"
+                  :max="!!this.frameList.length ? this.frameList.length : 10"
+                  :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
+                  :contained="true"
+                  tooltip="always"
+                  tooltip-placement="bottom"
+                  style="width: calc(100% - 14px);"
+                  @dragging="renderPreviewImage"
+                  @drag-end="curPreviewImg = ''"
+                 ></slider>
+              </div>
+
+              <div class="flex w-full justify-around items-center mb-4">
+                <sbtn class="w-full" @click="addText" :disabled="!canEdit">添加文字</sbtn>
+              </div>
+
+              <p class="flex flex-col text-lg">
+                <span class="inline-block pb-2 text-color-neutral text-sm font-normal border-gray-400">添加文字后，可于上方“预览”处，对文字进行位置、缩放、旋转等调整。</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm font-normal border-gray-400">也可于下方“时间轴”处进行更细粒度的调整。</span>
+              </p>
+
+            </section>
+
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+            v-show="curTab === 'addPic'"
+            >
+            <div class="flex flex-col justify-center items-start w-full">
+              <label for="" class="whitespace-no-wrap mb-1">
+                <span> 添加图片 </span>
+                <sup class="text-red-300"> Beta! </sup>
+                <span>：</span>
+              </label>
+              <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">若上传的图片尺寸过大，请至“预览”处拖动并调整大小。</span>
+            </div>
+
+            <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
+              <label for="">
+                <span>范围添加图片</span>
+                <span>：</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">只在指定范围内添加图片</span>
+              </label>
+
+              <slider class="flex-auto pt-0"
+                v-model="addImgRange"
+                :disabled="!canEdit"
+                :min="1"
+                :max="!!this.frameList.length ? this.frameList.length : 10"
+                :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
+                :contained="true"
+                tooltip="always"
+                tooltip-placement="bottom"
+                @dragging="renderPreviewImage"
+                @drag-end="curPreviewImg = ''"
+                style="width: calc(100% - 14px);"
+               ></slider>
+            </div>
+
+            <upload class="mt-4 uploader w-full" :before-upload="addImage" :disabled="!canEdit">添加图片</upload>
+
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+            v-show="curTab === 'cut'"
+            >
+            <section class="flex flex-col justify-center items-start mb-4 w-full">
+              <label for="">
+                <span>区间裁剪：</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">保留你感兴趣的片段</span>
+              </label>
+
+              <div class="pb-8 w-full">
+                <slider class="flex-auto py-0"
+                  v-model="frameSplitRange"
+                  :disabled="!canEdit"
+                  :min="1"
+                  :max="!!this.frameList.length ? this.frameList.length : 10"
+                  :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
+                  :contained="true"
+                  tooltip="always"
+                  tooltip-placement="bottom"
+                  :lazy="true"
+                  @change="renderPreview"
+                  @dragging="renderPreviewImage"
+                  @drag-end="curPreviewImg = ''"
+                  style="width: calc(100% - 14px);"
+                 ></slider>
+              </div>
+            </section>
+
+            <section class="flex flex-col justify-center items-start w-full">
+              <label for="">
+                <span>区间去除：</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">删除你不感兴趣的片段</span>
+              </label>
+
+              <div class="flex flex-row items-center">
+                <sbtn :disabled="!canEdit" @click="enableFrameRangeRemove = !enableFrameRangeRemove; renderPreview()">{{ !enableFrameRangeRemove ? '开启' : '关闭' }}</sbtn>
+              </div>
+
+              <div class="pb-8 w-full mt-4"
+                v-show="enableFrameRangeRemove"
+              >
+                <slider class="flex-auto w-full"
+                  :disabled="!canEdit"
+                  ref="frameRemoveRange"
+                  v-model="frameRemoveRange"
+                  :min="frameSplitRange[0]"
+                  :max="frameSplitRange[1]"
+                  :marks="[frameSplitRange[0], frameSplitRange[1]]"
+                  :contained="true"
+                  tooltip="always"
+                  tooltip-placement="bottom"
+                  :lazy="true"
+                  @change="renderPreview"
+                  @dragging="renderPreviewImage"
+                  @drag-end="curPreviewImg = ''"
+                  style="width: calc(100% - 14px);"
+                 ></slider>
+              </div>
+            </section>
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+            v-show="curTab === 'resize'"
+            >
+            <section class="flex flex-col justify-center items-start mb-4 w-full">
+              <label for="" class="mb-4">
+                <span>图片裁剪：</span>
+                <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">裁剪出原图中你感兴趣的部分</span>
+              </label>
+
+              <div v-show="isRotated()">
+                <span class="text-red-300"> 注意：</span>
+                <span> 注意：您当前无法在旋转状态下使用该功能（会导致使用上的问题，待该Bug修复后开放） </span>
+              </div>
+
+              <div v-show="!isRotated()" class="flex flex-row items-center">
+                <span>裁剪：</span><sbtn :disabled="!canEdit || isRotated()" @click="toggleResize">{{ !gifState.resize ? '开启' : '关闭' }}</sbtn>
+              </div>
+            </section>
+          </fieldset>
+
+          <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+            v-show="curTab === 'filter'"
+            >
+
+            <filter-panel :desk="this" ref="filter-panel" @filter="onFilterChange"></filter-panel>
+
+          </fieldset>
+
+          <!-- <fieldset 
+            v-for="panel in panels" :key="panel.panelName"
+            class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+            v-show="curTab === panel.tabInfo.name"
+            >
+            <component :is="panel.panelName" :desk="this" :ref="panel.panelName" @panel-event="panel.panelEvent">
+            </component>
+          </fieldset> -->
+
+          <fieldset class="pt-8 ">
+            <sbtn title="应用修改" @click="applyPreview2Timeline" type="success" :disabled="!canEdit">将修改应用到时间轴</sbtn>
+            <div class="py-2 mb-4 text-sm">
+              <span class="text-red-300"> 注意：</span>
+              <span class="text-color-neutral">若进行过“添加文字/图片”操作，则在生成最终结果前，需要先将修改应用到时间轴，等到提示“应用成功”后方可生成GIF。</span>
+            </div>
+            <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
+            <span class="inline-block py-2 text-color-neutral text-sm border-gray-400">tips: 受原Gif大小影响，点击“生成”按钮后可能会有短暂卡顿，此时耐心等候即可。</span>
+          </fieldset>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div v-show="isGenerating || generateDone" class="flex flex-col justify-center w-full p-4 mb-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
+      <label for="" class="hidden md:inline" v-show="generateDone">新图像：（保存图片：右击图片->图片另存为）</label>
+      <label for="" class="inline md:hidden" v-show="generateDone">新图像：（长按图片->保存图片）</label>
+
+      <div class="flex justify-center h-full items-center mt-4">
+        <div class="my-12 md:my-0" v-show="isGenerating">
+          <div class="mb-12 text-center">生成中： {{progress}}%</div>
+
+          <div class="loading-calm-cat"></div>
+        </div>
+
+        <div v-show="!isGenerating">
+          <div id="dtsgif" class="mt-4 md:mt-0 flex justify-center items-center"> </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline p-2 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
+      <label class="inline-block pb-4">
+        <span> 时间轴</span>
+        <sup class="text-red-300"> alpha </sup>
+        <span class="hidden md:inline">：（delete键：删除当前选中文字/图片）</span>
+      </label>
+      <div class="mb-4">
+        <p class="mb-2 text-color-neutral text-sm font-normal">在这里你可以对添加的文字/图片进行逐帧调整。</p>
+        <p class="text-color-neutral text-sm font-normal">
+          在这里进行修改后直接点击“生成”按钮生成GIF即可，切勿点击“将修改应用到时间轴”按钮，否则您在时间轴中的修改将会被还原。
+        </p>
+      </div>
+      <div class="md:hidden my-2 flex justify-start flex-wrap">
+        <sbtn class="mb-1" title="删除当前选中元素" @click="deleteActivedObject" type="error">删除当前选中文字/图片</sbtn>
+      </div>
+
+      <timeline ref="timeline" :frame-list="frameList" :gif-state="gifState"></timeline>
+
+    </div>
+
+  </div>
+</template>
+
+<script lang="ts">
+
+import { Vue, Component, Prop, } from 'vue-property-decorator';
+
+import Upload from '@/components/widget/s-upload.vue';
+import sbtn from '@/components/widget/s-btn.vue';
+import sInput from '@/components/widget/s-input.vue';
+
+import Previewer from './components/previewer.vue';
+
+import Timeline from './components/timeline.vue';
+
+import VueSlider from 'vue-slider-component';
+import 'vue-slider-component/theme/default.css';
+
+import { Chrome as ColorPicker } from 'vue-color';
+
+import { parseSrcGif, dataUrlToFile, GifGenerator, GifFrameList, GifFrame, getFileInfo } from '@/js/gif';
+
+import { fabric } from 'fabric';
+
+const FrameIndex = 1;
+const TextZIndex = 10;
+
+interface GenerateOption {
+  baseInterval: number;
+
+  generateRange: [number, number];
+  removeRange?: [number, number];
+}
+
+import { RangedFrameObject } from '../js/type';
+// import { GifPreview } from './js/preview';
+import { Toasted } from '../js/type';
+import { GifState } from './js/GifState';
+
+import { Text } from '../js/modules/Text';
+import { Image } from '../js/modules/Image';
+import { Filter } from '../js/modules/filter';
+import { Filters, FilterType } from '../js/modules/filters';
+import { Stage } from '../js/stage';
+// import { Timeline } from './js/timeline';
+
+import FilterPanel from './components/panels/filter.vue';
+import { Desk } from '../js/desk';
+import { Panel } from '../js/panel';
+
+import vSelect from 'vue-select';
+import 'vue-select/dist/vue-select.css'
+
+import { checkOrigin } from '../../../js/auth'
+
+@Component({
+  components: {
+    'v-select': vSelect,
+    'upload': Upload,
+    sbtn,
+    's-input': sInput,
+    slider: VueSlider,
+    'color-picker': ColorPicker,
+    previewer: Previewer,
+    timeline: Timeline,
+    'filter-panel': FilterPanel,
+  },
+})
+export default class extends Vue implements Toasted, Desk {
+  public stickyPreviewCanvas: boolean = false;
+  public curPreviewImg: string = '';
+  public pausePreview: boolean = false;
+
+  public curFrameSlider: number = 1;
+
+  public previewFramePointer: number = 0;
+
+  // 上传的Gif
+  public rawFile: File = null;
+  public oriImageSrc: string = '';
+
+  // 原图片宽高
+  public oriWidth: number = 0;
+  public oriHeight: number = 0;
+
+  // 表面显示图片宽高
+  public showWidth: number = 0;
+  public showHeight: number = 0;
+
+
+  // 帧列表
+  public frameList: GifFrameList = [];
+  public oriFrameList: any[] = [];
+
+  public generateOption: {[key: string]: any};
+
+  public oriGifLoadProgress: number = 0;
+
+  // 默认帧间隔
+  public interval: number = 60;
+
+  public isGenerating: boolean = false;
+  public generateDone: boolean = false;
+
+
+  // 文字操作 start
+  public textContent: string = '';
+  public textColorObj: {[key: string]: string} = { hex: '#fff' };
+  public textStrokeObj: {[key: string]: string} = { hex: '#000' };
+  public textSize: string = '42';
+  public textStrokeWidth: number = 1;
+
+  public fontFamily: string = '';
+  public fontList: {font: string, label: string}[] = [
+    {font: '', label:'默认'},
+    {font: 'zhankukuaileti', label: '站酷快乐体'},
+    {font: 'zhankuwenyiti', label: '站酷文艺体'},
+    {font: 'zhankugaoduanheiti', label: '站酷高端黑体'},
+    {font: 'fangzhengfangsong', label: '方正仿宋'},
+    {font: 'fangzhengkaiti', label: '方正楷体'},
+    {font: 'yangrengdongzhushiti', label: '杨任东竹石体'},
+    {font: 'xianerti', label: '贤二体'},
+    {font: 'qiantuxiaotuti', label:' 千图小兔体'},
+    {font: 'qingsongshouxieti2', label: '清松手写体2'},
+    {font: 'youshebiaotihei', label: '优设标题黑'},
+  ];
+
+  public addTextRange: [number, number] = [1, 1]; // 添加文字起始值
+
+  public enableTextStroke: boolean = false;
+  // 文字操作 end
+
+
+  // 图片操作 start
+  public addImgRange: [number, number] = [1, 1]; // 添加图片起始值
+  // 图片操作 end
+
+
+  // 帧区间裁剪 start
+  public frameSplitRange: [number, number] = [1, 10]; // 区间裁剪起始值
+  // 帧区间裁剪 end
+
+
+  // 帧区间去除 start
+  public enableFrameRangeRemove: boolean = false;
+  public frameRemoveRange: [number, number] = [1, 1]; // 区间去除起始值
+  // 帧区间去除 end
+
+  // 单帧宽/高度
+  // public frameWidth: number = 0;
+  // public frameHeight: number = 0;
+
+  // 生成进度
+  public progress: number = 0;
+
+  // timeline偏移值
+  public timelineLeft: number = 0;
+
+  public clipboard: any[] = [];
+
+  public previewer!: Previewer;
+
+  public gifState!: GifState;
+
+  public timeline!: Timeline;
+
+  public filterPanel!: FilterPanel;
+
+  get canEdit(): boolean {
+    return !!this.frameList?.length;
+  }
+
+  get textColor(): string {
+    return this.textColorObj?.hex8 ?? '#fff';
+  }
+
+  get textStrokeColor(): string {
+    return this.textStrokeObj?.hex8 ?? '#000';
+  }
+
+  get totalFrameCount(): number {
+    return this.frameList.length;
+  }
+
+  get enabledFrame(): number[] {
+    return Array.from(new Array(this.frameList.length).keys());
+  }
+
+  get isPreviewUseable(): boolean {
+    return this.canEdit || this.isGenerating || !!this.rawFile;
+  }
+
+  public isRotated(): boolean {
+    return Math.abs(+this.gifState.rotate) === 90 || Math.abs(+this.gifState.rotate) === 270;
+  }
+
+  public created() {
+    this.gifState = new GifState();
+
+    window.fabric = fabric;
+
+    window['app'] = this;
+
+    checkOrigin();
+  }
+
+  public mounted() {
+    document.getElementById('loading-ph')?.remove();
+
+    fabric.Object.prototype.objectCaching = false;
+
+    this.previewer = this.$refs['previewer'] as Previewer;
+
+    this.timeline = this.$refs['timeline'] as Timeline;
+
+    this.filterPanel = this.$refs['filter-panel'] as FilterPanel;
+    // this.frameActionPanel = this.$refs['frame-action-panel'][0] as FrameActionPanel;
+
+    // debugger;
+    // this.filterPanel.addToDesk(this); 
+    // this.frameActionPanel.addToDesk(this); 
+
+    this.initKeyPressEvent();
+  }
+
+  public async upload(e: FileList) {
+    const gifFile = e[0];
+
+    if (gifFile.type !== 'image/gif') {
+      this.toast('只支持上传Gif文件', 'error');
+      return;
+    }
+
+    this.rawFile = gifFile;
+
+    const { width, height, imgFileSrc } = await getFileInfo(gifFile);
+    const imgDOM = this.$refs.oriImageDom as HTMLImageElement;
+
+    this.oriWidth = width;
+    this.oriHeight = height;
+
+    // 监听图片加载完成事件 如果不等待图片显示完成 获取到的showWidth/Height将会是异常值
+    const oriImageOnLoadPromise = new Promise(resolve => {
+      imgDOM.onload = () => {
+        resolve();
+      }
+    });
+    this.oriImageSrc = imgFileSrc;
+    await oriImageOnLoadPromise;
+
+    const {width: showWidth, height: showHeight} = imgDOM;
+    this.showWidth = showWidth;
+    this.showHeight = showHeight;
+
+    this.resetStage();
+
+    const frameList = await parseSrcGif(gifFile, (cur, total) => {
+      this.oriGifLoadProgress = cur / total;
+    });
+    this.oriGifLoadProgress = 1;
+
+    this.frameList = frameList;
+    this.oriFrameList = frameList;
+
+    this.filterPanel.setPreviewFrame(this.frameList[0]);
+
+    await this.updateEditData();
+
+    // await this.makeTimeline(frameList);
+    await this.timeline.refreshFrameImg();
+    this.timeline.refresh();
+    await this.previewer.initGIF(frameList, showWidth, showHeight);
+
+    await this.renderPreview();
+  }
+
+  public toggleResize() {
+    const resize = this.gifState.toggleState('resize');
+
+    if (resize) {
+      this.previewer.showResizeRect();
+    } else {
+      this.previewer.hideResizeRect();
+    }
+  }
+
+  public async toggleState(key: keyof GifState, name?: string, resetTimeline: boolean = false) {
+    this.gifState.toggleState(key, name, resetTimeline);
+
+    this.renderPreview();
+
+    if (name) {
+      this.toast(`已${this[key]? '开启' : '关闭'}${name}`, 'info')
+    }
+
+    if (resetTimeline) {
+      await this.timeline.refreshFrameImg();
+      this.timeline.refresh();
+    }
+  }
+
+  public async rotate(deg: number) {
+    this.gifState.rotate += deg;
+
+    if (this.gifState.rotate === 360 || this.gifState.rotate === -360) {
+      this.gifState.rotate = 0;
+    }
+
+    await this.renderPreview();
+    await this.timeline.refreshFrameImg();
+    this.timeline.refresh();
+  }
+
+  public resetStage() {
+    const srcgifDOM = document.querySelector('#srcgif');
+
+    if (srcgifDOM) {
+      srcgifDOM.innerHTML = '';
+    }
+
+    if (!!this.timeline.canvas) {
+      this.timeline.canvas.clear();
+    }
+  }
+
+  // 将#时间轴#中的每一帧合并为GIF
+  public async generate() {
+    this.generateDone = false;
+
+    this.progress = 0;
+    this.isGenerating = true;
+
+    const rotated = Math.abs(+this.gifState.rotate) === 90 || Math.abs(+this.gifState.rotate) === 270;
+
+    let { width, height } = { width: this.oriWidth, height: this.oriHeight };
+    if (rotated) {
+      [width, height] = [height, width];
+    }
+
+    const totalWidth = (width + 1) * this.totalFrameCount;
+
+    this.timeline.canvas.absolutePan(new fabric.Point(0, 0));
+
+    const dataUrlArr: string[] = [];
+
+    // 处理帧裁剪数据
+    const startFrameIndex = (this.frameSplitRange[0] - 1);
+    const endFrameIndex = (this.frameSplitRange[1]);
+
+    const removeRangeStartIndex = this.frameRemoveRange[0] - 1;
+    const removeRangeEndIndex = this.frameRemoveRange[1] - 1;
+
+    const isResizeRect = this.gifState.resize;
+
+    const gScaleX = this.showWidth / width;
+    const gScaleY = this.showHeight / height;
+
+    const resizeRect = this.previewer.resizeRect;
+    const resizeWidth = Math.round((resizeRect.width * resizeRect.scaleX) / gScaleX);
+    const resizeHeight = Math.round((resizeRect.height * resizeRect.scaleY) / gScaleY);
+
+    let generatorWidth = isResizeRect ? resizeWidth : this.oriWidth;
+    let generatorHeight = isResizeRect ? resizeHeight : this.oriHeight;
+
+    if (rotated) {
+      [generatorWidth, generatorHeight] = [generatorHeight, generatorWidth];
+    }
+
+    const gif = new GifGenerator({
+      repeat: this.gifState.repeat ? 0 : -1,
+      width: generatorWidth,
+      height: generatorHeight,
+    });
+
+    for (let i = startFrameIndex; i < endFrameIndex; i++)  {
+      if (this.enableFrameRangeRemove && i >= removeRangeStartIndex && i <= removeRangeEndIndex) {
+        continue;
+      }
+
+      let _width = width;
+      let _height = height;
+      let left = !this.gifState.revert ? (width + 1) * i : totalWidth - (width + 1) * (i + 1);
+      let top = 0;
+
+      if (isResizeRect) {
+        _width = resizeWidth;
+        _height = resizeHeight;
+        left += resizeRect.left / gScaleX;
+        top += resizeRect.top / gScaleY;
+      }
+
+      const durl = this.timeline.canvas.toDataURL({
+        width: _width,
+        height: _height,
+        left,
+        top,
+        format: 'png',
+      });
+
+      dataUrlArr.push(durl);
+    }
+
+    if (!dataUrlArr.length) {
+      this.isGenerating = false;
+      this.generateDone = true;
+
+      this.toast('帧数据为空，取消生成', 'info');
+      return;
+    }
+
+    gif.addDataUrl(dataUrlArr, {delay: this.interval});
+
+    await gif.renderToElem('#dtsgif', (progress: number) => {
+      this.progress = Math.ceil(progress * 100);
+    });
+
+    this.isGenerating = false;
+    this.generateDone = true;
+  }
+
+  public initKeyPressEvent() {
+    window.onkeypress = (e: KeyboardEvent) => {
+      const keycode = e.keyCode;
+
+      if (keycode === 127) { // Delete
+        this.deleteActivedObject();
+        return;
+      }
+    };
+
+    window.onkeydown = (e: KeyboardEvent) => {
+      const activedObjects = this.timeline.canvas.getActiveObjects();
+
+      // @ts-ignore
+      const allFrames = activedObjects.every(item => !!item.frameData);
+      // @ts-ignore
+      const objs = activedObjects.filter(item => !item.frameData);
+
+      const keycode = e.keyCode;
+
+
+      if (keycode === 67 && e.ctrlKey) { // ctrl + c
+        this.onCopy();
+        return;
+      }
+
+      if (keycode === 86 && e.ctrlKey) { // ctrl + v
+        this.onPaste();
+        return;
+      }
+    };
+  }
+
+  public onCopy() {
+    let activedObjects = this.timeline.canvas.getActiveObjects();
+
+    const frameList = this.frameList;
+
+    if (!frameList || !frameList.length || !activedObjects.length) {
+      return;
+    }
+
+    let frameCount = 0;
+    let objCount = 0;
+
+    activedObjects.forEach(item => {
+      // @ts-ignore
+      if (item.frameData) {
+        frameCount++;
+      } else {
+        objCount++;
+      }
+    });
+
+    this.clipboard.length = 0;
+    this.clipboard.push(...activedObjects);
+
+    this.toast(`已复制${frameCount}帧、${objCount}个对象`, 'success');
+  }
+
+  public onPaste() {
+    const activedObjects = this.timeline.canvas.getActiveObjects();
+
+    const frameList = this.frameList;
+
+    if (!frameList || !frameList.length || !activedObjects.length) {
+      return;
+    }
+
+    const copiedFrame = this.clipboard.filter(item => item.frameData);
+
+    const copiedObj = this.clipboard.filter(item => !item.frameData);
+
+    let activeFrame = null;
+
+    activedObjects.forEach(item => {
+      // @ts-ignore
+      if (item.frameData) {
+        activeFrame = item;
+      }
+    });
+
+    if (activeFrame && copiedFrame.length) {
+      // @ts-ignore
+      const index = activeFrame.frameIndex;
+
+      frameList.splice(index + 1, 0, ...copiedFrame.map(item => item.frameData));
+
+      this.toast(`已粘贴${copiedFrame.length}帧`, 'success');
+
+      // this.makeTimeline(frameList);
+    }
+
+    if (copiedObj.length) {
+
+      copiedObj.forEach(obj => {
+        obj.clone((cloneObj: fabric.Object) => {
+          cloneObj.set({
+            left: ((obj.left || 0) + 16),
+            top: ((obj.top || 0) + 16),
+          })
+          this.timeline.canvas.add(cloneObj);
+          this.timeline.canvas.setActiveObject(cloneObj);
+        })
+      });
+
+      this.timeline.canvas.renderAll();
+
+      // @ts-ignore
+      this.toast(`已粘贴${this.copiedObj.length}个对象`, 'success');
+    }
+
+  }
+
+  public deleteActivedObject() {
+    const activedObjects = this.timeline.canvas.getActiveObjects();
+
+    if (!activedObjects.length) {
+      this.toast('当前没有选中元素', 'error');
+      return;
+    }
+
+    this.timeline.canvas.remove(...activedObjects);
+
+    this.toast('删除成功', 'success');
+  }
+
+  // 更新可编辑内容
+  public updateEditData() {
+    this.frameSplitRange = [1, this.frameList.length];
+    this.addTextRange = [1, this.frameList.length];
+    this.addImgRange = [1, this.frameList.length];
+    this.frameRemoveRange = [1, 1];
+  }
+
+  public toast(msg: string, type: string = 'info', duration: number = 3000) {
+    // @ts-ignore
+    this.$message(msg, { type, duration})
+  }
+
+  public curTab: string = 'base';
+  public switchTab(tab: string) {
+    this.curTab = tab;
+
+    if (tab === 'resize') {
+      if (this.gifState.resize) {
+        this.previewer.preview.showResizeRect();
+      }
+    } else {
+      // this.preview.hideResizeRect();
+    }
+  }
+
+  public addImage(imgList: FileList) {
+    const image = new Image(imgList, this.addImgRange);
+    image.addTo(this.previewer);
+
+    this.toast('添加成功', 'success', 1000);
+  }
+
+  public addText() {
+    const { textContent, textSize, textColor, enableTextStroke, textStrokeColor, textStrokeWidth, addTextRange } = this;
+    const { fontFamily } = this;
+
+    if (!textContent || !textContent.length) {
+      this.toast('请先输入需要添加的文字', 'warn');
+      return;
+    }
+
+    const text = new Text(textContent, {
+      color: textColor,
+      fontSize: +textSize,
+
+      fontWeight: 600,
+      fontFamily,
+
+      enableStroke: enableTextStroke,
+      strokeWidth: textStrokeWidth,
+      strokeColor: textStrokeColor,
+      frameRange: addTextRange,
+    });
+    text.addTo(this.previewer);
+
+    this.toast('添加成功', 'success', 1000);
+  }
+
+  public async renderPreview() {
+    const usefulFrame= this.usefulFrame;
+    const curFrame = this.curFrameSlider;
+
+    this.curFrameSlider = Math.min(usefulFrame[curFrame], usefulFrame[usefulFrame.length - 1]);
+
+    await this.previewer.preview.updateOptions(this.gifState);
+    
+    this.previewer.preview.renderPreview(this.usefulFrame, this.interval, index => {
+      this.curFrameSlider = index;
+    });
+  }
+
+  public onCurFrameChange(curFrame) {
+    if (isNaN(curFrame)) {
+      curFrame = 0;
+    }
+
+    this.previewer.preview.setPreviewFrame(curFrame);
+  }
+
+  public setPreviewFrame(pointer: number) {
+    this.previewer.preview.setPreviewFrame(pointer);
+  }
+
+  get usefulFrame(): number[] {
+    const {
+      frameList,
+      frameSplitRange,
+      enableFrameRangeRemove,
+      frameRemoveRange,
+    } = this;
+
+    let usefulFrame: number[] = Array.from(new Array(this.frameList.length).keys());
+
+    const startFrameIndex = frameSplitRange[0] - 1;
+    const endFrameIndex = frameSplitRange[1] - 1;
+    const startRemoveFrameIndex = frameRemoveRange[0] - 1;
+    const endRemoveFrameIndex = frameRemoveRange[1] - 1;
+
+    usefulFrame = usefulFrame.filter(index => {
+      return index >= startFrameIndex && index <= endFrameIndex;
+    });
+
+    if (enableFrameRangeRemove) {
+      usefulFrame = usefulFrame.filter(index => {
+        return !(index >= startRemoveFrameIndex && index <= endRemoveFrameIndex);
+      });
+    }
+
+    return usefulFrame;
+  }
+
+  public async applyPreview2Timeline() {
+    const {
+      previewer,
+    } = this;
+
+    const timelineCanvas = this.timeline.canvas;
+
+    const preview = previewer.preview;
+
+    timelineCanvas.getObjects().filter(obj => !obj.isType('timeline-frame')).forEach(obj => {
+      timelineCanvas.remove(obj);
+    });
+    timelineCanvas.renderAll();
+
+    // todo 给每次添加的object设置唯一group id 并将他们添加至组中
+    const allObject = preview.getObjects();
+
+    for (let i = 0; i < allObject.length; i++) {
+      const obj = allObject[i];
+
+      await this.applyObjectToTimeline(obj);
+    }
+
+    this.toast('应用成功', 'success');
+  }
+
+  public async applyObjectToTimeline(obj: fabric.Object): Promise<void> {
+    const {
+      showWidth: width,
+      showHeight: height,
+      oriWidth,
+      oriHeight,
+      // canvas: timelineCanvas,
+      oriImageSrc,
+    } = this;
+    const timelineCanvas = this.timeline.canvas;
+
+    const scaleX = width / oriWidth;
+    const scaleY = height / oriHeight;
+
+    const allDonePromise: Promise<void>[] = [];
+
+    const curWidth = this.isRotated() ? this.oriHeight : this.oriWidth;
+
+    this.frameList.forEach((frame, index) => {
+      allDonePromise.push(new Promise(resolve => {
+        obj.clone((cloneObj: RangedFrameObject) => {
+
+          const {left: oriLeft, top: oriTop, scaleX: oriScaleX, scaleY: oriScaleY, inFrame} = cloneObj;
+
+          if (inFrame.includes(index)) {
+            const newObj = cloneObj.set({
+              left: oriLeft / scaleX + ((curWidth + 1) * index),
+              top: oriTop / scaleY,
+              scaleX: oriScaleX / scaleX,
+              scaleY: oriScaleY / scaleY,
+              opacity: 1,
+            });
+
+            timelineCanvas.add(newObj).renderAll();
+          }
+
+          resolve();
+
+        }, ['inFrame']);
+      }))
+    });
+
+    await Promise.all(allDonePromise);
+
+    return Promise.resolve();
+  }
+
+  public expandRange2Array(rangeArr: [number, number]): number[] {
+    const start = Math.max(rangeArr[0] - 1, 0); // 因为slider都是从1开始的 所以这里要-1
+    const end = rangeArr[1];
+
+    const res: number[] = [];
+
+    for (let i = start; i < end; i++) {
+      res.push(i);
+    }
+
+    return res;
+  }
+
+  public clearNotification(ver: number) {
+    localStorage.setItem(`notification-update-${ver}`, '1');
+
+    const notificationDOM = document.querySelector(`[data-n-ver="${ver}"]`);
+
+    if (notificationDOM) {
+      notificationDOM.remove();
+    }
+  }
+  public getNotification(ver: number): boolean {
+    return !!localStorage.getItem(`notification-update-${ver}`);
+  }
+
+  public renderPreviewImage(range: [number, number], index: number) {
+    this.curPreviewImg = this.frameList[range[index] - 1].imgFileSrc;
+  }
+
+  private aaa: boolean = false;
+
+  public togglePause() {
+    if (!this.previewer.preview) {
+      return;
+    }
+    if (this.previewer.preview.isPause) {
+      this.previewer.preview.play();
+    } else {
+      this.previewer.preview.pause();
+    }
+
+    this.aaa = this.previewer.preview.isPause;
+  }
+
+  async onFilterChange({ event, filter, type }:{event: string, filter: Filter, type: FilterType}) {
+    console.log(event);
+    if (!filter) {
+      this.toast('滤镜不可用');
+      return;
+    }
+
+    await filter.addTo(this.previewer, process => {
+      this.filterPanel.setFilterState(type, '渲染预览...', `${(process * 100).toFixed(2)}%`);
+    });
+
+    await filter.addTo(this.timeline, process => {
+      this.filterPanel.setFilterState(type, '渲染时间轴...', `${(process * 100).toFixed(2)}%`);
+    });
+    this.filterPanel.clearFilterState(type);
+
+    this.timeline.refresh();
+
+    this.toast('滤镜应用成功', 'success');
+  }
+
+  get tabs() {
+    return [
+      { name: 'base', title: '基础设置', icon: '/static/icons/hammer.svg', },
+      { name: 'addText', title: '添加文字', icon: '/static/icons/text.svg', },
+      { name: 'addPic', title: '添加图片', icon: '/static/icons/image.svg', },
+      { name: 'cut', title: '帧裁剪', icon: '/static/icons/cut.svg', },
+      { name: 'resize', title: '裁剪', icon: '/static/icons/contract.svg', },
+      { name: 'filter', title: '滤镜', icon: '/static/icons/wand.svg', },
+    ];
+  }
+
+  public panels: Panel[] = [];
+
+}
+</script>
+
+
+<style>
+.vs__selected {
+  color: var(--primary-text-color);
+}
+</style>
+
+<style>
+@font-face {
+    font-family: zhankukuaileti;
+    src: url('https://static.sxqsachin.com/font/ZhanKuKuaiLeTi2016XiuDingBan.ttf') format('truetype');
+}
+@font-face {
+    font-family: zhankuwenyiti;
+    src: url('https://static.sxqsachin.com/font/ZhanKuWenYiTi.ttf') format('truetype');
+}
+@font-face {
+    font-family: zhankugaoduanheiti;
+    src: url('https://static.sxqsachin.com/font/GaoDuanHeiXiuDing151105.ttf') format('truetype');
+}
+@font-face {
+    font-family: fangzhengfangsong;
+    src: url('https://static.sxqsachin.com/font/FangZhengFangSongJianTi.ttf') format('truetype');
+}
+@font-face {
+    font-family: fangzhengkaiti;
+    src: url('https://static.sxqsachin.com/font/FangZhengKaiTiJianTi.ttf') format('truetype');
+}
+@font-face {
+    font-family: yangrengdongzhushiti;
+    src: url('https://static.sxqsachin.com/font/YangRenDongZhuShiTi.ttf') format('truetype');
+}
+@font-face {
+    font-family: xianerti;
+    src: url('https://static.sxqsachin.com/font/XianErTi.ttf') format('truetype');
+}
+@font-face {
+    font-family: qiantuxiaotuti;
+    src: url('https://static.sxqsachin.com/font/QianTuXiaoTuTi.ttf') format('truetype');
+}
+@font-face {
+    font-family: qingsongshouxieti2;
+    src: url('https://static.sxqsachin.com/font/QingSongShouXieTi2.ttf') format('truetype');
+}
+@font-face {
+    font-family: youshebiaotihei;
+    src: url('https://static.sxqsachin.com/font/YouSheBiaoTiHei.ttf') format('truetype');
+}
+</style>
+
+<style lang="scss" scoped>
+  .wrapper {
+    .uploader {
+      max-width: calc(100vw - 2rem);
+    }
+
+    & /deep/ .canvas-container {
+      margin: 0 auto;
+    }
+  }
+
+  .vc-chrome {
+    box-shadow: none;
+    & /deep/ .vc-chrome-fields-wrap {
+      display: none;
+    }
+  }
+
+  @media screen and (min-width: 768px) {
+    .md-auto-sticky {
+      position: sticky;
+      top: -90px;
+    }
+    .md-auto-sticky.md\:top-0 {
+      top: 0;
+    }
+  }
+  @media screen and (max-width: 767px) {
+    .md-preview-sticky {
+      position: sticky;
+      top: -90px;
+    }
+  }
+</style>import { fabric } from 'fabric';
+import { GifFrameList, GifFrame, } from '@/js/gif';
+import { RangedFrameObject, Toasted, TextOption } from '../../js/type';
+import { Stage } from '../../js/stage';
+
+export interface PreviewOption {
+  revert?: boolean;
+  repeat?: boolean;
+  rloop?: boolean;
+  showResize?: boolean;
+  resize?: boolean;
+  interval?: number;
+  flipX?: boolean;
+  flipY?: boolean;
+  rotate?: number;
+}
+
+const DefaultPreviewOption: PreviewOption = {
+  repeat: true,
+  revert: false,
+}
+
+class GifPreview implements Stage {
+  public previewCanvas!: fabric.Canvas;
+  public frameGroup: fabric.Group = null;
+  public frameList: GifFrameList = null;
+
+  private _pause: boolean = false;
+
+  private _curFramePointer: number = 0;
+  private _frameArray: number[] = [];
+
+  private renderPreviewCallback = (i: number) => {};
+
+  // private revert: boolean = false;
+  // private repeat: boolean = true;
+  private interval: number = 60;
+  private gifTimer: NodeJS.Timeout = null;
+
+  private options: PreviewOption = DefaultPreviewOption 
+
+  private main!: Toasted;
+
+  private showWidth: number = 0;
+  private showHeight: number = 0;
+
+  private _replay: boolean = false;
+
+  private _resizeRect!: fabric.Rect;
+  private _resizeRectBorderT!: fabric.Rect;
+  private _resizeRectBorderB!: fabric.Rect;
+  private _resizeRectBorderL!: fabric.Rect;
+  private _resizeRectBorderR!: fabric.Rect;
+
+  frames: fabric.Image[] = [];
+
+  get imgs() {
+    return this.frames;
+  }
+
+  constructor(canvasID: string, main: Toasted) {
+    this.previewCanvas = new fabric.Canvas(canvasID);
+
+    this.main = main;
+  }
+
+  public async updateOptions(options: PreviewOption) {
+    this.options = options;
+
+    await this.initPreviewCanvas(this.frameList, this.showWidth, this.showHeight);
+  }
+
+  public createResizeRect(width, height): fabric.Rect {
+    return new fabric.Rect({
+      type: 'assets',
+      width: width - 64,
+      height: height - 64,
+      top: 32,
+      left: 32,
+      fill: '#00000000',
+      hasBorders: false,
+      hasRotatingPoint: false,
+      cornerStyle: 'circle',
+      opacity: 0,
+      selectable: false,
+      cornerColor: '#fff',
+      cornerSize: 12,
+      transparentCorners: false
+    });
+  }
+
+  public createResizeRectBorder(): fabric.Rect {
+    return new fabric.Rect({
+      type: 'assets',
+      fill: '#000000c7',
+      opacity: 0,
+      selectable: false,
+      hasControls: false,
+    });
+  }
+
+  public async initPreviewCanvas(frameList: GifFrameList, width: number, height: number) {
+    const {
+      previewCanvas: canvas,
+      options,
+    } = this;
+
+    const {
+      rotate
+    } = options;
+
+    canvas.getObjects().forEach(object => {
+      if (object.type === 'bg') {
+        canvas.remove(object);
+      }
+    });
+
+    const rotated = Math.abs(+rotate) === 90 || Math.abs(+rotate) === 270;
+
+    if (rotated) {
+      canvas.setWidth(height).setHeight(width);
+    } else {
+      canvas.setWidth(width).setHeight(height);
+    }
+
+    this.frameGroup = null;
+
+    const resizeRect = this.createResizeRect(width, height);
+    const rt = this.createResizeRectBorder();
+    const rb = this.createResizeRectBorder();
+    const rl = this.createResizeRectBorder();
+    const rr = this.createResizeRectBorder();
+
+    const resizeBorder = () => {
+      rt.set({
+        width: 2000,
+        height: 2000,
+        top: resizeRect.top - 2000,
+        left: 0,
+      });
+      rb.set({
+        width: 2000,
+        height: 2000,
+        top: resizeRect.top + resizeRect.height * resizeRect.scaleY,
+        left: 0,
+      });
+      rl.set({
+        width: 2000,
+        height: resizeRect.height * resizeRect.scaleY,
+        top: resizeRect.top,
+        left: resizeRect.left - 2000,
+      });
+      rr.set({
+        width: 2000,
+        height: resizeRect.height * resizeRect.scaleY,
+        top: resizeRect.top,
+        left: resizeRect.left + resizeRect.width * resizeRect.scaleX,
+      });
+    };
+
+    resizeBorder();
+    resizeRect.on('moving', resizeBorder).on('scaling', resizeBorder); 
+
+    this._resizeRect = resizeRect;
+    this._resizeRectBorderT = rt;
+    this._resizeRectBorderB = rb;
+    this._resizeRectBorderL = rl;
+    this._resizeRectBorderR = rr;
+    this.showWidth = width;
+    this.showHeight = height;
+
+    this.frameList = frameList;
+    const frameGroup = await this.genSrcGIFFrameGroup(frameList, width, height);
+
+    this.frameGroup = frameGroup;
+
+    canvas.add(frameGroup).add(resizeRect).add(rt, rb, rl ,rr);
+    canvas.sendToBack(frameGroup).renderAll();
+
+    this.renderPreview(this._frameArray ?? Array.from(new Array(frameList.length).keys()), this.interval, this.renderPreviewCallback);
+  }
+
+   // 生成指定宽高的帧Group
+  public async genSrcGIFFrameGroup(frameList: GifFrameList, frameWidth: number, frameHeight: number): Promise<fabric.Group> {
+    const promiseGroup: Promise<fabric.Object>[] = [];
+
+    const {
+      flipX,
+      flipY,
+      rotate,
+    } = this.options;
+    const rotated = Math.abs(+rotate) === 90 || Math.abs(+rotate) === 270;
+
+    let res = [];
+
+    let width = frameWidth;
+    let height = frameHeight;
+
+    if (rotated) {
+      [width, height] = [height, width];
+    }
+
+    if (!this.frames.length) {
+      frameList.forEach((frame, index) => {
+        promiseGroup.push(new Promise(resolve => {
+          fabric.Image.fromURL(frame.imgFileSrc, img => {
+            if (!img.width || !img.height) {
+              return;
+            }
+
+            const nimg = img.set({
+              left: index * width,
+              top: 500,
+              name: `frame-${index}`,
+              hasControls: false,
+              selectable: false,
+              type: 'bg',
+              flipX,
+              flipY,
+            }).scaleToWidth(width).scaleToHeight(height) as fabric.Image;
+
+            nimg.originX = 'center';
+            nimg.originY = 'center';
+
+            this.frames.push(nimg);
+
+            resolve(nimg);
+          });
+        }))
+      });
+
+      res = await Promise.all(promiseGroup);
+    } else {
+      this.frames = this.frames.map(img => {
+        img.rotate(rotate).set({
+          flipX,
+          flipY,
+        }).scaleToWidth(width).scaleToHeight(height) as fabric.Image;
+        return img;
+      });
+      res = this.frames;
+    }
+
+    const fgroup = new fabric.Group(res);
+    fgroup.set({
+      selectable: false,
+      hasControls: false,
+      name: 'bg-group',
+      type: 'bg',
+      top: 0,
+    })
+
+    return fgroup;
+  }
+
+  // 重置预览GIF播放间隔
+  public renderPreview(frameArray: number[], interval: number = 60, callback?: (curFrameIndex: number) => void) {
+    const {
+      previewCanvas: canvas,
+      gifTimer,
+      options,
+      showWidth: frameWidth,
+      _resizeRect: resizeRect,
+      _resizeRectBorderT: resizeRectBorderT,
+      _resizeRectBorderB: resizeRectBorderB,
+      _resizeRectBorderL: resizeRectBorderL,
+      _resizeRectBorderR: resizeRectBorderR,
+    } = this;
+
+    const {
+      repeat,
+      revert,
+    } = options;
+
+    if (revert) {
+      frameArray.sort((a, b) => b - a);
+    } else {
+      frameArray.sort((a, b) => a - b);
+    }
+
+    this._frameArray = frameArray;
+    this.interval = interval;
+    this.renderPreviewCallback = callback;
+
+    const startFrameIndex = frameArray[0];
+    const startLeft = startFrameIndex * frameWidth;
+
+    let left = 0;
+    let frameIndex = 0;
+    // let framePointer = 0;
+
+    // this._curFramePointer = 0;
+
+    if (gifTimer) {
+      clearInterval(gifTimer);
+    }
+    this.gifTimer = setInterval(() => {
+      let {
+        _pause,
+        _curFramePointer,
+        _replay,
+        
+      } = this;
+
+      let {
+        showResize,
+      } = this.options;
+
+      if (showResize) {
+        resizeRect.set({
+          opacity: 1,
+          stroke: '#fff',
+          selectable: true,
+        });
+        resizeRectBorderT.set({ opacity: 1 });
+        resizeRectBorderB.set({ opacity: 1 });
+        resizeRectBorderL.set({ opacity: 1 });
+        resizeRectBorderR.set({ opacity: 1 });
+        canvas.bringToFront(resizeRectBorderT);
+        canvas.bringToFront(resizeRectBorderB);
+        canvas.bringToFront(resizeRectBorderL);
+        canvas.bringToFront(resizeRectBorderR);
+        canvas.renderAll();
+      } else {
+        resizeRect.set({
+          opacity: 0,
+          stroke: '#777',
+          selectable: false,
+        });
+        resizeRectBorderT.set({ opacity: 0 });
+        resizeRectBorderB.set({ opacity: 0 });
+        resizeRectBorderL.set({ opacity: 0 });
+        resizeRectBorderR.set({ opacity: 0 });
+        canvas.renderAll();
+      }
+
+      if (_pause) {
+        return;
+      }
+
+      if (!repeat && _replay) {
+        return;
+      }
+
+      if (_replay) {
+        _replay = false;
+
+        left = startLeft;
+        _curFramePointer = 0;
+      }
+      frameIndex = frameArray[_curFramePointer++];
+
+      canvas.getObjects().forEach((obj: RangedFrameObject) => {
+        if (!obj.inFrame) {
+          return;
+        }
+
+        if (obj.inFrame.includes(frameIndex)) {
+          obj.opacity = 1;
+        } else {
+          obj.opacity = 0;
+        }
+      })
+
+      left = -(frameWidth * frameIndex);
+      this.frameGroup.set({
+        left,
+      });
+      this._curFramePointer = _curFramePointer;
+
+      if (typeof callback === 'function') {
+        callback(_curFramePointer);
+      }
+
+      canvas.renderAll();
+      if (_curFramePointer > frameArray.length - 1) {
+        _replay = true;
+      }
+
+      this._replay = _replay;
+
+    }, interval);
+  }
+
+  public setPreviewFrame(pointer: number) {
+    const {
+      previewCanvas: canvas,
+      frameGroup,
+      frameArray,
+      showWidth: frameWidth,
+    } = this;
+
+    pointer = Math.min(Math.max(pointer, 0), frameArray.length - 1)
+
+    const frameIndex = frameArray[pointer];
+
+    canvas.getObjects().forEach((obj: RangedFrameObject) => {
+      if (!obj.inFrame) {
+        return;
+      }
+
+      if (obj.inFrame.includes(frameIndex)) {
+        obj.opacity = 1;
+      } else {
+        obj.opacity = 0;
+      }
+    })
+
+    const left = -(frameWidth * frameIndex);
+
+    this.frameGroup.set({
+      left,
+    });
+    this._curFramePointer = pointer;
+
+    this._replay = false;
+
+    canvas.renderAll();
+  }
+
+  public getObjects(includeFrame: boolean = false) {
+    const allObject = this.previewCanvas.getObjects().filter(obj => includeFrame || !obj.isType('bg') && !obj.isType('bg-group') && !obj.isType('assets'));
+
+    return allObject;
+  }
+
+  public removeActiveObjects() {
+    const { previewCanvas: canvas } = this;
+
+    const activeObjects = canvas.getActiveObjects();
+
+    if (!activeObjects.length) {
+      this.main.toast('当前没有选中元素', 'error', 1000);
+      return;
+    }
+
+    activeObjects.forEach(obj => {
+      canvas.remove(obj);
+    });
+
+    this.main.toast(`成功删除${activeObjects.length}个对象`, 'success', 1000);
+  }
+
+  public pause() {
+    this._pause = true;
+  }
+  public play() {
+    this._pause = false;
+  }
+
+  public showResizeRect() {
+    this.options.showResize = true;
+    this.previewCanvas.setActiveObject(this._resizeRect);
+  }
+
+  public hideResizeRect() {
+    this.options.showResize = false;
+    this.previewCanvas.discardActiveObject();
+  }
+
+  get resizeRect(): fabric.Rect {
+    return this._resizeRect;
+  }
+
+  get curFramePointer(): number {
+    return this._curFramePointer;
+  }
+
+  get frameArray(): number[] {
+    return this._frameArray;
+  }
+
+  get isPause(): boolean {
+    return this._pause;
+  }
+
+  get canvas() {
+    return this.previewCanvas;
+  }
+}
+
+export {
+  GifPreview,
+}export type ProcessAction = {
+  actionName: string;
+}import { PreviewOption } from "./preview";
+
+// 用来保存对GIF图片进行的操作
+export class GifState implements PreviewOption {
+
+  // 倒放
+  public revert: boolean = false;
+
+  // 循环播放
+  public repeat: boolean = true;
+
+  // 抽帧
+  public rs: boolean = false;
+
+  // 反复
+  public rloop: boolean = false;
+
+  // 镜像
+  public flipX: boolean = false;
+  public flipY: boolean = false;
+
+  // 旋转角度
+  public rotate: number = 0;
+
+  public resize: boolean = false;
+
+  public toggleState(key: keyof this, name?: string, resetTimeline: boolean = false): any {
+    this[key] = !this[key] as any;
+
+    return this[key];
+  }
+}import { Stage } from '../../js/stage';
+import { GifFrameList } from '@/js/gif';
+import { fabric } from 'fabric';
+import { GifState } from './GifState';
+
+export class Timeline implements Stage {
+  private _canvas: fabric.Canvas;
+
+  private _wrapper: HTMLElement;
+
+  constructor(canvasID: string, wrapper) {
+    this._canvas = new fabric.Canvas(canvasID);
+
+    this._wrapper = wrapper;
+  }
+
+  async make(frameList: GifFrameList, oriWidth: number, oriHeight: number, gifState: GifState) {
+    if (!this.canvas) {
+      console.error('makrTimeline: canvas not ready');
+      return;
+    }
+
+    if (!frameList) {
+      return;
+    }
+
+    this.canvas.getObjects().forEach(obj => {
+      // @ts-ignore
+      if (obj.frameData) {
+        this.canvas.remove(obj);
+      }
+    })
+
+    const firstImg = frameList[0];
+
+    const frameWidth = oriWidth; // firstImg.width as number;
+    const frameHeight = oriHeight; // firstImg.height as number;
+
+    const canvasTotalWidth = (frameWidth + 1) * frameList.length;
+    const canvasHeight = frameHeight as number;
+
+    const timelineWrapperWidth = this._wrapper.offsetWidth - 2;
+
+    const scale = 1;
+    const divideWidth = 1;
+
+    this.canvas.setWidth(timelineWrapperWidth);
+    this.canvas.setHeight(canvasHeight);
+
+    frameList = frameList.map((frame, index) => {
+      const percent = (index + 1) / frameList.length;
+      fabric.Image.fromURL(frame.imgFileSrc, img => {
+        if (!img.width || !img.height) {
+          return;
+        }
+
+        const curWidth = img.width * scale;
+        const curHeight = img.height * scale;
+
+        const nimg = img.set({
+          left: index * (curWidth + divideWidth),
+          top: 0,
+          width: img.width,
+          name: 'frame' + index,
+          type: 'timeline-frame',
+          lockMovementX: true,
+          lockMovementY: true,
+          hasControls: false,
+          selectable: false,
+          flipX: gifState.flipX,
+          flipY: gifState.flipY,
+        }).scale(scale) as fabric.Image;
+
+        // @ts-ignore
+        nimg.frameIndex = index;
+        // @ts-ignore
+        nimg.frameData = frame;
+
+        this.canvas.add(nimg);
+      });
+
+      return frame;
+    });
+  }
+
+  get canvas() {
+    return this._canvas;
+  }
+
+  get imgs(): fabric.Image[] {
+    throw new DOMException('123')
+  }
+}
+import { StageModule } from "./module";
+
+// 这里定义了一个能够接受插件的 Stage 类型 
+export interface Stage {
+  canvas: fabric.Canvas;
+
+  imgs: fabric.Image[];
+}import { StageModule } from "../module";
+import { Stage } from "../stage";
+import { fabric } from "fabric";
+import { RangedFrameObject } from "../type";
+import { getFileInfo } from "@/js/gif";
+
+export class Image implements StageModule {
+  private imgList: FileList;
+  private frameRange: [number, number];
+
+  public constructor(imgs: FileList, frameRange: [number, number]) {
+    this.imgList = imgs;
+    this.frameRange = frameRange;
+  }
+
+  public async addTo(stage: Stage) {
+    const img = this.imgList[0];
+
+    if (!img.type.includes('image')) {
+      return;
+    }
+
+    const frameData = await getFileInfo(img);
+
+    const initImageData: Promise<fabric.Object> = new Promise(resolve => {
+      fabric.Image.fromURL(frameData.imgFileSrc, img => {
+        const nimg = img.set({
+          left: 15,
+          top: 15,
+          width: frameData.width,
+          height: frameData.height,
+          cornerColor: '#66a6ff',
+          cornerSize: 8,
+          transparentCorners: false
+        }) as RangedFrameObject;
+
+        nimg.set({
+          type: 'nimg',
+
+          inFrame: this.expandRange2Array(this.frameRange),
+        });
+
+        resolve(nimg);
+      });
+    });
+
+    const imgObj = await initImageData;
+
+    stage.canvas.add(imgObj).renderAll();
+    stage.canvas.setActiveObject(imgObj);
+  }
+
+  public expandRange2Array(rangeArr: [number, number]): number[] {
+    const start = Math.max(rangeArr[0] - 1, 0); // 因为slider都是从1开始的 所以这里要-1
+    const end = rangeArr[1];
+
+    const res: number[] = [];
+
+    for (let i = start; i < end; i++) {
+      res.push(i);
+    }
+
+    return res;
+  }
+
+  public removeFrom(stage: Stage) {
+  }
+}import { StageModule } from "../module";
+import { Stage } from "../stage";
+import { fabric } from "fabric";
+import { RangedFrameObject } from "../type";
+
+export type TextOption = {
+  fontSize?: number,
+  color?: string,
+
+  fontWeight?: 400 | 600,
+  fontFamily?: string,
+
+  enableStroke?: boolean,
+  strokeWidth?: number,
+  strokeColor?: string,
+
+  frameRange: [number, number],
+}
+
+export class Text implements StageModule {
+  // 文字操作 start
+
+  private content: string = '';
+  private color: string = '#fff';
+  private fontSize: number = 42;
+
+  private fontWeight: number = 600;
+  private fontFamily: string = '';
+
+  private enableStroke: boolean = false;
+  private strokeColor: string = '#000';
+  private strokeWidth: number = 1;
+
+  private frameRange: [number, number] = [1, 1]; // 添加文字起始值
+  // 文字操作 end
+
+  public constructor(content: string, option: TextOption) {
+    this.content = content;
+
+    this.color = option.color;
+    this.fontSize = option.fontSize;
+
+    this.fontWeight = option.fontWeight;
+    this.fontFamily = option.fontFamily;
+
+    this.enableStroke = option.enableStroke;
+    this.strokeColor = option.strokeColor;
+    this.strokeWidth = option.strokeWidth;
+
+    this.frameRange = option.frameRange;
+  }
+
+  public expandRange2Array(rangeArr: [number, number]): number[] {
+    const start = Math.max(rangeArr[0] - 1, 0); // 因为slider都是从1开始的 所以这里要-1
+    const end = rangeArr[1];
+
+    const res: number[] = [];
+
+    for (let i = start; i < end; i++) {
+      res.push(i);
+    }
+
+    return res;
+  }
+
+  public async addTo(stage: Stage) {
+    const canvas = stage.canvas;
+    let {
+      content,
+
+      fontSize,
+      color,
+
+      fontWeight,
+      fontFamily,
+
+      enableStroke,
+
+      strokeWidth,
+      strokeColor,
+    } = this;
+
+    const itext = new fabric.IText(content, {
+      fill: color,
+      left: 15,
+      top: 15,
+      fontWeight,
+      fontSize: fontSize,
+      cornerColor: '#66a6ff',
+      cornerSize: 8,
+      transparentCorners: false
+    }) as fabric.IText & RangedFrameObject;
+
+    if (fontFamily) {
+      itext.set({
+        fontFamily,
+      })
+    }
+
+    if (enableStroke) {
+      itext.set({
+        stroke: strokeColor,
+        strokeWidth: strokeWidth,
+      });
+    }
+
+    itext.set({
+      type: 'text',
+
+      inFrame: this.expandRange2Array(this.frameRange),
+    });
+
+    canvas.add(itext).renderAll();
+    canvas.setActiveObject(itext);
+  }
+
+  public removeFrom(stage: Stage) {
+  }
+}import { AbstractFilter } from '../filter';
+import { fabric } from 'fabric';
+
+export class Grayscale extends AbstractFilter {
+  applyFilter(img: fabric.Image): fabric.Image {
+    img.filters.push(new fabric.Image.filters.Grayscale());
+    return img;
+  }
+}import { AbstractFilter } from '../filter';
+import { fabric } from 'fabric';
+
+export class Emboss extends AbstractFilter {
+  applyFilter(img: fabric.Image): fabric.Image {
+    img.filters.push(new fabric.Image.filters.Convolute({
+      matrix: [1, 1, 1,
+        1, 0.7, -1,
+        -1, -1, -1]
+    }));
+    return img;
+  }
+}import { AbstractFilter } from '../filter';
+import { fabric } from 'fabric';
+
+export class Noise extends AbstractFilter {
+  applyFilter(img: fabric.Image): fabric.Image {
+    img.filters.push(new fabric.Image.filters.Noise({noise: 128}));
+    return img;
+  }
+}import { AbstractFilter } from '../filter';
+import { fabric } from 'fabric';
+
+export class Kodachrome extends AbstractFilter {
+  applyFilter(img: fabric.Image): fabric.Image {
+    // @ts-ignore
+    img.filters.push(new fabric.Image.filters.Kodachrome());
+    return img;
+  }
+}import { AbstractFilter } from '../filter';
+import { fabric } from 'fabric';
+
+export class Pixelate extends AbstractFilter {
+  applyFilter(img: fabric.Image): fabric.Image {
+    img.filters.push(new fabric.Image.filters.Pixelate({blocksize: 8}));
+    return img;
+  }
+}import { AbstractFilter } from '../filter';
+import { fabric } from 'fabric';
+
+export class Sepia extends AbstractFilter {
+  applyFilter(img: fabric.Image): fabric.Image {
+    img.filters.push(new fabric.Image.filters.Sepia());
+    return img;
+  }
+}import { AbstractFilter } from '../filter';
+import { fabric } from 'fabric';
+
+export class Technicolor extends AbstractFilter {
+  applyFilter(img: fabric.Image): fabric.Image {
+    // @ts-ignore
+    img.filters.push(new fabric.Image.filters.Technicolor());
+    return img;
+  }
+}import { AbstractFilter } from '../filter';
+import { fabric } from 'fabric';
+
+export class Vintage extends AbstractFilter {
+  applyFilter(img: fabric.Image): fabric.Image {
+    // @ts-ignore
+    img.filters.push(new fabric.Image.filters.Vintage());
+    return img;
+  }
+}import { AbstractFilter } from '../filter';
+import { fabric } from 'fabric';
+
+export class Invert extends AbstractFilter {
+  applyFilter(img: fabric.Image): fabric.Image {
+    img.filters.push(new fabric.Image.filters.Invert());
+    return img;
+  }
+}import { AbstractFilter } from '../filter';
+import { fabric } from 'fabric';
+
+export class Polaroid extends AbstractFilter {
+  applyFilter(img: fabric.Image): fabric.Image {
+    // @ts-ignore
+    img.filters.push(new fabric.Image.filters.Polaroid());
+    return img;
+  }
+}import { AbstractFilter } from '../filter';
+import { fabric } from 'fabric';
+
+export class Sharpen extends AbstractFilter {
+  applyFilter(img: fabric.Image): fabric.Image {
+    img.filters.push(new fabric.Image.filters.Convolute({
+      matrix: [0, -1, 0,
+        -1, 5, -1,
+        0, -1, 0]
+    }));
+    return img;
+  }
+}import { AbstractFilter } from '../filter';
+import { fabric } from 'fabric';
+
+export class Blur extends AbstractFilter {
+  applyFilter(img: fabric.Image): fabric.Image {
+    // @ts-ignore
+    img.filters.push(new fabric.Image.filters.Blur({value: 10}));
+    return img;
+  }
+}import { AbstractFilter } from '../filter';
+import { fabric } from 'fabric';
+
+export class BlackWhite extends AbstractFilter {
+  applyFilter(img: fabric.Image): fabric.Image {
+    // @ts-ignore
+    img.filters.push(new fabric.Image.filters.BlackWhite());
+    return img;
+  }
+}import { Noise } from "./filters/noise";
+import { Grayscale } from "./filters/gray-scale";
+import { Invert } from "./filters/invert";
+import { Sepia } from "./filters/sepia";
+import { Pixelate } from "./filters/pixelate";
+import { BlackWhite } from "./filters/black-white";
+// import { Blur } from "./filters/blur";
+import { Kodachrome } from "./filters/kodachrome";
+import { Polaroid } from "./filters/polaroid";
+import { Technicolor } from "./filters/technicolor";
+import { Sharpen } from "./filters/sharpen";
+import { Emboss } from "./filters/emboss";
+import { Vintage } from "./filters/vintage";
+import { Filter } from "./filter";
+
+const FilterMap = {
+  Noise,
+  Grayscale,
+  Invert,
+  Sepia,
+  Pixelate,
+  BlackWhite,
+  // Blur,
+  Kodachrome,
+  Polaroid,
+  Technicolor,
+  Sharpen,
+  Emboss,
+  Vintage,
+};
+
+export type FilterType = 'Noise' | 'Grayscale' | 'BlackWhite' | 'Invert' | 'Sepia' | 'Pixelate' | 'Kodachrome' | 'Polaroid' | 'Technicolor' | 'Sharpen' | 'Emboss' | 'Vintage';
+
+export class Filters {
+  public static get(type: FilterType): Filter | null {
+    if (!FilterMap[type]) {
+      return null;
+    }
+
+    return new FilterMap[type]();
+  }
+}import { Stage } from "../stage";
+import { StageModule } from "../module";
+import { delay } from "@/js/utility";
+
+
+export interface Filter extends StageModule {
+}
+
+export abstract class AbstractFilter implements Filter {
+  async addTo({ imgs }: Stage, processCallback: (process: number) => void = () => { }) {
+    for (let index = 0; index < imgs.length; index++) {
+      let img = imgs[index];
+
+      img = this.applyFilter(img);
+      img.applyFilters();
+
+      // 插入一个延时 避免阻塞用户操作
+      await delay(28);
+
+      processCallback((index + 1) / imgs.length);
+    }
+  }
+
+  abstract applyFilter(img: fabric.Image): fabric.Image;
+}import { Stage } from "./stage";
+
+export interface StageModule {
+  addTo(stage: Stage)
+  addTo(stage: Stage, processCallback?: (process: number) => void)
+}import { Panel } from "./panel";
+
+export interface Desk {
+  tabs: { name: string, title: string, icon: string, new?: boolean }[];
+
+  panels: any[];
+}export type RangedFrameObject = fabric.Object & { inFrame: number[] };
+
+export interface Toasted {
+  toast(text: string, type?: string, duration?: number);
+}
+
+export type TextOption = {
+  size?: number,
+  color?: string,
+  enableStroke?: boolean,
+  strokeWidth?: number,
+  strokeColor?: string,
+  fontWeight?: 400 | 600,
+}
+
+export type GIFInfo = {
+  
+}import { Vue, Prop, } from 'vue-property-decorator';
+import { Toasted } from '@/pages/index/js/type';
+import { Desk } from './desk';
+
+export interface Panel {
+  tabInfo: { name: string, title: string, icon: string, new?: boolean };
+
+  panelName: string;
+
+  addToDesk(desk?: Desk);
+}
+
+export abstract class AbstractPanel extends Vue implements Toasted, Panel {
+  // @Prop({})
+  // public desk!: any;
+
+  abstract tabInfo;
+  abstract panelName;
+
+  public toast(msg: string, type: string = 'info', duration: number = 3000) {
+    // @ts-ignore
+    this.$message(msg, { type, duration });
+  }
+
+  public addToDesk(desk: Desk) {
+    // const desk = this.desk;
+    // desk.panels.splice(desk.panels.length, 1, this);
+    desk.tabs.splice(desk.tabs.length, 1, this.tabInfo);
+  };
+}import '@babel/polyfill'
+
+import '@/assets/css/base.css'
+import '@/assets/css/base.scss'
+import '@/assets/css/normalize.scss';
+
+import Vue from 'vue';
+import App from './vue/App.vue';
+
+import message from '@/js/msg/message.ts';
+
+Vue.prototype.$message = message;
+Vue.config.ignoredElements = [/^ion-/];
+
+new Vue({
+  render: h => h(App),
+}).$mount('#app');<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta charset="utf-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="GifSuper是一个帮助你快速编辑GIF的在线工具网站,在线即可编辑GIF动态图与动态表情包。"/>
+  <meta name="keywords" content="GIF,GIF在线制作,GIF表情在线编辑,GIF编辑,GIF编辑文字,在线编辑动态图,动态表情编辑,关于GifSuper"/>
+
+  <meta name="author" content="SxqSachin" />
+  <meta name="robots" content="index,follow" />
+  <meta name="google" content="index,follow" />
+  <meta name="googlebot" content="index,follow" />
+  <meta name="verify" content="index,follow" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+
+  <title>关于Gif Super</title>
+
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon" />
+
+  <style>
+    @import url('/static/css/theme-light.css') (prefers-color-scheme: light), (prefers-color-scheme: no-preference);
+    @import url('/static/css/theme-dark.css') (prefers-color-scheme: dark);
+  </style>
+
+  <style>
+    header { height: 48px; }
+    main { min-height: calc(100vh - 42px - 48px); }
+    img.logo { width: 32px; height: 32px; }
+    footer { min-height: 42px; }
+  </style>
+
+  <script>
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?0d54d1ca6bc93cf45d41a523003a2bdf";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+  </script>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-168829362-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-168829362-1');
+  </script>
+
+</head>
+
+<body class="flex flex-col min-h-screen theme">
+  <header class="text-center flex items-center justify-center lg:justify-between shadow px-8 border-b border-gray-400 bg-primary">
+    <div class="flex items-center">
+      <img class="logo" src="/static/imgs/logo.png" alt="Gif Super Logo"/>
+      <a href="/" class="ml-2 cursor-pointer text-color-primary"> Gif Super </a>
+      <sup class="text-red-300 ml-1"> Beta </sup>
+      <a href="/" class="hidden lg:block ml-8 text-color-primary"> 帮助您在线操作GIF文件 </a>
+    </div>
+
+    <div class="flex">
+      <a href="/" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> 主页 </a>
+      <a href="/comment.html" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> Bug反馈&留言 </a>
+      <a href="/update.html" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> 更新日志 </a>
+      <a href="/about.html" class="hidden lg:block ml-8 cursor-pointer text-color-primary"> 关于GifSuper </a>
+    </div>
+  </header>
+
+  <main class="w-full lg:w-3/5 mx-auto p-4 lg:p-8 text-color-primary">
+    <!-- <a href="https://github.com/SxqSachin/gifsuper" target="_blank" class="github-corner hidden md:block absolute right-0" style="top: 48px;" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#70B7FD; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style> -->
+    <article class="leading-8">
+      <h1 class="mb-4 text-xl">关于Gif Super</h1>
+      <p>这是一个帮助您在线编辑Gif的工具站。</p>
+      <p>即开即用无需登陆等多余操作，减少您的使用成本。</p>
+      <!-- <p>开发初衷：微信表情包10mb限制。</p> -->
+      <p>Gif编辑过程中不包含任何网络请求，操作均在您的终端设备上直接计算。</p>
+      <p class="mt-4">正在着手开发的功能：</p>
+      <ol class="list-disc list-inside">
+        <li>Gif压缩</li>
+        <li>Gif拼接</li>
+        <li>Gif分离（分解为多张Gif）</li>
+        <li>添加图片自动调整大小</li>
+      </ol>
+      <p>功能会不断扩充，期待您的建议与反馈，帮助Gif Super变得更好。</p>
+
+      <h1 class="mt-6 mb-4 text-xl">关于作者</h1>
+      <!-- <p>SxqSachin</p> -->
+      <p>Github： <a class="text-color-link" href="https://github.com/SxqSachin/gifsuper" target="_blank">GifSuper</a></p>
+      <!-- <p>QQ： 2512870210</p> -->
+      <!-- <p>邮箱： sxqsachin@yahoo.com</p> -->
+      <p>期待您的建议与反馈</p>
+
+      <!-- <h1 class="mt-6 mb-4 text-xl">打赏一下</h1>
+      <p class="mt-4 mb-2">请作者喝瓶饮料</p>
+      <div class="flex flex-col lg:flex-row items-center">
+        <div class="w-64 border border-gray-400 rounded-md">
+          <img class="w-full" src="https://static.sxqsachin.com/imgs/wechat-receive-5-min.jpg" alt="打赏一下" srcset="">
+        </div>
+        <div class="ml-0 lg:ml-4 mt-4 lg:mt-0 w-64 border border-gray-400 rounded-md">
+          <img class="w-full" src="https://static.sxqsachin.com/imgs/alipay-receive-5-min.jpg" alt="打赏一下" srcset="">
+        </div>
+      </div> -->
+
+      <h1 class="mt-6 mb-4 text-xl">源代码使用</h1>
+      <ol class="list-disc list-inside">
+        <li><a href="https://github.com/vuejs/vue" target="_blank">vue.js</a></li>
+        <li><a href="https://github.com/NightCatSama/vue-slider-component" target="_blank">vue-slider-components.js</a></li>
+        <li><a href="https://github.com/xiaokaike/vue-color" target="_blank">vue-color</a></li>
+        <li><a href="https://github.com/jnordberg/gif.js" target="_blank">gif.js</a></li>
+        <li><a href="https://github.com/buzzfeed/libgif-js" target="_blank">libgif.js</a></li>
+        <li><a href="https://github.com/tailwindlabs/tailwindcss" target="_blank">tailwind.css</a></li>
+        <li><a href="https://github.com/sagalbot/vue-select" target="_blank">Vue Select</a></li>
+
+        <li>ionicons</li>
+      </ol>
+    </article>
+  </main>
+
+  <footer class="pb-4 flex justify-center items-center border-t border-gray-400 flex-col bg-primary">
+    <!-- <div class="w-full mb-4 py-4 px-16 lg:px-32 flex flex:col md:flex-row justify-center flex-row items-center border-b border-gray-400">
+      <span>友情链接：</span>
+      <ul class="flex flex:col md:flex-row">
+      </ul>
+    </div> -->
+    <div class="flex flex-col justify-center items-center mb-2 leading-6">
+      <p>如有Bug报告/建议，请联系站长</p>
+      <p>
+        <span>QQ：2512870210</span>
+        <span class="inline lg:hidden"> | </span>
+        <span class="inline lg:hidden"><a href="/comment.html">Bug反馈&留言</a></span>
+        <span class="inline lg:hidden"> | </span>
+        <span class="inline lg:hidden"><a href="/about.html">关于Gif Spuer</a></span>
+      </p>
+    </div>
+    <div class="flex justify-center items-center">
+      <div>2020</div>
+      <div class="ml-4">@GifSuper</div>
+    </div>
+    <!-- <a class="ml-4" href="http://www.beian.miit.gov.cn/">苏ICP备17070289号</a> -->
+  </footer>
+
+  <script>
+    (function() {
+      if (new Date().getHours() > 20 || new Date().getHours() < 6) {
+        document.body.classList.remove('theme');
+        document.body.classList.add('theme--dark');
+      }
+    })()
+  </script>
+
+  <!-- <script type="module" src="https://unpkg.com/ionicons@5.0.0/dist/ionicons/ionicons.esm.js"></script> -->
+
+  <script>
+    function add2Favorite() { var url = window.location || 'https://gifsuper.com'; var title = document.title || 'Gif Super，一个帮助您快速编辑GIF的在线工具网站'; var ua = navigator.userAgent.toLowerCase(); if (ua.indexOf("360se") > -1) { alert("由于360浏览器功能限制，请 Ctrl+D 手动收藏！"); } else if (ua.indexOf("msie 8") > -1) { window.external.AddToFavoritesBar(url, title); } else if (document.all) { try{ window.external.addFavorite(url, title); }catch(e){ alert('您的浏览器不支持自动收藏，请 Ctrl+D 手动收藏!'); } } else if (window.sidebar) { window.sidebar.addPanel(title, url, ""); } else { alert('您的浏览器不支持自动收藏，请 Ctrl+D 手动收藏!'); } }
+  </script>
+</body>
+
+</html>import '@/assets/css/base.css'
+import '@/assets/css/base.scss'
+import '@/assets/css/normalize.scss';

@@ -438,10 +438,13 @@
             <sbtn title="应用修改" @click="applyPreview2Timeline" type="success" :disabled="!canEdit">将修改应用到时间轴</sbtn>
             <div class="py-2 mb-4 text-sm">
               <span class="text-red-300"> 注意：</span>
-              <span class="text-color-neutral">若进行过“添加文字/图片”操作，则在生成最终结果前，需要先将修改应用到时间轴，等到提示“应用成功”后方可生成GIF。</span>
+              <span class="text-color-neutral">若进行过“添加文字/图片”、“应用滤镜”操作，则在生成最终结果前，需要先将修改应用到时间轴，等到提示“应用成功”后方可生成GIF。</span>
             </div>
             <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
-            <span class="inline-block py-2 text-color-neutral text-sm border-gray-400">tips: 受原Gif大小影响，点击“生成”按钮后可能会有短暂卡顿，此时耐心等候即可。</span>
+            <div class="py-2 text-color-neutral text-sm">
+              <p class="">tips: 受原Gif大小影响，点击“生成”按钮后可能会有短暂卡顿，此时耐心等候即可。</p>
+              <p class=""> 生成后的GIF文件体积可能增加，可前往“<a href="https://www.iloveimg.com/zh-cn/compress-image?from=gifsuper.com" target="_blank">ILoveImg</a>”进行图片压缩。</p>
+            </div>
           </fieldset>
         </div>
 
@@ -484,6 +487,18 @@
 
       <timeline ref="timeline" :frame-list="frameList" :gif-state="gifState"></timeline>
 
+    </div>
+
+    <!-- 这里预载入字体 -->
+    <div class="absolute top-0 left-0 w-0 h-0 overflow-hidden" style="visiblity: hidden;">
+      <template v-for="fontItem in fontList">
+        <span
+          :key="fontItem.font"
+          class="w-full text-color-primary"
+          :style="`font-family:${fontItem.font};`">
+            <p class="text-2xl" :style="`font-family:${fontItem.font};`" >1</p>
+        </span>
+      </template>
     </div>
 
   </div>
@@ -728,7 +743,7 @@ export default class extends Vue implements Toasted, Desk {
     this.oriHeight = height;
 
     // 监听图片加载完成事件 如果不等待图片显示完成 获取到的showWidth/Height将会是异常值
-    const oriImageOnLoadPromise = new Promise(resolve => {
+    const oriImageOnLoadPromise = new Promise<void>(resolve => {
       imgDOM.onload = () => {
         resolve();
       }
