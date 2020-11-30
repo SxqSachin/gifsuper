@@ -202,7 +202,33 @@
 
               <div class="flex items-center mb-4">
                 <label for="" class="whitespace-no-wrap">文字颜色：</label>
-                <color-picker class="z-40 ml-0 border border-gray-500" v-model="textColorObj"></color-picker>
+                <div class="flex items-center">
+                  <div 
+                    class="w-2/3 md:w-32 h-8 border border-gray-400 rounded-sm"
+                    :style="{backgroundColor: textColor}"
+                    @click="showTextColorPicker = true"
+                    >
+                  </div>
+                  <span class="ml-3 text-color-neutral text-xs"> 点击左侧方框取色 </span>
+                </div>
+                <s-modal :show="showTextColorPicker" class="absolute top-0 left-0 z-50">
+                  <div class="flex justify-center mx-auto max-w-full" style="width: 400px;">
+                    <div class="bg-primary flex flex-col justify-center rounded-sm p-6 w-full">
+                      <h1 class="text-xl">请选择文字颜色</h1>
+                      <hr class="my-4"/>
+                      <color-picker class="z-40 border border-gray-500 mx-auto" v-model="tmpTextColorObj"></color-picker>
+                      <hr class="my-4"/>
+
+                      <div class="w-full text-center" :style="textContentPreviewStyle"> {{textContent || '示例文字'}} </div>
+
+                      <hr class="my-4"/>
+                      <div class="flex justify-between">
+                        <sbtn class="px-8 text-primary flex-1" @click="textColorObj = tmpTextColorObj; showTextColorPicker = false;" type="info">确定</sbtn>
+                        <sbtn class="px-8 text-primary flex-1 ml-4" @click="showTextColorPicker = false;">取消</sbtn>
+                      </div>
+                    </div>
+                  </div>
+                </s-modal>
               </div>
 
               <div class="flex justify-center items-center mb-4 pb-8 w-full">
@@ -224,7 +250,7 @@
                 <label for="" class="whitespace-no-wrap">字体<sup class="text-red-400"> new </sup>：</label>
                 <v-select
                   v-model="fontFamily"
-                  class="w-full text-color-primary"
+                  class="w-full text-color-primary border border-gray-400 rounded-sm"
                   :options="fontList"
                   :style="`font-family:${fontFamily};`"
                   :reduce="font => font.font">
@@ -236,13 +262,37 @@
 
               <section class="flex flex-col w-full mb-4">
                 <div class="flex flex-row items-center mb-4">
-                  <span>文字边线：</span><sbtn :disabled="!canEdit" @click="enableTextStroke = !enableTextStroke">{{ !enableTextStroke ? '开启' : '关闭' }}</sbtn>
+                  <span>文字轮廓：</span><sbtn :disabled="!canEdit" @click="enableTextStroke = !enableTextStroke">{{ !enableTextStroke ? '开启' : '关闭' }}</sbtn>
                 </div>
 
                 <div class="flex flex-col justify-start w-full" v-show="enableTextStroke">
                   <div class="flex items-center mb-4">
-                    <label for="" class="whitespace-no-wrap">字边线色：</label>
-                    <color-picker class="z-40 ml-0 border border-gray-500" v-model="textStrokeObj"></color-picker>
+                    <label for="" class="whitespace-no-wrap">轮廓颜色：</label>
+                    <div class="flex items-center">
+                      <div 
+                        class="w-2/3 md:w-32 h-8 border border-gray-400 rounded-sm"
+                        :style="{backgroundColor: textStrokeColor}"
+                        @click="showTextStrokeColorPicker = true"
+                        >
+                      </div>
+                      <span class="ml-3 text-color-neutral text-xs"> 点击左侧方框取色 </span>
+                    </div>
+                    <s-modal :show="showTextStrokeColorPicker" class="absolute top-0 left-0 z-50">
+                      <div class="flex justify-center mx-auto max-w-full" style="width: 400px;">
+                        <div class="bg-primary flex flex-col justify-center rounded-sm p-6 w-full">
+                          <h1 class="text-xl">请选择轮廓颜色</h1>
+                          <hr class="my-4"/>
+                          <color-picker class="z-40 border border-gray-500 mx-auto" v-model="tmpTextStrokeObj"></color-picker>
+                          <hr class="my-4"/>
+                          <div class="w-full text-center" :style="textContentPreviewStyle"> {{textContent || '示例文字'}} </div>
+                          <hr class="my-4"/>
+                          <div class="flex justify-between">
+                            <sbtn class="px-8 text-primary flex-1" @click="textStrokeObj = tmpTextStrokeObj; showTextStrokeColorPicker = false;" type="info">确定</sbtn>
+                            <sbtn class="px-8 text-primary flex-1 ml-4" @click="showTextStrokeColorPicker = false;">取消</sbtn>
+                          </div>
+                        </div>
+                      </div>
+                    </s-modal>
                   </div>
 
                   <div class="flex justify-center items-center pb-8 w-full">
@@ -511,6 +561,7 @@ import { Vue, Component, Prop, } from 'vue-property-decorator';
 import Upload from '@/components/widget/s-upload.vue';
 import sbtn from '@/components/widget/s-btn.vue';
 import sInput from '@/components/widget/s-input.vue';
+import sModal from '@/components/widget/s-modal.vue';
 
 import Previewer from './components/previewer.vue';
 
@@ -562,6 +613,7 @@ import { checkOrigin } from '../../../js/auth'
     'upload': Upload,
     sbtn,
     's-input': sInput,
+    's-modal': sModal,
     slider: VueSlider,
     'color-picker': ColorPicker,
     previewer: Previewer,
@@ -608,6 +660,8 @@ export default class extends Vue implements Toasted, Desk {
 
   // 文字操作 start
   public textContent: string = '';
+  public tmpTextColorObj: {[key: string]: string} = { hex: '#fff' };
+  public tmpTextStrokeObj: {[key: string]: string} = { hex: '#000' };
   public textColorObj: {[key: string]: string} = { hex: '#fff' };
   public textStrokeObj: {[key: string]: string} = { hex: '#000' };
   public textSize: string = '42';
@@ -631,6 +685,9 @@ export default class extends Vue implements Toasted, Desk {
   public addTextRange: [number, number] = [1, 1]; // 添加文字起始值
 
   public enableTextStroke: boolean = false;
+
+  public showTextColorPicker: boolean = false;
+  public showTextStrokeColorPicker: boolean = false;
   // 文字操作 end
 
 
@@ -691,6 +748,20 @@ export default class extends Vue implements Toasted, Desk {
 
   get isPreviewUseable(): boolean {
     return this.canEdit || this.isGenerating || !!this.rawFile;
+  }
+
+  get textContentPreviewStyle(): {[key: string]: string} {
+    const style = {
+      color: this.tmpTextColorObj?.hex8 ?? '#fff',
+      'font-size': `${this.textSize}px`,
+      'font-family': this.fontFamily,
+    }
+
+    if (this.enableTextStroke) {
+      style['-webkit-text-stroke'] = `${this.textStrokeWidth}px ${this.tmpTextStrokeObj?.hex8 ?? '#000'}`;
+    }
+
+    return style;
   }
 
   public isRotated(): boolean {
@@ -1319,6 +1390,9 @@ export default class extends Vue implements Toasted, Desk {
 <style>
 .vs__selected {
   color: var(--primary-text-color);
+}
+.vs__dropdown-toggle {
+  border: 0;
 }
 </style>
 
