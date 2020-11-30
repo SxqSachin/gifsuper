@@ -204,7 +204,7 @@
                 <label for="" class="whitespace-no-wrap">文字颜色：</label>
                 <div class="flex items-center">
                   <div 
-                    class="w-2/3 md:w-32 h-8 border border-gray-400 rounded-sm"
+                    class="w-20 md:w-32 h-8 border border-gray-400 rounded-sm"
                     :style="{backgroundColor: textColor}"
                     @click="showTextColorPicker = true"
                     >
@@ -270,7 +270,7 @@
                     <label for="" class="whitespace-no-wrap">轮廓颜色：</label>
                     <div class="flex items-center">
                       <div 
-                        class="w-2/3 md:w-32 h-8 border border-gray-400 rounded-sm"
+                        class="w-20 md:w-32 h-8 border border-gray-400 rounded-sm"
                         :style="{backgroundColor: textStrokeColor}"
                         @click="showTextStrokeColorPicker = true"
                         >
