@@ -2,6 +2,7 @@ const baseWebpackConfig = require('./webpack.base.js');
 const merge = require('webpack-merge');
 const webpack = require('webpack');
 const path = require('path');
+const SentryWebpackPlugin = require("@sentry/webpack-plugin");
 
 const resolve = (dir) => {
   return path.join(__dirname, '..', dir);
@@ -39,6 +40,18 @@ const prodWebpackConfig = merge(baseWebpackConfig, {
       }
     },
   },
+  plugins: [
+    new SentryWebpackPlugin({
+      // sentry-cli configuration
+      authToken: '556a69005b074980af150dae5001f8f795181be12df145c69da6206870fab3c5',
+      org: "sxqsachin",
+      project: "gifsuper",
+
+      // webpack specific configuration
+      include: ".",
+      ignore: ["node_modules", "webpack.config.js"],
+    }),
+  ]
 })
 
 module.exports = prodWebpackConfig;
