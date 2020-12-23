@@ -46,10 +46,10 @@ const prodWebpackConfig = merge(baseWebpackConfig, {
       authToken: '556a69005b074980af150dae5001f8f795181be12df145c69da6206870fab3c5',
       org: "sxqsachin",
       project: "gifsuper",
-
       // webpack specific configuration
       include: ".",
       ignore: ["node_modules", "webpack.config.js"],
+      release: '1.0.0',
     }),
   ]
 })
