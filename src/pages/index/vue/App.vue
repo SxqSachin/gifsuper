@@ -800,9 +800,6 @@ export default class extends Vue implements Toasted, Desk {
   public async upload(e: FileList) {
     const gifFile = e[0];
 
-    // @ts-ignore
-    ccif();
-
     if (gifFile.type !== 'image/gif') {
       this.toast('只支持上传Gif文件', 'error');
       return;
