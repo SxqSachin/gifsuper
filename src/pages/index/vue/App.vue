@@ -68,7 +68,7 @@
                   <slider class="flex-auto"
                     v-model="curFrameSlider"
                     :min="1"
-                    :max="usefulFrame.length"
+                    :max="usefulFrame.length || 2"
                     :disabled="!canEdit"
                     :drag-on-click="true"
                     :duration="0"
@@ -519,6 +519,17 @@
       </div>
     </div>
 
+    <!-- 底部广告 -->
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-1451575114945845"
+         data-ad-slot="6511949176"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <div is="script">
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </div>
+
     <div class="timeline p-2 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
       <label class="inline-block pb-4">
         <span> 时间轴</span>
@@ -535,7 +546,7 @@
         <sbtn class="mb-1" title="删除当前选中元素" @click="deleteActivedObject" type="error">删除当前选中文字/图片</sbtn>
       </div>
 
-      <timeline ref="timeline" :frame-list="frameList" :gif-state="gifState"></timeline>
+      <timeline v-show="canEdit" ref="timeline" :frame-list="frameList" :gif-state="gifState"></timeline>
 
     </div>
 
