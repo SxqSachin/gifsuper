@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapper p-4 sm:p-4 md:p-8 lg:p-8 max:w-screen w-full">
+  <div class="wrapper p-4 sm:p-4 md:py-8 lg:py-8 max:w-screen w-full">
 
     <!-- <div v-if="false && !getNotification(1)" data-n-ver="1" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
       <div> 新功能：现在可以实时预览各项编辑操作啦！ </div>
