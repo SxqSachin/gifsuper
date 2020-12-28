@@ -65,7 +65,7 @@ export default class SBtn extends Vue {
   border: 0;
   border-radius: 2pt;
 
-  color: white;
+  color: var(--text-color-primary);
   background-color: red;
 
   .s-btn {

@@ -20,6 +20,7 @@
     "@babel/preset-env": "^7.10.2",
     "@babel/preset-typescript": "^7.10.1",
     "@fullhuman/postcss-purgecss": "^2.2.0",
+    "@sentry/webpack-plugin": "^1.14.0",
     "@types/fabric": "^3.6.8",
     "babel-loader": "^8.1.0",
     "babel-preset-stage-0": "^6.24.1",
@@ -48,13 +49,18 @@
   "dependencies": {
     "@babel/plugin-syntax-decorators": "^7.10.1",
     "@babel/runtime": "^7.10.2",
+    "@sentry/browser": "^5.29.2",
+    "@sentry/tracing": "^5.29.2",
+    "@sentry/vue": "^5.29.2",
     "axios": "^0.20.0",
     "fabric": "^4.1.0",
+    "js-base64": "^3.6.0",
     "tailwindcss": "^1.4.6",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",
     "vue-color": "^2.7.1",
     "vue-property-decorator": "^8.4.2",
+    "vue-select": "^3.10.8",
     "vue-slider-component": "^3.1.5"
   }
 }

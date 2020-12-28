@@ -60,7 +60,6 @@ export default class extends Vue implements Stage {
         const imgPromise: Promise<fabric.Image> = new Promise(resolve => {
 
           fabric.Image.fromURL(frame.imgFileSrc, img => {
-            console.log(img.width, img.height);
             if (!img.width || !img.height) {
               return;
             }
@@ -189,7 +188,18 @@ export default class extends Vue implements Stage {
       fill: '#777777',
       lockMovementY: true,
       hasControls: false,
-    }).on('moving', ({target}) => {
+    }).on('moving', (arg) => {
+      let target = undefined;
+      if (arg.target) {
+        target = arg.target;
+      } else if ((arg?.transform as any)?.target) {
+        target = (arg?.transform as any)?.target;
+      }
+
+      if (!target) {
+        target = {left: 0};
+      }
+
       let left = target.left as number;
 
       if (left + dragBarWidth >= containerWidth) {

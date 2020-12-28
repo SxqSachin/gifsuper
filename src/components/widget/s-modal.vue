@@ -60,7 +60,7 @@ export default class SModal extends Vue {
     opacity: 0;
     transform: scale(1.2);
 
-    @media screen and (max-width: $xs) {
+    @media screen and (max-width: 767px) {
     }
 
     .s-modal__shade {
@@ -91,8 +91,8 @@ export default class SModal extends Vue {
 
       max-height: 100vh - 12vh * 2;
 
-      @media screen and (max-width: $xs) {
-        background: white;
+      @media screen and (max-width: 767px) {
+        // background: white;
       }
     }
   }
