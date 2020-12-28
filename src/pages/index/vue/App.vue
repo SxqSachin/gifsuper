@@ -520,7 +520,7 @@
     </div>
 
     <!-- 底部广告 -->
-    <ins class="adsbygoogle"
+    <ins class="adsbygoogle mb-4"
          style="display:block"
          data-ad-client="ca-pub-1451575114945845"
          data-ad-slot="6511949176"
