@@ -11,9 +11,14 @@
       <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(2);"> + </div>
     </div> -->
 
-    <div v-if="!getNotification(3)" data-n-ver="3" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
+    <!-- <div v-if="!getNotification(3)" data-n-ver="3" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
       <div> 新功能：现在添加文字可选字体啦！字体库会慢慢补充哦！ </div>
       <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(3);"> + </div>
+    </div> -->
+
+    <div v-if="!getNotification(4)" data-n-ver="4" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
+      <div> 新功能：GIF图片压缩功能上线啦！ </div>
+      <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(4);"> + </div>
     </div>
 
     <!-- todo 严重bug 长度过大的gif上传后存在内存爆栈 导致标签页假死 -->
@@ -123,6 +128,7 @@
             >
               <img class="w-4 h-4 flex-shrink-0" :src="tab.icon"/>
               <span class="ml-2 md:inline" :class="{inline: curTab === tab.name, 'hidden': curTab !== tab.name}">{{tab.title}}</span>
+              <sup v-show="tab.new" class="text-red-400"> new </sup>
             </li>
           </ul>
         </div>
@@ -493,7 +499,7 @@
             <sbtn type="success" @click="generate" :disabled="isGenerating || !canEdit">生成</sbtn>
             <div class="py-2 text-color-neutral text-sm">
               <p class="">tips: 受原Gif大小影响，点击“生成”按钮后可能会有短暂卡顿，此时耐心等候即可。</p>
-              <p class=""> 生成后的GIF文件体积可能增加，可前往“<a href="https://www.iloveimg.com/zh-cn/compress-image?from=gifsuper.com" target="_blank">ILoveImg</a>”进行图片压缩。</p>
+              <p class=""> 生成后的GIF文件体积可能增加，可前往“<a href="https://yasuo.gifsuper.com?from=gifsuper.com" target="_blank">GifSuper图片压缩</a>”进行图片压缩。</p>
             </div>
           </fieldset>
         </div>
@@ -561,6 +567,8 @@
         </span>
       </template>
     </div>
+
+    <a ref="compress-link" class="absolute top-0 left-0 w-0 h-0 overflow-hidden" style="visiblity: hidden" href="https://yasuo.gifsuper.com?from=gifsuper.com" target="_blank">gifsuper压缩</a>
 
   </div>
 </template>
@@ -1145,6 +1153,12 @@ export default class extends Vue implements Toasted, Desk {
 
   public curTab: string = 'base';
   public switchTab(tab: string) {
+    if (tab === 'compress') {
+      (this.$refs['compress-link'] as HTMLElement).click();
+
+      return;
+    }
+
     this.curTab = tab;
 
     if (tab === 'resize') {
@@ -1389,6 +1403,7 @@ export default class extends Vue implements Toasted, Desk {
       { name: 'cut', title: '帧裁剪', icon: '/static/icons/cut.svg', },
       { name: 'resize', title: '裁剪', icon: '/static/icons/contract.svg', },
       { name: 'filter', title: '滤镜', icon: '/static/icons/wand.svg', },
+      { name: 'compress', title: '压缩', icon: '/static/icons/compress.svg', new: true },
     ];
   }
 
