@@ -509,8 +509,8 @@
     </div>
 
     <div v-show="isGenerating || generateDone" class="flex flex-col justify-center w-full p-4 mb-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
-      <label for="" class="hidden md:inline" v-show="generateDone">新图像：（保存图片：右击图片->图片另存为）</label>
-      <label for="" class="inline md:hidden" v-show="generateDone">新图像：（长按图片->保存图片）</label>
+      <label for="" class="hidden md:inline" v-show="generateDone">新图像：（保存图片：右击图片->图片另存为 或 点击下方按钮下载）</label>
+      <label for="" class="inline md:hidden" v-show="generateDone">新图像：（长按图片->保存图片 或 点击下方按钮下载）</label>
 
       <div class="flex justify-center h-full items-center mt-4">
         <div class="my-12 md:my-0" v-show="isGenerating">
@@ -521,6 +521,7 @@
 
         <div v-show="!isGenerating">
           <div id="dtsgif" class="mt-4 md:mt-0 flex justify-center items-center"> </div>
+          <sbtn class="mt-2 md:mt-4" type="success" @click="downloadNewImage">下载新图像</sbtn>
         </div>
       </div>
     </div>
@@ -1393,6 +1394,15 @@ export default class extends Vue implements Toasted, Desk {
     this.timeline.refresh();
 
     this.toast('滤镜应用成功', 'success');
+  }
+
+  public downloadNewImage() {
+    const linkSource = document.querySelector('#dtsgif img').getAttribute('src');
+    const downloadLink = document.createElement("a");
+    downloadLink.setAttribute('href', linkSource);
+    downloadLink.setAttribute('download', 'new.gif');
+    downloadLink.click();
+    downloadLink.remove();
   }
 
   get tabs() {
