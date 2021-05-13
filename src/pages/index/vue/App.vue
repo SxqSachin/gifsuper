@@ -1396,6 +1396,13 @@ export default class extends Vue implements Toasted, Desk {
     this.toast('滤镜应用成功', 'success');
   }
 
+
+
+
+
+
+
+
   public downloadNewImage() {
     const linkSource = document.querySelector('#dtsgif img').getAttribute('src');
     const downloadLink = document.createElement("a");
