@@ -503,7 +503,7 @@
             </component>
           </fieldset> -->
 
-          <fieldset class="pt-8 ">
+          <fieldset id="action-panel" class="pt-8 ">
             <sbtn title="应用修改" @click="applyPreview2Timeline" type="success" :disabled="!canEdit">将修改应用到时间轴</sbtn>
             <div class="py-2 mb-4 text-sm">
               <span class="text-red-300"> 注意：</span>
@@ -521,7 +521,7 @@
 
     </div>
 
-    <div v-show="isGenerating || generateDone" class="flex flex-col justify-center w-full p-4 mb-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
+    <div id="gif-res" v-show="isGenerating || generateDone" class="flex flex-col justify-center w-full p-4 mb-4 bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md">
       <label for="" class="hidden md:inline" v-show="generateDone">新图像：（保存图片：右击图片->图片另存为 或 点击下方按钮下载）</label>
       <label for="" class="inline md:hidden" v-show="generateDone">新图像：（长按图片->保存图片 或 点击下方按钮下载）</label>
 
@@ -1436,7 +1436,7 @@ export default class extends Vue implements Toasted, Desk {
       { name: 'resize', title: '裁剪', icon: '/static/icons/contract.svg', },
       { name: 'filter', title: '滤镜', icon: '/static/icons/wand.svg', },
       { name: 'compress', title: '压缩', icon: '/static/icons/compress.svg', },
-      { name: 'capture', title: '录屏', icon: '/static/icons/capture.svg', new: true },
+      { name: 'capture', title: '录屏', icon: '/static/icons/capture.svg', new: true, beta: true, },
     ];
   }
 
