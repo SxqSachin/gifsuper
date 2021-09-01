@@ -16,9 +16,14 @@
       <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(3);"> + </div>
     </div> -->
 
-    <div v-if="!getNotification(4)" data-n-ver="4" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
+    <!-- <div v-if="!getNotification(4)" data-n-ver="4" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
       <div> 新功能：GIF图片压缩功能上线啦！ </div>
       <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(4);"> + </div>
+    </div> -->
+
+    <div v-if="!getNotification(5)" data-n-ver="5" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
+      <div> 新功能：<strong>在线录屏</strong>功能上线啦！ </div>
+      <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(5);"> + </div>
     </div>
 
     <!-- todo 严重bug 长度过大的gif上传后存在内存爆栈 导致标签页假死 -->
@@ -481,7 +486,15 @@
 
           </fieldset>
 
-          <!-- <fieldset 
+          <fieldset class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
+            v-show="curTab === 'capture'"
+            >
+
+            <capture-panel :desk="this" ref="capture-panel"></capture-panel>
+
+          </fieldset>
+
+          <!-- <fieldset
             v-for="panel in panels" :key="panel.panelName"
             class="flex items-start flex-col p-4 w-full bg-assets shadow hover:shadow-lg transition-shadow transition-time-func rounded-md"
             v-show="curTab === panel.tabInfo.name"
@@ -619,6 +632,7 @@ import { Stage } from '../js/stage';
 // import { Timeline } from './js/timeline';
 
 import FilterPanel from './components/panels/filter.vue';
+import CapturePanel from './components/panels/capture.vue';
 import { Desk } from '../js/desk';
 import { Panel } from '../js/panel';
 
@@ -639,6 +653,7 @@ import { checkOrigin } from '../../../js/auth'
     previewer: Previewer,
     timeline: Timeline,
     'filter-panel': FilterPanel,
+    'capture-panel': CapturePanel,
   },
 })
 export default class extends Vue implements Toasted, Desk {
@@ -1420,7 +1435,8 @@ export default class extends Vue implements Toasted, Desk {
       { name: 'cut', title: '帧裁剪', icon: '/static/icons/cut.svg', },
       { name: 'resize', title: '裁剪', icon: '/static/icons/contract.svg', },
       { name: 'filter', title: '滤镜', icon: '/static/icons/wand.svg', },
-      { name: 'compress', title: '压缩', icon: '/static/icons/compress.svg', new: true },
+      { name: 'compress', title: '压缩', icon: '/static/icons/compress.svg', },
+      { name: 'capture', title: '录屏', icon: '/static/icons/capture.svg', new: true },
     ];
   }
 
