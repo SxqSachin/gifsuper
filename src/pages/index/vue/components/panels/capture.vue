@@ -2,20 +2,38 @@
 <template>
   <div class="w-full flex flex-col">
 
-    <h2 class="text-center mb-4">关于“GifSuper 屏幕录制”功能</h2>
-    <ul class="list-disc list-inside">
-      <li>该功能需要浏览器提供相关接口支持，建议在高版本现代浏览器下操作，以获得最佳体验。</li>
-      <li>该功能与本站其他功能一样，录制全程不包含任何网络活动，不必担心隐私问题。（可断网录制）</li>
-      <li>点击下方“开始录制”按钮，即可开始录制屏幕。浏览器弹出窗口后，可选择需要进行屏幕录制的窗口。</li>
-      <li>完成录制后，会生成一份可下载的视频。</li>
-      <li>该功能属于实验性功能，期待您的使用与反馈。</li>
-    </ul>
+    <div class="w-full flex flex-col">
+      <h3 class="text-center mb-2">关于“GifSuper 屏幕录制”功能</h3>
+      <ul class="list-disc list-inside">
+        <li>该功能需要浏览器提供相关接口支持，建议在高版本现代浏览器下操作，以获得最佳体验。</li>
+        <li>该功能与本站其他功能一样，录制全程不包含任何网络活动，不必担心隐私问题。（可断网录制）</li>
+        <li>首次使用时，浏览器会向您获取相关权限。</li>
+        <li>该功能属于实验性功能，期待您的使用与反馈。</li>
+      </ul>
 
-    <hr class="my-4 md:mb-6">
+      <h3 class="text-center mt-4 mb-2">使用方法</h3>
+      <ol class="list-decimal list-inside">
+        <li>点击下方“开始录制”按钮，即可开始录制屏幕。</li>
+        <li>浏览器会要求您选择需要进行录制的窗口（选择录制屏幕时，可任意切换窗口。），选择完毕后即可开始录制。</li>
+        <li>当需要停止录制时，点击下方的“停止录制”按钮，或点击由浏览器提供的“停止分享”按钮。</li>
+        <li>完成录制后，即可生成一份可下载的视频。</li>
+      </ol>
+
+      <hr class="my-4 md:mb-6">
+    </div>
 
     <template v-if="isRecordEnable">
-      <s-btn v-if="!isRecording" @click="doCapture">{{isRecordDone ? "重新录制" : "开始录制"}}</s-btn>
-      <s-btn v-if="isRecording" :disabled="true">正在录制中</s-btn>
+
+      <template v-if="!isRecording">
+        <div class="flex flex-row items-center mb-4">
+          <span>录制麦克风：</span><s-btn :type="recordAudio ? 'success' : 'info'" @click="recordAudio = !recordAudio">{{ recordAudio ? '开启' : '关闭' }}</s-btn>
+        </div>
+        <s-btn @click="doCapture">{{isRecordDone ? "重新录制" : "开始录制"}}</s-btn>
+      </template>
+      <template v-else>
+        <p class="mb-4 md:mb-6 w-full text-center">正在录制中...</p>
+        <s-btn v-if="isRecording" type="error" @click="stopCapture">停止录制</s-btn>
+      </template>
 
       <template v-if="isRecordDone">
         <hr class="my-4 md:mb-6">
@@ -25,7 +43,7 @@
 
         <div class="mb-4"></div>
 
-        <video controls>
+        <video controls autoplay>
           <source :src="videoUrl" type="video/webm">
         </video>
 
@@ -55,6 +73,12 @@ export default class extends AbstractPanel {
   public isRecordDone: boolean = false;
   public isRecording: boolean = false;
   public recordedChunks: any[] = [];
+  public videoType: string = "webm";
+
+  public recordAudio: boolean = false;
+
+  // public stream: MediaStream = null;
+  public tracks: MediaStreamTrack[] = [];
 
   public mounted() {
     console.log('capture panel loaded');
@@ -72,13 +96,18 @@ export default class extends AbstractPanel {
     this.isRecordDone = false;
     this.isRecording = true;
     this.recordedChunks = [];
+    this.tracks = [];
 
-    const stream = await this.startCapture();
+    const stream: MediaStream = await this.startCapture({
+      video: true,
+      audio: this.recordAudio,
+    });
+    this.tracks = stream.getTracks();
 
-    const options = { mimeType: "video/webm; codecs=vp9" };
+    const options = { mimeType: `video/${this.videoType}; codecs=vp9` };
     // @ts-ignore
     const mediaRecorder = new MediaRecorder(stream, options);
-    const handleDataAvailable = (event) => {
+    mediaRecorder.ondataavailable = (event) => {
       if (event.data.size > 0) {
         this.recordedChunks.push(event.data);
         this.isRecordDone = true;
@@ -87,12 +116,21 @@ export default class extends AbstractPanel {
         // ...
       }
     }
-
-    mediaRecorder.ondataavailable = handleDataAvailable;
     mediaRecorder.start();
   }
 
-  public async startCapture(displayMediaOptions = null) {
+  public stopCapture() {
+    if (!this.tracks?.length) {
+      return;
+    }
+
+    this.tracks.forEach(track => {
+      console.error(track);
+      track.stop();
+    })
+  }
+
+  public async startCapture(displayMediaOptions: MediaStreamConstraints = null) {
     let captureStream = null;
 
     try {
@@ -117,7 +155,7 @@ export default class extends AbstractPanel {
     //@ts-ignore
     a.style = "display: none";
     a.href = url;
-    a.download = "屏幕录制.webm";
+    a.download = `屏幕录制.${this.videoType}`;
     a.click();
     window.URL.revokeObjectURL(url);
   }
