@@ -1458,43 +1458,43 @@ export default class extends Vue implements Toasted, Desk {
 <style>
 @font-face {
     font-family: zhankukuaileti;
-    src: url('https://static.sxqsachin.com/font/ZhanKuKuaiLeTi2016XiuDingBan.ttf') format('truetype');
+    src: url('https://gifsuper.sxqsachin.com/static/fonts/ZhanKuKuaiLeTi2016XiuDingBan.ttf') format('truetype');
 }
 @font-face {
     font-family: zhankuwenyiti;
-    src: url('https://static.sxqsachin.com/font/ZhanKuWenYiTi.ttf') format('truetype');
+    src: url('https://gifsuper.sxqsachin.com/static/fonts/ZhanKuWenYiTi.ttf') format('truetype');
 }
 @font-face {
     font-family: zhankugaoduanheiti;
-    src: url('https://static.sxqsachin.com/font/GaoDuanHeiXiuDing151105.ttf') format('truetype');
+    src: url('https://gifsuper.sxqsachin.com/static/fonts/GaoDuanHeiXiuDing151105.ttf') format('truetype');
 }
 @font-face {
     font-family: fangzhengfangsong;
-    src: url('https://static.sxqsachin.com/font/FangZhengFangSongJianTi.ttf') format('truetype');
+    src: url('https://gifsuper.sxqsachin.com/static/fonts/FangZhengFangSongJianTi.ttf') format('truetype');
 }
 @font-face {
     font-family: fangzhengkaiti;
-    src: url('https://static.sxqsachin.com/font/FangZhengKaiTiJianTi.ttf') format('truetype');
+    src: url('https://gifsuper.sxqsachin.com/static/fonts/FangZhengKaiTiJianTi.ttf') format('truetype');
 }
 @font-face {
     font-family: yangrengdongzhushiti;
-    src: url('https://static.sxqsachin.com/font/YangRenDongZhuShiTi.ttf') format('truetype');
+    src: url('https://gifsuper.sxqsachin.com/static/fonts/YangRenDongZhuShiTi.ttf') format('truetype');
 }
 @font-face {
     font-family: xianerti;
-    src: url('https://static.sxqsachin.com/font/XianErTi.ttf') format('truetype');
+    src: url('https://gifsuper.sxqsachin.com/static/fonts/XianErTi.ttf') format('truetype');
 }
 @font-face {
     font-family: qiantuxiaotuti;
-    src: url('https://static.sxqsachin.com/font/QianTuXiaoTuTi.ttf') format('truetype');
+    src: url('https://gifsuper.sxqsachin.com/static/fonts/QianTuXiaoTuTi.ttf') format('truetype');
 }
 @font-face {
     font-family: qingsongshouxieti2;
-    src: url('https://static.sxqsachin.com/font/QingSongShouXieTi2.ttf') format('truetype');
+    src: url('https://gifsuper.sxqsachin.com/static/fonts/QingSongShouXieTi2.ttf') format('truetype');
 }
 @font-face {
     font-family: youshebiaotihei;
-    src: url('https://static.sxqsachin.com/font/YouSheBiaoTiHei.ttf') format('truetype');
+    src: url('https://gifsuper.sxqsachin.com/static/fonts/YouSheBiaoTiHei.ttf') format('truetype');
 }
 </style>
 
