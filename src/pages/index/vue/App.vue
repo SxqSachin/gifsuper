@@ -55,7 +55,7 @@
             <div v-show="!!oriImageSrc && oriGifLoadProgress < 1" class="flex flex-col justify-center items-center">
               <img ref="oriImageDom" :src="oriImageSrc" alt="" srcset=""/>
               <div v-show="!!oriImageSrc && oriGifLoadProgress < 1" class="mask w-full h-full float-left absolute flex justify-center items-center bg-opacity-75 bg-gray-800 text-white text-lg text-center" :style="{width: `${showWidth}px`, height: `${showHeight}px`}"> 
-                读取数据中： {{ Math.max(0, (oriGifLoadProgress * 100 - 1).toFixed(0)) }} %
+                读取数据中： {{ Math.max(0, +(oriGifLoadProgress * 100 - 1).toFixed(0)) }} %
               </div>
             </div>
           </div>
@@ -149,11 +149,11 @@
               <div class="flex w-full">
                 <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
                   <label for="interval" class="whitespace-no-wrap flex-0 inline-block">总帧数：</label>
-                  <div>{{ this.frameList.length }}</div>
+                  <div>{{ frameList.length }}</div>
                 </div>
                 <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
                   <label for="interval" class="whitespace-no-wrap flex-0 inline-block">大小：</label>
-                  <div>{{ this.rawFile ? +(this.rawFile.size / (1024 * 1024)).toFixed(2) : 0 }}MB</div>
+                  <div>{{ rawFile ? +(rawFile.size / (1024 * 1024)).toFixed(2) : 0 }}MB</div>
                 </div>
               </div>
             </section>
@@ -335,8 +335,8 @@
                   v-model="addTextRange"
                   :disabled="!canEdit"
                   :min="1"
-                  :max="!!this.frameList.length ? this.frameList.length : 10"
-                  :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
+                  :max="!!frameList.length ? frameList.length : 10"
+                  :marks="[1, (!!frameList.length ? frameList.length : 10)]"
                   :contained="true"
                   tooltip="always"
                   tooltip-placement="bottom"
@@ -382,8 +382,8 @@
                 v-model="addImgRange"
                 :disabled="!canEdit"
                 :min="1"
-                :max="!!this.frameList.length ? this.frameList.length : 10"
-                :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
+                :max="!!frameList.length ? frameList.length : 10"
+                :marks="[1, (!!frameList.length ? frameList.length : 10)]"
                 :contained="true"
                 tooltip="always"
                 tooltip-placement="bottom"
@@ -411,8 +411,8 @@
                   v-model="frameSplitRange"
                   :disabled="!canEdit"
                   :min="1"
-                  :max="!!this.frameList.length ? this.frameList.length : 10"
-                  :marks="[1, (!!this.frameList.length ? this.frameList.length : 10)]"
+                  :max="!!frameList.length ? frameList.length : 10"
+                  :marks="[1, (!!frameList.length ? frameList.length : 10)]"
                   :contained="true"
                   tooltip="always"
                   tooltip-placement="bottom"
@@ -539,6 +539,17 @@
       </div>
     </div>
 
+    <!-- 支付宝红包 -->
+    <div class="alipay-red-packet-layer animate-fade-in" v-if="showAliPayRedPacketLayer">
+      <div class="bg-white p-4 rounded-md w-4/5 md:w-auto">
+        <div class="flex justify-between items-center mb-2 p-2 pt-0 flex-no-wrap">
+          <p> <span>等待时间，领个红包！</span><br class="inline-block md:hidden"/><span>(生成进度：{{progress}}%)</span></p>
+          <div class="text-color-neutral transform rotate-45 text-2xl cursor-pointer" @click="showAliPayRedPacketLayer = false"> + </div>
+        </div>
+        <img src="/static/imgs/alipay-red-packet-2021.jpg" alt="支付宝红包">
+      </div>
+    </div>
+
     <!-- 底部广告 -->
     <ins class="adsbygoogle mb-4"
          style="display:block"
@@ -571,18 +582,17 @@
     </div>
 
     <!-- 这里预载入字体 -->
-    <div class="absolute top-0 left-0 w-0 h-0 overflow-hidden" style="visiblity: hidden;">
-      <template v-for="fontItem in fontList">
-        <span
-          :key="fontItem.font"
-          class="w-full text-color-primary"
-          :style="`font-family:${fontItem.font};`">
-            <p class="text-2xl" :style="`font-family:${fontItem.font};`" >1</p>
-        </span>
-      </template>
+    <div class="absolute top-0 left-0 w-0 h-0 overflow-hidden" style="visibility: hidden;">
+      <span
+        v-for="fontItem in fontList"
+        :key="fontItem.font"
+        class="w-full text-color-primary"
+        :style="`font-family:${fontItem.font};`">
+          <p class="text-2xl" :style="`font-family:${fontItem.font};`" >1</p>
+      </span>
     </div>
 
-    <a ref="compress-link" class="absolute top-0 left-0 w-0 h-0 overflow-hidden" style="visiblity: hidden" href="https://yasuo.gifsuper.com?from=gifsuper.com" target="_blank">gifsuper压缩</a>
+    <a ref="compress-link" class="absolute top-0 left-0 w-0 h-0 overflow-hidden" style="visibility: hidden" href="https://yasuo.gifsuper.com?from=gifsuper.com" target="_blank">gifsuper压缩</a>
 
   </div>
 </template>
@@ -640,6 +650,7 @@ import vSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css'
 
 import { checkOrigin } from '../../../js/auth'
+import { delay } from '@/js/utility';
 
 @Component({
   components: {
@@ -760,6 +771,8 @@ export default class extends Vue implements Toasted, Desk {
   public timeline!: Timeline;
 
   public filterPanel!: FilterPanel;
+
+  public showAliPayRedPacketLayer: boolean = false;
 
   get canEdit(): boolean {
     return !!this.frameList?.length;
@@ -934,10 +947,14 @@ export default class extends Vue implements Toasted, Desk {
 
   // 将#时间轴#中的每一帧合并为GIF
   public async generate() {
+    this.showAliPayRedPacketLayer = true;
+
     this.generateDone = false;
 
     this.progress = 0;
     this.isGenerating = true;
+
+    await delay(1000);
 
     const rotated = Math.abs(+this.gifState.rotate) === 90 || Math.abs(+this.gifState.rotate) === 270;
 
@@ -1375,7 +1392,7 @@ export default class extends Vue implements Toasted, Desk {
     this.curPreviewImg = this.frameList[range[index] - 1].imgFileSrc;
   }
 
-  private aaa: boolean = false;
+  aaa: boolean = false;
 
   public togglePause() {
     if (!this.previewer.preview) {
@@ -1410,13 +1427,6 @@ export default class extends Vue implements Toasted, Desk {
 
     this.toast('滤镜应用成功', 'success');
   }
-
-
-
-
-
-
-
 
   public downloadNewImage() {
     const linkSource = document.querySelector('#dtsgif img').getAttribute('src');
@@ -1513,6 +1523,30 @@ export default class extends Vue implements Toasted, Desk {
     box-shadow: none;
     & /deep/ .vc-chrome-fields-wrap {
       display: none;
+    }
+  }
+
+  div.alipay-red-packet-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* background-image: url('/static/imgs/alipay-red-packet-2021.jpg'); */
+
+    img {
+      width: 400px;
+    }
+
+    @media screen and (max-width: 767px) {
+      img {
+        width: 100%;
+      }
     }
   }
 
