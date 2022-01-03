@@ -540,7 +540,7 @@
     </div>
 
     <!-- 支付宝红包 -->
-    <div class="alipay-red-packet-layer animate-fade-in" v-if="showAliPayRedPacketLayer">
+    <!-- <div class="alipay-red-packet-layer animate-fade-in" v-if="showAliPayRedPacketLayer">
       <div class="bg-white p-4 rounded-md w-4/5 md:w-auto">
         <div class="flex justify-between items-center mb-2 p-2 pt-0 flex-no-wrap">
           <p> <span>等待时间，领个红包！</span><br class="inline-block md:hidden"/><span>(生成进度：{{progress}}%)</span></p>
@@ -548,7 +548,7 @@
         </div>
         <img src="/static/imgs/alipay-red-packet-2021.jpg" alt="支付宝红包">
       </div>
-    </div>
+    </div> -->
 
     <!-- 底部广告 -->
     <ins class="adsbygoogle mb-4"
