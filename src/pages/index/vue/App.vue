@@ -552,15 +552,17 @@
     </div>
 
     <!-- 支付宝红包 -->
-    <!-- <div class="alipay-red-packet-layer animate-fade-in" v-if="showAliPayRedPacketLayer">
-      <div class="bg-white p-4 rounded-md w-4/5 md:w-auto">
-        <div class="flex justify-between items-center mb-2 p-2 pt-0 flex-no-wrap">
-          <p> <span>等待时间，领个红包！</span><br class="inline-block md:hidden"/><span>(生成进度：{{progress}}%)</span></p>
-          <div class="text-color-neutral transform rotate-45 text-2xl cursor-pointer" @click="showAliPayRedPacketLayer = false"> + </div>
+    <div class="hidden md:block">
+      <div class="alipay-red-packet-layer animate-fade-in" v-if="showAliPayRedPacketLayer">
+        <div class="bg-white p-4 rounded-md w-4/5 md:w-auto">
+          <div class="flex justify-between items-center mb-2 p-2 pt-0 flex-no-wrap">
+            <p class="text-gray-700"> <span>等待时间，领个红包！</span><br class="inline-block md:hidden"/><span>( {{progress !== 100 ? `后台生成进度: ${progress}%`: '图片生成完毕!'}} )</span></p>
+            <div class="text-color-neutral transform rotate-45 text-2xl cursor-pointer" @click="showAliPayRedPacketLayer = false"> + </div>
+          </div>
+          <img src="/static/imgs/alipay-red-packet-2022-03-31.png" alt="支付宝红包">
         </div>
-        <img src="/static/imgs/alipay-red-packet-2021.jpg" alt="支付宝红包">
       </div>
-    </div> -->
+    </div>
 
     <!-- 底部广告 -->
     <ins class="adsbygoogle mb-4"

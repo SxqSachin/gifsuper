@@ -196,15 +196,11 @@ class GifGenerator {
     reader.onload = (e: any) => {
       const dataUrl = e!.target!.result;
 
-      console.log(dataUrl);
-
       const dtsGif = new Image();
       dtsGif.src = dataUrl;
 
       dtsDOM.appendChild(dtsGif);
     };
-
-    console.log(blob);
 
     reader.readAsDataURL(blob);
 
