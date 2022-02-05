@@ -170,7 +170,7 @@
               <div class="flex flex-row items-center mb-4">
                 <span>本图形为透明背景<sup class="text-red-400"> new </sup>：</span>
                 <sbtn :disabled="!canEdit" @click="isTransparentBg = !isTransparentBg">{{ isTransparentBg ? '是' : '否' }}</sbtn>
-                <span class="inline-block text-color-neutral text-sm border-gray-400 ml-4">如果上传的图像包含透明背景，则需要开启本开关。</span>
+                <span class="inline-block text-color-neutral text-sm border-gray-400 ml-4">如果上传的图像包含透明像素，则需要开启本开关。</span>
               </div>
 
               <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
@@ -525,6 +525,13 @@
             <div class="py-2 text-color-neutral text-sm">
               <p class="">tips: 受原Gif大小影响，点击“生成”按钮后可能会有短暂卡顿，此时耐心等候即可。</p>
               <p class=""> 生成后的GIF文件体积可能增加，可前往“<a href="https://yasuo.gifsuper.com?from=gifsuper.com" target="_blank">GifSuper图片压缩</a>”进行图片压缩。</p>
+            </div>
+
+            <div class="mt-2 p-4 w-full text-center border border-red-400 rounded-md">
+              <p class="text-red-400">
+                GifSuper正在进行一次问卷调查，我们非常重视每位用户的宝贵意见，期待您的参与!
+              </p>
+              <a class="inline-block mt-2 py-1 px-2 border border-blue-400 rounded-md" href="https://wj.qq.com/s2/9674796/4d70/" target="_blank">点击参与本次匿名问卷调查</a>
             </div>
           </fieldset>
         </div>
