@@ -21,9 +21,14 @@
       <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(4);"> + </div>
     </div> -->
 
-    <div v-if="!getNotification(5)" data-n-ver="5" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
+    <!-- <div v-if="!getNotification(5)" data-n-ver="5" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
       <div> 新功能：<strong>在线录屏</strong>功能上线啦！ </div>
       <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(5);"> + </div>
+    </div> -->
+
+    <div v-if="!getNotification(6)" data-n-ver="6" class="w-full py-2 px-4 mb-8 rounded-md border border-color-info flex justify-between items-center">
+      <div> 问题修复：修复了透明背景Gif生成后背景变为黑色的问题。 </div>
+      <div class="color-link transform rotate-45 text-2xl cursor-pointer" @click="clearNotification(6);"> + </div>
     </div>
 
     <!-- todo 严重bug 长度过大的gif上传后存在内存爆栈 导致标签页假死 -->
@@ -151,6 +156,7 @@
                   <label for="interval" class="whitespace-no-wrap flex-0 inline-block">总帧数：</label>
                   <div>{{ frameList.length }}</div>
                 </div>
+
                 <div class="flex items-center mb-4 mr-0 md:mr-4 w-full md:w-auto">
                   <label for="interval" class="whitespace-no-wrap flex-0 inline-block">大小：</label>
                   <div>{{ rawFile ? +(rawFile.size / (1024 * 1024)).toFixed(2) : 0 }}MB</div>
@@ -160,6 +166,12 @@
 
             <section class="flex flex-col flex-auto mt-4 w-full">
               <h2 class="mb-4 text-lg"> 基础调整 </h2>
+
+              <div class="flex flex-row items-center mb-4">
+                <span>本图形为透明背景<sup class="text-red-400"> new </sup>：</span>
+                <sbtn :disabled="!canEdit" @click="isTransparentBg = !isTransparentBg">{{ isTransparentBg ? '是' : '否' }}</sbtn>
+                <span class="inline-block text-color-neutral text-sm border-gray-400 ml-4">如果上传的图像包含透明背景，则需要开启本开关。</span>
+              </div>
 
               <div class="flex flex-col justify-center items-start mb-4 pb-8 w-full">
                 <label for="">
@@ -190,6 +202,7 @@
                 <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后生成的Gif将会上下颠倒" :disabled="!canEdit" @click="toggleState('flipY', '上下翻转', true)">上下翻转：{{ gifState.flipY ? '开' : '关' }}</sbtn>
                 <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="将图片向左旋转90度" :disabled="!canEdit" @click="rotate(-90)"> 左旋转 </sbtn>
                 <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="将图片向右旋转90度" :disabled="!canEdit" @click="rotate(90)"> 右旋转 </sbtn>
+
                 <!-- <sbtn class="mr-0 md:mr-4 w-full md:w-auto mb-1" title="开启后可实现首尾相接重复的特效" :disabled="!canEdit" @click="toggleRLoop">
                   <span>反复</span>
                   <span>:{{ rloop ? '开' : '关' }} </span>
@@ -257,11 +270,11 @@
                  ></slider>
               </div>
 
-              <div class="flex items-center mb-4">
-                <label for="" class="whitespace-no-wrap">字体<sup class="text-red-400"> new </sup>：</label>
+              <!-- <div class="flex items-center mb-4 cursor-not-allowed">
+                <label for="" class="whitespace-no-wrap cursor-not-allowed">字体：</label>
                 <v-select
                   v-model="fontFamily"
-                  class="w-full text-color-primary border border-gray-400 rounded-sm"
+                  class="w-full text-color-primary border border-gray-400 rounded-sm cursor-not-allowed"
                   :options="fontList"
                   :style="`font-family:${fontFamily};`"
                   :reduce="font => font.font">
@@ -269,7 +282,7 @@
                     <p class="text-2xl" :style="`font-family:${font};`" >{{ label }}</p>
                   </template>
                 </v-select>
-              </div>
+              </div> -->
 
               <section class="flex flex-col w-full mb-4">
                 <div class="flex flex-row items-center mb-4">
@@ -365,7 +378,6 @@
             <div class="flex flex-col justify-center items-start w-full">
               <label for="" class="whitespace-no-wrap mb-1">
                 <span> 添加图片 </span>
-                <sup class="text-red-300"> Beta! </sup>
                 <span>：</span>
               </label>
               <span class="inline-block pb-2 text-color-neutral text-sm border-gray-400">若上传的图片尺寸过大，请至“预览”处拖动并调整大小。</span>
@@ -582,7 +594,7 @@
     </div>
 
     <!-- 这里预载入字体 -->
-    <div class="absolute top-0 left-0 w-0 h-0 overflow-hidden" style="visibility: hidden;">
+    <!-- <div class="absolute top-0 left-0 w-0 h-0 overflow-hidden" style="visibility: hidden;">
       <span
         v-for="fontItem in fontList"
         :key="fontItem.font"
@@ -590,7 +602,7 @@
         :style="`font-family:${fontItem.font};`">
           <p class="text-2xl" :style="`font-family:${fontItem.font};`" >1</p>
       </span>
-    </div>
+    </div> -->
 
     <a ref="compress-link" class="absolute top-0 left-0 w-0 h-0 overflow-hidden" style="visibility: hidden" href="https://yasuo.gifsuper.com?from=gifsuper.com" target="_blank">gifsuper压缩</a>
 
@@ -688,6 +700,8 @@ export default class extends Vue implements Toasted, Desk {
   public showWidth: number = 0;
   public showHeight: number = 0;
 
+  // 是否为透明背景
+  public isTransparentBg: boolean = false;
 
   // 帧列表
   public frameList: GifFrameList = [];
@@ -996,6 +1010,7 @@ export default class extends Vue implements Toasted, Desk {
       repeat: this.gifState.repeat ? 0 : -1,
       width: generatorWidth,
       height: generatorHeight,
+      isTransparentBg: this.isTransparentBg,
     });
 
     for (let i = startFrameIndex; i < endFrameIndex; i++)  {
@@ -1022,6 +1037,8 @@ export default class extends Vue implements Toasted, Desk {
         top,
         format: 'png',
       });
+
+      // console.log(durl);
 
       dataUrlArr.push(durl);
     }
@@ -1446,7 +1463,7 @@ export default class extends Vue implements Toasted, Desk {
       { name: 'resize', title: '裁剪', icon: '/static/icons/contract.svg', },
       { name: 'filter', title: '滤镜', icon: '/static/icons/wand.svg', },
       { name: 'compress', title: '压缩', icon: '/static/icons/compress.svg', },
-      { name: 'capture', title: '录屏', icon: '/static/icons/capture.svg', new: true, beta: true, },
+      { name: 'capture', title: '录屏', icon: '/static/icons/capture.svg', },
     ];
   }
 

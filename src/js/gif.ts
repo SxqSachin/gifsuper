@@ -120,13 +120,17 @@ class GifGenerator {
   private pall: Array<Promise<HTMLImageElement>>;
 
   constructor(options?: {[key: string]: any}) {
-
-    const opts = {
+    const opts: {[key: string]: any} = {
       worker: 2,
       quality: 10,
       workerScript: '/static/js/gif.worker.js',
       ...options,
     };
+
+    if (!!options.isTransparentBg) {
+      opts.background = 'rgba(0,0,0,0)';
+      opts.transparent = 0xffffff;
+    }
 
     // @ts-ignore
     this.gif = new GIF(opts);
@@ -192,11 +196,15 @@ class GifGenerator {
     reader.onload = (e: any) => {
       const dataUrl = e!.target!.result;
 
+      console.log(dataUrl);
+
       const dtsGif = new Image();
       dtsGif.src = dataUrl;
 
       dtsDOM.appendChild(dtsGif);
     };
+
+    console.log(blob);
 
     reader.readAsDataURL(blob);
 
