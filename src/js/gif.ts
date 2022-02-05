@@ -129,7 +129,7 @@ class GifGenerator {
 
     if (!!options.isTransparentBg) {
       opts.background = 'rgba(0,0,0,0)';
-      opts.transparent = 0xffffff;
+      opts.transparent = 0x00ff00;
     }
 
     // @ts-ignore
