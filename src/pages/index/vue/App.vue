@@ -47,7 +47,12 @@
           <div class="w-full">
             <div class="flex">
               <div class="flex-auto">
-                <label v-show="canEdit || isGenerating" for="srcgif" class="inline-block block">预览：</label>
+                <div v-show="canEdit || isGenerating" class="flex justify-between">
+                  <label for="srcgif" class="inline-block">预览：</label>
+                  <!-- <sbtn title="放大/缩小" type="ghost" @click="onBiggerPreviewBtnClick" style="padding-left: 0.45rem; padding-right: 0.45rem;">
+                    <img class="w-4 h-4 flex-shrink-0 cursor-pointer" src="/static/icons/play-skip-back.svg"/>
+                  </sbtn> -->
+                </div>
                 <label v-show="canEdit || isGenerating" for="srcgif" class="hidden md:block w-full whitespace-no-wrap truncate">点击添加的文字/图片来进行缩放/旋转操作。</label>
                 <label v-show="canEdit || isGenerating" for="srcgif" class="hidden md:block w-full">可用鼠标框选元素。</label>
                 <label v-show="canEdit || isGenerating" for="srcgif" class="block md:hidden w-full whitespace-no-wrap truncate">点击添加的文字/图片来进行缩放/旋转操作。</label>
@@ -560,13 +565,28 @@
 
     <!-- 支付宝红包 -->
     <div class="hidden md:block">
-      <div class="alipay-red-packet-layer animate-fade-in" v-if="showAliPayRedPacketLayer">
+      <div class="alipay-red-packet-layer animate-fade-in" v-if="false && showAliPayRedPacketLayer">
         <div class="bg-white p-4 rounded-md w-4/5 md:w-auto">
           <div class="flex justify-between items-center mb-2 p-2 pt-0 flex-no-wrap">
             <p class="text-gray-700"> <span>等待时间，领个红包！</span><br class="inline-block md:hidden"/><span>( {{progress !== 100 ? `后台生成进度: ${progress}%`: '图片生成完毕!'}} )</span></p>
             <div class="text-color-neutral transform rotate-45 text-2xl cursor-pointer" @click="showAliPayRedPacketLayer = false"> + </div>
           </div>
           <img src="/static/imgs/alipay-red-packet-2022-03-31.png" alt="支付宝红包">
+        </div>
+      </div>
+    </div>
+
+    <!-- 群二维码 -->
+    <div class="hidden md:block">
+      <div class="alipay-red-packet-layer animate-fade-in" v-if="showWechatGroupLayer">
+        <div class="bg-white p-4 rounded-md w-4/5 md:w-auto">
+          <div class="flex justify-between items-center mb-2 p-2 pt-0 flex-no-wrap">
+            <p class="text-gray-700"> <span>加个小群一起玩！</span><br class="inline-block md:hidden"/><span>( {{progress !== 100 ? `后台生成进度: ${progress}%`: '图片生成完毕!'}} )</span></p>
+            <div class="text-color-neutral transform rotate-45 text-2xl cursor-pointer" @click="showWechatGroupLayer = false"> + </div>
+          </div>
+          <img src="/static/imgs/wechat-group-20220310.jpeg" alt="表情包群">
+
+          <div class="text-gray-500 text-center mt-2 cursor-pointer" @click="hidePopupLayer('group')">不再提示</div>
         </div>
       </div>
     </div>
@@ -706,6 +726,8 @@ export default class extends Vue implements Toasted, Desk {
   public oriHeight: number = 0;
 
   // 表面显示图片宽高
+  public oriShowWidth: number = 0;
+  public oriShowHeight: number = 0;
   public showWidth: number = 0;
   public showHeight: number = 0;
 
@@ -796,6 +818,10 @@ export default class extends Vue implements Toasted, Desk {
   public filterPanel!: FilterPanel;
 
   public showAliPayRedPacketLayer: boolean = false;
+  public showWechatGroupLayer: boolean = false;
+
+  // 更大的预览界面
+  public biggerPreview: boolean = false;
 
   get canEdit(): boolean {
     return !!this.frameList?.length;
@@ -893,9 +919,10 @@ export default class extends Vue implements Toasted, Desk {
     this.oriImageSrc = imgFileSrc;
     await oriImageOnLoadPromise;
 
-    const {width: showWidth, height: showHeight} = imgDOM;
-    this.showWidth = showWidth;
-    this.showHeight = showHeight;
+    let {width: showWidth, height: showHeight} = imgDOM;
+
+    this.oriShowWidth = this.showWidth = showWidth;
+    this.oriShowHeight = this.showHeight = showHeight;
 
     this.resetStage();
 
@@ -970,7 +997,11 @@ export default class extends Vue implements Toasted, Desk {
 
   // 将#时间轴#中的每一帧合并为GIF
   public async generate() {
-    this.showAliPayRedPacketLayer = true;
+    // this.showAliPayRedPacketLayer = true;
+
+    if (!localStorage.getItem('hide-layer-group')) {
+      this.showWechatGroupLayer = true;
+    }
 
     this.generateDone = false;
 
@@ -1461,6 +1492,22 @@ export default class extends Vue implements Toasted, Desk {
     downloadLink.setAttribute('download', 'new.gif');
     downloadLink.click();
     downloadLink.remove();
+  }
+
+  public onBiggerPreviewBtnClick() {
+    this.biggerPreview = !this.biggerPreview;
+
+    const scale = this.biggerPreview ? 2 : 1;
+
+    this.showWidth = this.oriShowWidth * scale;
+    this.showHeight = this.oriShowHeight * scale;
+  }
+
+  public hidePopupLayer(key) {
+    localStorage.setItem('hide-layer-' + key, '1');
+    if (key === 'group') {
+      this.showWechatGroupLayer = false;
+    }
   }
 
   get tabs() {
