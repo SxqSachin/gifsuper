@@ -586,7 +586,7 @@
           </div>
           <img src="/static/imgs/wechat-group-20220413.jpeg" alt="表情包群">
 
-          <div class="text-gray-500 text-center mt-2 cursor-pointer" @click="hidePopupLayer('group')">不再提示</div>
+          <div class="text-gray-500 text-center mt-2 cursor-pointer" @click="hidePopupLayer('group2')">不再提示</div>
         </div>
       </div>
     </div>
@@ -999,7 +999,7 @@ export default class extends Vue implements Toasted, Desk {
   public async generate() {
     // this.showAliPayRedPacketLayer = true;
 
-    if (!localStorage.getItem('hide-layer-group')) {
+    if (!localStorage.getItem('hide-layer-group2')) {
       this.showWechatGroupLayer = true;
     }
 
