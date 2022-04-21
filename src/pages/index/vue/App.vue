@@ -584,9 +584,9 @@
             <p class="text-gray-700"> <span>加个小群一起玩！</span><br class="inline-block md:hidden"/><span>( {{progress !== 100 ? `后台生成进度: ${progress}%`: '图片生成完毕!'}} )</span></p>
             <div class="text-color-neutral transform rotate-45 text-2xl cursor-pointer" @click="showWechatGroupLayer = false"> + </div>
           </div>
-          <img src="/static/imgs/wechat-group-20220413.jpeg" alt="表情包群">
+          <img src="/static/imgs/wechat-group-20220421.jpeg" alt="表情包群">
 
-          <div class="text-gray-500 text-center mt-2 cursor-pointer" @click="hidePopupLayer('group2')">不再提示</div>
+          <div class="text-gray-500 text-center mt-2 cursor-pointer" @click="hidePopupLayer('group3')">不再提示</div>
         </div>
       </div>
     </div>
@@ -999,7 +999,7 @@ export default class extends Vue implements Toasted, Desk {
   public async generate() {
     // this.showAliPayRedPacketLayer = true;
 
-    if (!localStorage.getItem('hide-layer-group2')) {
+    if (!localStorage.getItem('hide-layer-group3')) {
       this.showWechatGroupLayer = true;
     }
 
@@ -1505,7 +1505,7 @@ export default class extends Vue implements Toasted, Desk {
 
   public hidePopupLayer(key) {
     localStorage.setItem('hide-layer-' + key, '1');
-    if (key === 'group') {
+    if (key === 'group3') {
       this.showWechatGroupLayer = false;
     }
   }
