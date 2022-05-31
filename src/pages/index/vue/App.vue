@@ -584,7 +584,7 @@
             <p class="text-gray-700"> <span>加个小群一起玩！</span><br class="inline-block md:hidden"/><span>( {{progress !== 100 ? `后台生成进度: ${progress}%`: '图片生成完毕!'}} )</span></p>
             <div class="text-color-neutral transform rotate-45 text-2xl cursor-pointer" @click="showWechatGroupLayer = false"> + </div>
           </div>
-          <img src="/static/imgs/wechat-group-20220523.jpg" alt="表情包群">
+          <img src="/static/imgs/wechat-group-20220531.jpg" alt="表情包群">
 
           <div class="text-gray-500 text-center mt-2 cursor-pointer" @click="hidePopupLayer('group3')">不再提示</div>
         </div>
