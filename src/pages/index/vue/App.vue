@@ -999,9 +999,9 @@ export default class extends Vue implements Toasted, Desk {
   public async generate() {
     // this.showAliPayRedPacketLayer = true;
 
-    if (!localStorage.getItem('hide-layer-group3')) {
-      this.showWechatGroupLayer = true;
-    }
+    // if (!localStorage.getItem('hide-layer-group3')) {
+    //   this.showWechatGroupLayer = true;
+    // }
 
     this.generateDone = false;
 
